@@ -1,0 +1,75 @@
+
+//-- ########################################################### --//
+     Prerequisites:
+     OpenJDK 17 installed & configured
+//-- ########################################################### --//
+
+# IntelliJ IDEA reference
+https://www.jetbrains.com/help/idea/creating-and-running-your-first-java-application.html
+
+
+//-- ########################################################### --//
+     1. set up project folder structure
+//-- ########################################################### --//
+
+# 00. project folder structure
+mkdir -p ~/Developer/projects/Helloworld
+cd ~/Developer/projects/Helloworld
+tree .
+|__Dev
+    |__Projects
+       |__Helloworld
+
+# 02. open IntelliJ into above created project, Helloworld;
+
+
+//-- ########################################################### --//
+     2. Setup java for IntelliJ
+//-- ########################################################### --//
+
+File -> Project Structure -> Project Settings -> Project -> SDK: select java-17
+
+
+//-- ########################################################### --//
+     3. create Java project
+//-- ########################################################### --//
+
+# 01. create New project:
+  - Java
+  - Name: 
+  - Location: 
+  - Build system: maven
+  - JDK
+  - Advanced settings:
+    - groupId: com.funnygorilla
+    - ArtifactId: Helloworld
+
+# 04. Create a Helloworld class and 
+
+# 05. Create a main method.
+[toDo]
+
+
+//-- ########################################################### --//
+     4. run Java project
+//-- ########################################################### --//
+
+# 01. In IntelliJ, right click main method, and in context prompt click run Run As Java Application;
+
+# 02. In IntelliJ console, you can try out input some text and see output what you have input;
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,72 @@
+
+//-- ################################################################## --//
+//-- ****       Queue:                                             **** --//   
+                 1. Queue definition 
+                 2. enqueue ()                               
+                 3. dequeue ()                               
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+     1. List based Queue
+//-- ################################################################## --//
+
+# 00. Base queue definition ------------------------------------------#
+class ListQueue: 
+    def __init__(self): 
+        self.items = []             # starts with empty list
+        self.front = self.size = 0  # initialized with 0
+        self.capacity = 10          # maximum capacity of the queue
+
+
+//-- ################################################################## --//
+     2. enqueue function
+//-- ################################################################## --//
+
+# 01. enqueue definition ---------------------------------------------#
+
+    def enqueue(self, data):  
+        if self.capacity == self.size:
+            print("\n Queue is full")
+        else:   
+            self.items.append(data)  
+            self.size += 1
+
+# 02. test code -----------------------------------------------------#
+
+q = ListQueue()
+q.enqueue(20)
+q.enqueue(30)
+q.enqueue(40)
+q.enqueue(50)
+
+print(q.items)
+
+
+//-- ################################################################## --//
+     3. dequeue function
+//-- ################################################################## --//
+
+# 01. dequeue definition ---------------------------------------------#
+
+    def dequeue(self):
+        if self.front == self.size:
+            print("Queue is empty")
+        else:
+            data = self.items.pop(0)  # delete the item from front end of the queue        
+            self.size -= 1
+            return data
+
+
+# 02. test code -----------------------------------------------------#
+
+print(q.dequeue())
+print(q.items)
+
+
+//-- ############################### End ############################## --//
+
+
+
+
+

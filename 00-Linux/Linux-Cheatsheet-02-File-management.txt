@@ -1,0 +1,111 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. File  manipulation 
+        01. touch
+        02. echo
+        03. cat
+        04. mv
+        05. rm
+        06. locate
+//-- ########################################################### --//
+
+# 01. create 2 file2
+touch funnygorilla-01.txt funnygorilla-02.txt
+
+# 02. List all in current directory (.)
+ls -l
+ls -l .
+
+# 03. Add content to a file
+echo "Hello, Funnygorilla\!" > ./funnygorilla-02.txt
+echo "Hello, Funnygorilla\!" >> ./funnygorilla-02.txt
+
+# 04. Quick check content
+cat ./funnygorilla-02.txt
+
+# 05. move file to a directory
+mv funnygorilla-01.txt ./funnygorilla/test-automation
+
+# 06. Use tree package to check the folder structure
+tree ./
+
+# 07. Remove a file
+rm ./funnygorilla-01.txt 
+
+# 08. Locate a file
+locate funnygorilla-01.txt
+
+
+//-- ########################################################### --//
+     2. Directory  introduction  
+//-- ########################################################### --//
+
+//-- # 00. directory
+     # ~    home directory
+     # ../  parent directory
+     # /    root directory
+     # ./<directory-name>  children directory
+
+# 00. check where I am?
+pwd
+
+# 01. Move to home directory (every login user has a home directory)
+cd ~
+
+# 02. Check current directory
+ls -l
+ls -l .
+
+
+//-- ########################################################### --//
+     3. Directory  manipulation 
+//-- ########################################################### --//
+
+# 01. create a directory under current directory
+mkdir ./funnygorilla
+
+# 02. list all files in current directory
+ls -l .
+
+# 03. create a directory with subdirectory under current directory
+mkdir -p ./funnygorilla/test-automation
+
+# 04. check directory created
+tree -L 3 .
+
+# 05. move to subdirctory and parent directory
+cd funnygorilla
+pwd
+
+cd ..
+pwd
+
+# 06. move back to home directory
+cd ~
+
+# 07. check directroy
+tree -L 3
+
+# 08. remove a directory and containered files
+rm -r ./funnygorilla/test-automation
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

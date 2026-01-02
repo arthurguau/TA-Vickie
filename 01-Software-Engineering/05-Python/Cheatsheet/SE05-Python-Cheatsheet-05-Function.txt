@@ -1,0 +1,147 @@
+//-- ################################################################## --//
+//-- ****    Function:                                             **** --//
+               1. positional arguments          
+               2. arbitrary arguments          
+               3. keyword arguments             
+               4. Arbitrary Keyword Arguments   
+               5. can return any type           
+               6. changes to an object                      
+//-- ################################################################## --//
+
+//-- # define a function by using key word "def"
+     # parameter: the variable listed inside the parentheses in the function definition.
+     # argument: the value that is sent to the function when it is called.
+     # return type: can return any type.
+
+def my_function(something):
+  return something
+
+x = my_function("hello!")
+print(x)
+
+
+//-- ################################################################## --//
+     1. positional arguments:
+//-- ################################################################## --//
+
+def subtract_three_numbers(num1, num2, num3):
+  result = num1 - num2 - num3
+  return result
+
+x = subtract_three_numbers(10, 3.0, 1)
+print(x)
+
+
+//-- ################################################################## --//
+     2. arbitrary arguments: *args
+//-- ################################################################## --//
+
+def my_function(*friends):
+  print("The best friend is " + friends[2])
+
+my_function("Tom", "Mike", "Peter")
+
+
+//-- ################################################################## --//
+     3. keyword arguments: 
+        - send arguments with the key = value 
+        - the order of the arguments does not matter
+//-- ################################################################## --//
+
+def subtract_three_numbers(num1, num2, num3):
+  result = num1 - num2 - num3
+  return result
+
+x = subtract_three_numbers(num3 = 1, num1 = 10, num2 = 3.0)
+print(x)
+
+# not legitimate
+subtract_three_numbers(num3 = 1, num2 = 3.0, 10)
+
+# ??
+subtract_three_numbers(10, num3 = 1, num2 = 3.0 )
+
+
+//-- ################################################################## --//
+     4. Arbitrary Keyword Arguments, **kwargs
+//-- ################################################################## --//
+
+def my_function(**kid):
+  print("His last name is " + kid["lname"])
+
+my_function(fname = "Tobias", lname = "Refsnes")
+
+
+//-- ################################################################## --//
+     5. can return any type: 
+//-- ################################################################## --//
+
+# observe the tuple
+def string_func(string):
+  return len(string), string.upper(), string.title()
+
+string_func('Funnygorilla') 
+
+
+//-- ################################################################## --//
+//-- # default parameter value
+//-- ################################################################## --//
+
+def my_function(country = "Norway"):
+  print("I am from " + country)
+
+my_function("Sweden")
+my_function()
+
+//-- ################################################################## --//
+//-- # pass statement: if content yet
+//-- ################################################################## --//
+
+def my_function():
+  pass
+
+//-- ################################################################## --//
+//-- # recursion function
+//-- ################################################################## --//
+
+def my_recursion(k):
+  if(k > 0):
+    result = k + my_recursion(k - 1)
+    print(result)
+  else:
+    result = 0
+  return result
+
+print("\n\nRecursion Function Results: ")
+my_recursion(6)
+
+
+//-- ################################################################## --//
+     6. object changes made in function, will be permanent
+//-- ################################################################## --//
+
+# the changes within the function appears outside the function
+def list_mod(inp):
+  inp.insert(1, 'AB')
+
+list7 = [100, 'ML', 200]
+list_mod(list7)
+print (list7) 
+
+
+# the use of * before grocery_items is to allow an arbitrary number of arguments
+def grocery_to_do(money, *grocery_items): 
+  acronym = ''
+  for i in grocery_items:
+    acronym += i[0].title()
+  
+  //-- # this is another way to write "print('You have ' + str(money) + '$')" using place holder {}
+  print('You have {}$'.format(money)) 
+  print('Your acronym is', acronym)
+
+grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+
+//-- ################################ END $############################ --//
+
+

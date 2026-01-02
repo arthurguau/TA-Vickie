@@ -1,0 +1,62 @@
+
+//-- ################################################################## --//
+//-- ****        Iterator                                          **** --//
+                 Generator Function                      
+                 Generator Expression                   
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+       1. Iterator                                      
+//-- ################################################################## --//
+
+//-- # Creating an iterator from an iterable object: List, Tuple, ...
+     # An iterator object itself represents a stream of data and provides the access to the next object in this stream.
+list_a = ['a', 'b', 'c', 'd']
+iter_a = iter(list_a)
+iter_a
+
+//-- # access next element by passing the iterator
+next(iter_a) 
+
+//-- # access next element by calling iterable method
+iter_a.__next__() 
+
+
+# the iterator is exhausted, one more call raises StopIteration exception
+
+//-- # e X is either an iterator or an iterable
+for variable in X:
+  the body of the loop
+
+
+//-- ################################################################## --//
+       2. Generator Function                                      
+//-- ################################################################## --//
+
+//-- # define a list within a function, and return iterable
+def first_n_sum_func(n):
+  index = 1
+  sum_list_num = [] # create an empty list to hold values of sums
+  sum_num = sum(sum_list_num)
+  while index <= n:
+    sum_num += index 
+    sum_list_num.append(sum_num)
+    index += 1
+  return sum_list_num
+
+//-- # use it in a for loop to iterate over its elements for printing
+for i in first_n_sum_func(10):
+  # end parameter is used to replace the default newline character at the end
+  print(i, end = " ") 
+
+
+//-- ################################################################## --//
+        3. Generator Expression                                    
+//-- ################################################################## --//
+
+[toDo]
+
+
+
+//-- ################################ End ############################# --//

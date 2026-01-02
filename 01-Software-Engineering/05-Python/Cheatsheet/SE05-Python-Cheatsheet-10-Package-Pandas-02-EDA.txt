@@ -1,0 +1,82 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+1. Docker Desktop installed     
+2. Docker is up and running
+
+//-- # prepare datasets: scooter.csv geocodestreet.csv
+Place data file into folder: ~/Dev/Projects/Python-docker 
+
+
+//-- ########################################################### --//
+     1. Exploratory Data Analysis (EDA):
+        01. df.columns
+        02. df.dtypes
+        03. df.head()/tail()
+        04. df['<column-name>']
+//-- ########################################################### --//
+
+//-- # import pandas package, and read csv file
+import pandas as pd          
+df = pd.read_csv('/home/jovyan/work/scooter.csv')
+
+//-- # 01. check columns
+df.columns
+
+//-- # 02. check types of each columns
+df.dtypes
+
+//-- # 03. check a few sample data - first 5/specified
+df.head()/head(integer)
+df.tail()/tail(integer)
+
+//-- # reset max column
+pd.set_option('display.max_columns', 500)
+
+//-- # print some columns
+df[['trip_id','DURATION','start_location_name']]     
+
+//-- # sample data
+df.sample(5)
+
+//-- # slicing: df[start:end]
+df[10:15]
+
+//-- # specific row
+df.loc[2]
+df.at[2, 'DURATION']
+
+
+//-- ########################################################### --//
+     2. Analyzing the data: 
+        01. df.describe()
+        02. def['<colume-name>'].value_counts()
+//-- ########################################################### --//
+
+//-- # useful for numeric data
+df.describe()
+
+//-- # for a single column
+df['start_location_name'].describe()
+
+//-- # counts for a value
+df['DURATION'].value_counts()
+
+//-- # percentage of a value 
+df['DURATION'].value_counts(normalize=True) 
+
+//-- # dropna: include null values for not 
+df['end_location_name'].value_counts(dropna=False)
+
+//-- # check the number of null value
+df.isnull().sum()
+
+//-- # 
+df['trip_id'].value_counts(bins=10)
+
+
+//-- ##########################   END  ######################### --//    
+
+
+

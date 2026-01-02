@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  student-database:
+     image: mysql:8.4
+     container_name: mysql-funnygorilla
+     # port mapping 
+     ports: 
+       - "3316:3306" 
+     # environment variables for starup script
+     # container will use these variables to start the container with these variables       
+     environment:
+       - MYSQL_ROOT_PASSWORD=root
+       - MYSQL_USER=tester
+       - MYSQL_PASSWORD=tester
+     healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 3     
+     # Mount init.sql file to automatically run and create tabls for us.
+     # everything in docker-entrypoint-initdb.d folder
+     # is executed as soon as container is up and running.  
+     volumes:
+       - "./db/init-student-mysql.sql:/docker-entrypoint-initdb.d/init-student-mysql.sql"
+     networks: 
+      - funnygorilla-network
+       
+  student-app:
+     image: student-management:0.0.1
+     container_name: student-app
+     ports:
+      - "8087:8087"
+     depends_on: 
+      student-database:
+        condition: service_healthy
+     environment:
+      # database url-Docker name                   
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-funnygorilla:3306/studentmanagement      
+      SPRING_DATASOURCE_USERNAME: tester
+      SPRING_DATASOURCE_PASSWORD: tester        
+     networks: 
+      - funnygorilla-network
+      
+  funnygorilla-web:
+     image: funnygorilla-web:v1
+     container_name: funnygorilla-web
+     # port mapping 
+     ports: 
+       - "8080:80"      
+     depends_on: 
+       student-app:
+         condition: service_started
+     networks: 
+      - funnygorilla-network      
+      
+networks:
+  funnygorilla-network:    
+      

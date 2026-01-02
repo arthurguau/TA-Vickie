@@ -1,0 +1,112 @@
+
+//-- ############################################################# --//
+     Install Python and Jupyter into host machine     
+        1. download python installable
+        2. install and update pip
+        3. install pandas package
+        4. install Jupyter
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+     1. download python installable               
+//-- ############################################################# --//
+
+# download Python: https://www.python.org/
+
+# run installation
+
+# add Python to Path
+
+
+//-- ############################################################# --//
+     2. run python in terminal session
+//-- ############################################################# --//
+
+# type python3, and will see python prompt (>>>)
+python
+
+# try
+>>> print ("Hello World!")
+
+# CTL + D to exit python session  (windows: CTL+Z)
+
+
+//-- ############################################################# --//
+     3. install and update pip                   
+//-- ############################################################# --//
+
+# install and update pip
+py -m pip install --upgrade pip
+
+# install virtual environment
+py -m pip install virtualenv
+
+
+//-- ############################################################# --//
+     4. install pandas package                   
+//-- ############################################################# --//
+
+# install pandas package
+pip install pandas
+
+
+//-- ############################################################# --//
+     5. jupyter notebook   
+         01. install Jupyter
+         02. launch Jupyter
+         03. some keyboard shortcuts                     
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+     01. install jupyter                                   
+//-- ============================================================= --//
+   
+# Mac
+brew install jupyter
+
+# windows
+pip install notebook
+
+
+//-- ############################################################# --//
+     02. launch jupyter                                   
+//-- ============================================================= --//
+
+# launch Jupyter
+jupyter notebook
+
+# access Jupyter:  copy access url from console
+http://localhost:8888/tree?token=b20474099b3609e58540739e820ab733192c4936b5daf890
+
+
+//-- ############################################################# --//
+     03. keyboard shortcuts                                    
+//-- ============================================================= --//
+
+#  Run the current cell and move to the next one.
+Shift + Enter
+
+# Run the current cell.
+Ctrl + Enter
+
+# Enter command mode.
+Esc
+
+# Enter edit mode.
+Enter
+
+# Insert a new cell
+A: Insert a new cell above the current cell.
+B: Insert a new cell below the current cell.
+
+# Delete cell
+D + D: Delete the current cell.
+
+# change cell type
+M: Change the current cell type to Markdown.
+Y: Change the current cell type to code
+
+
+//-- ########################## End ############################ --//

@@ -1,0 +1,139 @@
+//-- ################################################################# --//
+//-- ****      Prerequisite                                       **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# 01. run mysql docker (create a credential)
+docker run -d -p 3366:3306            \
+  --name mysql-funnygorilla-container \
+  -e MYSQL_ROOT_PASSWORD=root         \
+  -e MYSQL_DATABASE=funnygorilla      \
+  -e MYSQL_USER=funnygorilla          \
+  -e MYSQL_PASSWORD=funnygorilla      \
+mysql:8.4.0
+
+# 02. Spin uo database container
+docker exec -it mysql-funnygorilla-container /bin/bash
+
+
+//-- ################################################################# --//
+     Advanced SQL:
+        1. Index: improve performance   
+        2. View: virtual table     
+        3. stored procedure  
+        4. Sequence
+        5. trigger
+//-- ################################################################# --//
+
+# 01. login as root user
+mysql -u root -p
+
+# 02. Check existing databases
+mysql> show databases;
+
+# 03. Connect to database
+mysql> use classicmodels;
+
+
+//-- ################################################################# --//
+     1. Index: improve performance        
+//-- ################################################################# --//
+
+# 01. create an index
+CREATE INDEX contactFirstName  ON customers (contactFirstName)
+
+# 02. drop an index
+DROP INDEX contactFirstName ON customers;
+
+
+//-- ################################################################# --//
+     2. View: virtual table                 
+//-- ################################################################# --//
+
+# 01. create a view
+CREATE VIEW customerContact_V AS
+SELECT customerName, phone
+FROM customers
+WHERE country = 'France';
+
+# 02. check exsiting views
+SHOW FULL TABLES IN classicmodels WHERE TABLE_TYPE LIKE 'VIEW';
+
+# 03. query by view
+select  * from customerContact_V;
+
+# 04. drop view
+Drop VIEW customerContact_V
+
+
+//-- ################################################################# --//
+     3. stored procedure            
+//-- ################################################################# --//
+
+# 01. check defined stored procedure for a dababase
+SHOW PROCEDURE STATUS WHERE db = 'classicmodels';
+
+# 02. drop a stored procedure
+DROP PROCEDURE IF EXISTS GetCustomersByCountry;
+
+# 03. change delimiter
+DELIMITER //
+
+CREATE PROCEDURE GetCustomersByCountry(
+	IN countryName VARCHAR(255),
+        OUT total INT
+)
+BEGIN
+	SELECT count(customerNumber)
+        INTO total 
+ 	FROM customers
+	WHERE country = countryName;
+END //
+
+# 04. put delimiter back to ";"
+DELIMITER ;
+
+# 05. try sql clause
+select count(customerNumber) into total from customers where country=countryName;
+
+
+# 06. call procedure
+call GetCustomersByCountry('USA', @total);
+SELECT @total AS  total_in_process;
+
+# 07. drop 
+DROP PROCEDURE GetCustomersByCountry;
+
+
+//-- ################################################################# --//
+     4. Sequence
+//-- ################################################################# --//
+toDO
+
+
+//-- ################################################################# --//
+     5. trigger
+//-- ################################################################# --//
+toDo
+
+
+//-- ################################################################# --//
+      Clean up
+//-- ################################################################# --//
+
+# 01. exit from mysql
+exit
+
+# 02. exit from docker container
+exit
+
+# 03. stop and remove container
+docker container stop mysql-funnygorilla-container
+docker container rm mysql-funnygorilla-container
+
+# 04. remove image
+docker image rm mysql:8.4.0
+
+
+//-- ############################ END ################################ --//

@@ -1,0 +1,174 @@
+
+//-- ########################################################### --//
+     Prerequisites:
+//-- ########################################################### --//
+
+     OpenJDK 17 installed & configured
+
+
+//-- ########################################################### --//
+     Method definition:
+     1. Method signature
+     2. Method parameter
+     3. Variable & Scope
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. Method signature
+        01. class method - static
+        02. instance method 
+        03. return type
+        04. not return type
+//-- =========================================================== --//
+
+# class method: static
+public static String method-name (String input) {
+    return "Hello, " + name + " !";
+}
+
+# instance method: no static
+public String method-name (String name) {
+   return "Hello, " + name + " !";
+}
+
+# class method without return value
+public static void method-name (String name) {
+   System.out.println( "Hello, " + name + " !");
+}
+
+# instance method without return value
+public void method-name (String name) {
+   System.out.println( "Hello, " + name + " !");
+}
+
+
+//-- ########################################################### --//
+     2. Method parameter
+        01. pass by value
+        02. pass by reference
+//-- =========================================================== --//
+
+# primitive type:  with value
+
+
+# object type: with memory address to object
+
+[toDo - implecation]
+
+
+//-- ########################################################### --//
+     3. Variable & scope
+        01. method local variable
+        02. class variable
+        03. instance variable
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+     01. local variable
+         - valid inside of method
+//-- =========================================================== --//
+
+class Student {
+
+   private double mark1, mark2, mark3; 
+   private double maxMark = 100; 
+   
+   public double getAverage() {
+
+      //-- # local variable, valid in the scope of method
+      double avg = 0; 
+      avg = ((mark1 + mark2 + mark3) / (maxMark*3)) * 100;
+      return avg;
+   }
+ 
+   public void setAverage(double val) {
+      avg = val;    //-- # will not compile
+   }
+}
+
+
+//-- ########################################################### --//
+     02. class variable
+         - valid across Class and instance
+         - shared across instance and class    
+//-- =========================================================== --//
+
+# Phone class
+package com.mobile;
+
+class Phone {
+   static boolean softKeyboard = true; 
+}
+
+# Test class
+package com.mobile;
+
+class TestPhone {
+   
+   public static void main(String[] args) {
+      
+      //-- access class variable by class name
+      Phone.softKeyboard = false; 
+
+      Phone p1 = new Phone();
+      Phone p2 = new Phone();
+      
+      //-- class variable accessible to instance   
+      System.out.println(p1.softKeyboard); 
+      System.out.println(p2.softKeyboard); 
+   
+      //-- change class variable through instance
+      p1.softKeyboard = true; 
+
+      //-- class variable, shared across class and instance
+      System.out.println(p1.softKeyboard); 
+      System.out.println(p2.softKeyboard); 
+      System.out.println(Phone.softKeyboard); 
+   }
+}
+
+
+//-- ########################################################### --//
+     03. instance variable
+         - valid to a specific instance
+//-- =========================================================== --//
+
+# Phone class with instance variable
+class Phone {
+
+  // instance variable 
+  private int number; 
+
+  public void setNumber(int val) { 
+    number = val;
+  }
+  
+  public int getNumber() { 
+    return number;
+  }
+}
+
+
+# Test class
+package com.mobile;
+
+class TestPhone {
+   
+   public static void main(String[] args) {
+      
+      Phone p1 = new Phone();
+      p1.setNumber(123);
+
+      Phone p2 = new Phone();
+      p2.setNumber(456);
+      
+      //-- class variable accessible to instance   
+      System.out.println(p1.getNumber(); 
+      System.out.println(p2.getNumber(); 
+   
+   }
+}
+
+//-- ############################# End ######################### --//
+

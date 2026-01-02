@@ -1,0 +1,119 @@
+
+//-- ############################################################# --//
+     Assignment 01 - Loop practices                 
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+     1. For loop: 
+          01. find maximum/minimum number in a list
+          02. find longest/shortest string in a list
+//-- ############################################################# --//
+
+
+//-- ============================================================= --//
+     01. find maximum/minimum number in a list
+//-- ============================================================= --//
+
+# Example data:
+Input: nums = [2,7,11,15, 0, 18]
+
+# find maximum number in the list
+max = nums[0]
+for x in nums:
+   if max < x:
+      max = x
+
+print (max)
+
+# find minimum number- [toDo]
+
+# find maximum & minimum number in a list - [toDo]
+
+# find index of maximum number in list - [toDo]
+
+# find index of minimum number in list - [toDo]
+
+# find index of maximum & minimum number in list - [toDo]
+
+
+//-- ============================================================= --//
+     02. find longest/shortest string in a list
+//-- ============================================================= --//
+
+# Example data:
+Input: nums = ["hello", "FunnyGorilla", "here", "you", "he"]
+
+# find longest string in the list
+
+# find shortest string [toDo]
+
+# find longest & shortest string in a list - [toDo]
+
+# find index of longest string in list - [toDo]
+
+# find index of shortest string - [toDo]
+
+# find index of longest & shortest string in list - [toDo]
+
+
+//-- ############################################################# --//
+     2. while loop: 
+          01. find maximum/minimum number in a list
+          02. find longest/shortest string in a list
+//-- ############################################################# --//
+
+
+//-- ============================================================= --//
+     01. find maximum/minimum number in a list
+//-- ============================================================= --//
+
+# Example data:
+Input: nums = [2,7,11,15, 0, 18]
+
+# find maximum number in the list
+
+# find minimum number- [toDo]
+
+# find maximum & minimum number in a list - [toDo]
+
+# find index of maximum number in list - [toDo]
+
+# find index of minimum number in list - [toDo]
+
+# find index of maximum & minimum number in list - [toDo]
+
+
+//-- ============================================================= --//
+     02. find longest/shortest string in a listd
+//-- ============================================================= --//
+
+# Example data:
+Input: nums = ["hello", "FunnyGorilla", "here", "you", "he"]
+
+# find longest string in the list
+
+# find shortest string [toDo]
+
+# find longest & shortest string in a list - [toDo]
+
+# find index of longest string in list - [toDo]
+
+# find index of shortest string - [toDo]
+
+# find index of longest & shortest string in list - [toDo]
+
+
+//-- ############################################################# --//
+     3. Nested loop: 
+//-- ############################################################# --//
+
+# Example data:
+Input: nums = [2,7,11,15, 0, 18]
+
+# find the maximum sum of any two number in the list - [toDo]
+
+
+
+//-- ############################ End ############################ --//
+

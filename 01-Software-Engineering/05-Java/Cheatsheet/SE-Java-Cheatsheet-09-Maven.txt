@@ -1,0 +1,265 @@
+
+//-- ########################################################### --//
+     Prerequisites:
+      1. OpenJDK 17 installed & configured
+      2. Maven installed & configured
+//-- ########################################################### --//
+
+# concepts - classpath  
+an environment variable used by the Java Virtual Machine (JVM) 
+to locate and load classes when running a Java program
+
+# usage
+java -classpath /path/to/classes:/path/to/lib.jar MyProgram
+
+
+//-- ########################################################### --//
+     Java archive (JAR) management
+        01. create a normal JAR
+        02. create an executable JAR
+        03. use a JAR
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     01. build up a normal JAR
+//-- =========================================================== --//
+
+# jar cfv <jar-name>  <class-names>
+     c - to create
+     f - to specify jar file name, the 
+     v - to generate verbose output,
+jar cfv helloworld.jar .
+
+
+//-- ########################################################### --//
+     02. Creating an executable JAR
+//-- =========================================================== --//
+
+//-- # Creating an executable JAR file
+     # e - executable 
+
+//-- # 01. create manifest file: manifest.txt
+     # end with new line character
+Main-Class: Helloworld
+
+//-- # 02. m - manifest
+jar cfvm Helloworld.jar manifest.txt *.class
+
+//-- # execute a jar file
+java -jar Helloworld.jar
+
+
+//-- ########################################################### --//
+     03. use a JAR
+//-- =========================================================== --//
+
+# usage
+java -classpath /path/to/lib.jar MyProgram
+
+
+//-- ########################################################### --//
+     Maven Directory Structure
+//-- ########################################################### --//
+
+<Project-Name>
+  |_src
+    |_main
+       |_java
+       |_resources
+    |_test
+       |_java
+       |_resources
+  |_target
+
+
+//-- ########################################################### --//
+     Project scaffolding
+//-- ########################################################### --//
+     
+Dev
+ |_Projects
+     |_<Project-Name>
+ 
+ |_Workspaces
+     |_<Project-workspace>
+
+
+# make project folder and a workspace folder
+cd Dev/projects
+
+# create project shell by maven archetype
+mvn archetype:generate                   \
+-DgroupId=com.funnygorilla.learnmaven    \
+-DartifactId=funnygorilla-learnmaven     \
+-DarchetypeArtifactId=maven-archetype-quickstart   \
+-DarchetypeVersion=1.5                   \
+-DinteractiveMode=false
+
+# move to created folder
+cd funnygorilla
+
+# inspect maven created folder structure
+tree .
+
+
+//-- ########################################################### --//
+     Prepare for eclipse 
+//-- ########################################################### --//
+
+# 01. generate  .project and .classpath files
+mvn eclipse:eclipse
+
+# 02. inspect folder structure again:  .project, .classpath files created 
+tree .
+
+# 03. move to /Dev/ folder and create a folder Workspaces
+cd /Dev/Workspaces
+mkdir funnygorillaWS
+
+
+//-- ########################################################### --//
+     Manage dependencies:
+       01. group Id
+       02. artifactId
+       03. version
+       04. scope
+//-- ########################################################### --//
+
+# 01. group Id
+
+# 02. artifactid
+
+# 03. version
+
+# 04. scope: 
+       -- compile (default)
+       -- provided 
+       -- runtime 
+       -- test
+       -- system 
+       -- import
+
+//-- ########################################################### --//
+     Build life cycles: 
+      1. default (major lifecyle)
+      2. clean
+      3. site
+//-- ########################################################### --//
+
+# reference
+https://www.baeldung.com/maven-goals-phases
+
+
+//-- ########################################################### --//
+     Build phase - default lifecycle:
+      01. validate
+      02. compile
+      03. test-compile
+      04. test
+      05. package
+      06. integration-test
+      07. install
+      08. deploy
+//-- ########################################################### --//
+
+//-- # Phase definitions:
+     # validate: check if all information necessary for the build is available
+     # compile: compile the source code
+     # test-compile: compile the test source code
+     # test: run unit tests
+     # package: package compiled source code into the distributable format (jar, war, …)
+     # integration-test: process and deploy the package if needed to run integration tests
+     # install: install the package to a local repository
+     # deploy: copy the package to the remote repository
+
+# Phases are executed in a specific order
+
+# compile code
+mvn compile
+
+# execute test cases
+mvn test
+
+# make package - jar/war
+mvn package
+
+# install jars into local maven repository
+mvn install
+
+
+//-- ########################################################### --//
+     Build goal
+//-- ########################################################### --//
+
+//-- # Each phase is a sequence of goals 
+     # each goal is responsible for a specific task
+     # When run a phase, all goals bound to this phase are executed in order
+
+# Here are some of the phrases and default goals bound to them [goal]:[phrase]
+
+compiler:compile – the compile goal from the compiler plugin is bound to the compile phase
+compiler:testCompile is bound to the test-compile phase
+surefire:test is bound to the test phase
+install:install is bound to the install phase
+jar:jar and war:war is bound to the package phase
+
+
+# list all goals bound to a specific phase 
+mvn help:describe -Dcmd=PHASENAME
+
+
+//-- ########################################################### --//
+     Maven Plugins
+       -- add your own actions to the build process
+//-- ########################################################### --//
+
+# Maven plugin
+  a group of goals; these goals aren’t necessarily all bound to the same phase.
+
+
+//-- ########################################################### --//
+     01. Failsafe Plugins
+//-- =========================================================== --//
+
+//-- # Failsafe plugin: responsible for running integration tests:
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>${maven.failsafe.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>integration-test</goal>
+                        <goal>verify</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+
+# list all goals in a specific plugin: mvn <PLUGIN>:help
+mvn failsafe:help
+
+# mvn <PLUGIN>:<GOAL>
+mvn failsafe:integration-test
+
+
+//-- ########################################################### --//
+     02. Surefire Plugin
+//-- =========================================================== --//
+
+[toDo]
+
+
+//-- ########################################################### --//
+     Build profile
+//-- ########################################################### --//
+
+# apply profile name
+mvn clean test -P profile-name
+
+
+//-- ########################## End ############################ --//

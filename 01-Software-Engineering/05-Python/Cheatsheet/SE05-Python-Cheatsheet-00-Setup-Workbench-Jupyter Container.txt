@@ -1,0 +1,162 @@
+//-- ################################################### --//
+//-- ****    Prerequisite: Docker Desktop           **** --//
+//-- ################################################### --//
+
+Docker installed, up and running
+
+# check exiting containers
+docker container ls -a
+
+# start the stopped container, to continue with previous work
+docker start <container-ID>
+
+# remove unused containers if you want a fresh container
+docker rm <container-name>
+
+
+//-- ################################################### --//
+         Use Jupyter container                    
+           1. Startup a Jupyter container
+           2. access jupyter Container
+           3. run python in terminal session
+           4. access jupyter notebook
+//-- ################################################### --//
+
+//-- ################################################### --//
+     1. Startup a Jupyter container           
+//-- ################################################### --//
+
+# 00. home directory
+projects_dir = ~/Developer/projects
+
+# 01. docker command
+
+docker run -p 8800:8888                  \
+--name funnygorilla_notebook             \
+-v <host_working_dir>:/home/jovyan/work  \
+-e JUPYTER_ENABLE_LAB=yes                \
+--env-file .env                          \
+-it                                      \
+jupyter/scipy-notebook:latest
+
+# -p 8800:8888: exposes the server on host port 8800
+# -v: Mounts the working directory on the host as /home/jovyan/work folder in the container.
+# -e JUPYTER_ENABLE_LAB=yes: Run JupyterLab instead of the default classic Jupyter Notebook.
+# --name funnygorilla_notebook: Define a container name.
+# -it: enable interactive mode with a pseudo-TTY when running a container.
+# --env-file .env: Pass a .env file to a container.
+
+docker run -p 8800:8888         \
+  --name funnygorilla_notebook  \
+  -v ~/Developer/projects/Python-docker:/home/jovyan/work \
+  -e JUPYTER_ENABLE_LAB=yes -it jupyter/scipy-notebook:latest
+
+
+# 02. check the docker container is up and running
+docker ps
+
+# 03. check if the docker is up and running 
+docker logs funnygorilla_notebook
+
+
+//-- ############################################################# --//
+     2. access jupyter Container
+//-- ############################################################# --//
+
+# 01. access container
+docker exec -it funnygorilla_notebook bash
+
+# 02. navigate to work directory
+cd work
+
+# 03. check python exists
+which python3
+
+# 04. check python version
+python --version
+
+
+//-- ############################################################# --//
+     3. run python in terminal session
+//-- ############################################################# --//
+
+# type pyton3, and will see python prompt (>>>)
+python3
+
+# try
+>>> print ("Hello World!")
+
+# CTL + D to exit python session
+
+
+//-- ############################################################# --//
+     4. access jupyter notebook
+         01. code
+         02. markdown
+//-- ############################################################# --//
+
+# concepts:
+    -- Kernel: processing engine
+    -- Cell: code cell, markdown cell
+
+# 00. find access url from console, and copy it in browser
+      change port number to mapped number: 8800
+http://127.0.0.1:8800/lab?token=f893d978862144681066f1ebb769ec160aa063e67865a6e6
+
+# 01. try hello function (select code)
+def say_hello(recipient):
+    return 'Hello, {}!'.format(recipient)
+
+say_hello('Funnygorilla')
+
+
+# 02. select markdown -> input message as below:
+
+# Level 1 heading
+
+## Level 2 heading
+
+This is a paragraph. Add emphasis via **bold** or __bold__, and *italic* or _italic_.
+
+Paragraphs must be separated by an empty line.
+
+* Sometimes we want to include lists.
+* Which can be bulleted using asterisks.
+
+1. Lists can also be numbered.
+2. If we want an ordered list.
+
+[to include hyperlinks](https://www.dataquest.io)
+
+Inline code uses single backticks: `foo()`, and code blocks use triple backticks:
+```
+bar()
+```
+Or can be indented by 4 spaces:
+```
+    foo()
+```
+
+Adding images is easy: ![Alt text](https://www.dataquest.io/wp-content/uploads/2023/02/DQ-Logo.svg)
+
+
+//-- ############################################################# --//
+     5. Code cell for imports and setup 
+//-- ############################################################# --//
+
+# start off with a code cell specifically for imports and setup
+# import pandas to work with data, 
+         Matplotlib to plot charts, and 
+         Seaborn to make charts prettier.
+
+%matplotlib inline
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="darkgrid")
+
+
+
+//-- ########################## End ############################ --//

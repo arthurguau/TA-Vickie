@@ -1,0 +1,89 @@
+
+//-- ############################################################# --//
+     LeetCode practices                 
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+     Example - length Of Longest Substring: 
+     https://leetcode.com/problems/longest-substring-without-repeating-characters/
+//-- ############################################################# --//
+
+# problem:
+Given a string s, find the length of the longest substring without repeating characters.
+
+# test data:
+Input: s = "abcabcbb"
+Output: 3
+Explanation: The answer is "abc", with the length of 3.
+
+Input: s = "pwwkew"
+Output: 3
+Explanation: The answer is "wke", with the length of 3.
+Notice that the answer must be a substring, "pwke" is a subsequence and not a substring.
+
+
+# Code snippet:
+
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+
+
+//-- ############################################################# --//
+     Pseudo Code
+//-- ############################################################# --//
+
+[toDo]
+
+
+//-- ############################################################# --//
+     sample solution:
+//-- ############################################################# --//
+
+# sample solution:
+def lengthOfLongestSubstring(s: str) -> int:
+
+     currMax = 0
+     tempSet = "" 
+     currMaxSubstr = ""
+    
+     for e in s:
+         if (e not in tempSet):
+             tempSet = tempSet + e  #add(e)
+             print(e)
+             print(tempSet)
+         else:
+             if (currMax < len(tempSet)):
+                 print("CurrentMax: ", currMax, " tempSet: ", len(tempSet))                 
+                 currMax = len(tempSet) 
+                 currMaxSubstr = tempSet
+                 print("CurrentMax after reset: ", currMaxSubstr, currMax) 
+             tempSet = ""
+             tempSet = tempSet + e
+             print (e)
+             print (tempSet)
+             
+     print("Result", currMaxSubstr, len(currMaxSubstr))
+         
+s1 = "abcabcdabcdeabcdbb"
+s2= "pwwkew"
+
+lengthOfLongestSubstring(s1)
+
+
+//-- ############################################################# --//
+     solution explanation: 
+//-- ############################################################# --//
+
+[toDo]
+
+
+
+//-- ############################################################# --//
+     Take aways 
+//-- ############################################################# --//
+
+[toDo]
+
+
+//-- ########################## End ############################## --//

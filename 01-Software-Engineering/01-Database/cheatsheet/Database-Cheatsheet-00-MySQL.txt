@@ -1,0 +1,71 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+
+
+//-- ################################################################# --//
+     Sample Database setup: 
+     0. download sample database
+     1. spin up mysql docker container
+     2. access mysql container
+     3. login to mysql server
+     4. import sample database
+     5. check around table and data
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. download sample database    
+//-- ################################################################# --//
+
+# manually download sample database
+https://www.mysqltutorial.org/getting-started-with-mysql/mysql-sample-database/
+
+# Mac terminal/Ubuntu terminal
+Wget https://www.mysqltutorial.org/wp-content/uploads/2023/10/mysqlsampledatabase.zip
+
+
+//-- ################################################################# --//
+     1. spin up mysql docker container
+//-- ################################################################# --//
+
+# Windows machine
+docker-compose -f docker-compose-mysql.yml up -d
+
+# Mac machine
+docker compose -f docker-compose-mysql.yml up -d
+
+
+//-- ################################################################# --//
+     2. access docker container
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+     3. login to mysql server
+//-- ################################################################# --//
+
+
+
+
+//-- ################################################################# --//
+     4. import sample database
+//-- ################################################################# --//
+
+
+
+
+//-- ################################################################# --//
+     5. check around table and data
+//-- ################################################################# --//
+
+# access DBeaver web url: 
+localhost:49160 
+
+
+//-- ######################## END #################################### --//
+
+

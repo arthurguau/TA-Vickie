@@ -1,0 +1,88 @@
+//-- ################################################### --//
+//-- ****             Prerequisites                 **** --//
+//-- ################################################### --//
+
+1. Docker installed, up and running
+2. Ubuntu up and running
+
+
+//-- ################################################### --//
+     spin up Student-management application
+//-- ################################################### --//
+
+//-- # Ubuntu home directory
+~/developer
+   |__projects
+        |__04-WebApplication
+             |__docker-compose-sample.yaml
+
+# 01. cd to application directory
+cd ~/developer/projects/04-WebApplication
+
+# 02. spin up 2 microservice and database
+docker-compose -f docker-compose-sample.yaml up -d
+
+
+//-- ################################################### --//
+       Curl commands:
+          01. GET
+          02. POST
+          03. PUT
+          04. PATCH
+          05. DELETE
+//-- ################################################### --//
+
+
+//-- ################################################### --//
+      GET: 
+       -- 200   
+//-- ################################################### --//
+
+# GET command: curl -v -i -X GET <API-Endpoint>
+curl -v -i -X GET
+
+# curl command - GET: 200
+curl -v -X GET http://localhost:8087/studentmanagement/api/v1/students/1 | jq '.'
+
+
+//-- ################################################### --//
+      Post: 
+       -- 201     
+//-- ################################################### --//
+
+curl -v -H 'Content-Type: application/json' \
+-X POST http://localhost:8087/studentmanagement/api/v1/students/  \
+-d '{"firstName":"Michael","lastName":"Gu","contact":"arthur@hotmail.com","course":"CS"}' | jq '.'
+
+
+//-- ################################################### --//
+      Update: 
+       -- 200. 
+       -- 204        
+//-- ################################################### --//
+
+# curl -v -X PUT -H 'Content-Type: application/json' <API-Endpoint> -d '<message-body>'
+
+curl -v -H 'Content-Type: application/json' \
+-X PUT http://localhost:8087/studentmanagement/api/v1/students/6 \
+-d '{"id":6,"firstName":"Michael","lastName":"Gu","contact":"arthur@hotmail.com","course":"Accounting"}' | jq '.'
+
+
+//-- ################################################### --//
+      delete: comes with multiple status code:
+       -- 200. 
+       -- 202
+       -- 204        
+//-- ################################################### --//
+
+# curl command - delete: comes with multiple status code. 200. 202, 204
+
+curl -v -H 'Content-Type: application/json'  \
+-X DELETE http://localhost:8087/studentmanagement/api/v1/students/5
+
+
+# curl command - GET: 404
+curl -v -i -X GET http://localhost:8087/studentmanagement/api/v1/students/4
+
+
+//-- ##################   END   ######################## --//

@@ -1,0 +1,77 @@
+//-- ################################################################# --//
+//-- *****               Prerequisite                             **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# reference
+https://www.postgresql.org/docs/9.1/tutorial-window.html
+
+
+//-- ################################################################# --//
+     Window function:
+      -- performs a calculation across a set of table rows 
+      -- that are somehow related to the current row
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. spin up postgres docker container
+//-- ################################################################# --//
+
+# run postgres docker (create a credential)
+docker run -d -p 5432:5432                \
+  --name postgres-funnygorilla-container  \
+  -e POSTGRES_PASSWORD=mypassword         \
+  -e POSTGRES_USER= funnygorilla          \
+  -e POSTGRES_DB= funnygorilla            \
+postgres:17
+
+
+//-- ################################################################# --//
+     2. login to container
+//-- ################################################################# --//
+
+# 01. access container
+Docker exec -it postgres-funnygorilla-container /bin/bash
+
+# 02. login as funnygorilla
+psql> psql -u funnygorilla -p
+
+# 03. check funnygorilla database created
+psql> SHOW DATABASES;
+
+
+//-- ################################################################# --//
+      3. Prepare tables                                    
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      4. Window functions                                   
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ################################################################# --//
+      Clean up
+//-- ################################################################# --//
+
+# 01. exit from postgres
+exit
+
+# 02. exit from docker container
+exit
+
+# 03. stop and rm container
+docker container stop postgres-funnygorilla-container
+docker container rm postgres-funnygorilla-container
+
+# 04. remove image
+docker image rm postgres:17
+
+
+//-- ##########################    EMD   ############################# --//
+
+

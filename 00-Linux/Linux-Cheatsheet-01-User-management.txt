@@ -1,0 +1,118 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+Docker is up and running
+
+
+//-- ########################################################### --//
+      User management
+      1. Chang password for root user
+      2. Create a user
+      3. Adding the Username to the sudoers
+      4. install Java
+      5. Setup project structure
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. Chang password for root user
+//-- ########################################################### --//
+
+# change root password to "passw0rd"
+passwd
+New password: passw0rd
+Retype new password: passw0rd
+
+
+//-- ########################################################### --//
+     2. Create a user
+//-- ########################################################### --//
+
+# 01. add a new user, named "arthur" with password "passw0rd"
+useradd -m arthur
+passwd arthur
+
+# 02. check user information
+id arthur
+
+# 03. install sudo 
+apt-get install sudo
+
+# 04. switch user (su) to "arthur"
+su - arthur
+
+# 05. check home directory of user arthur
+pwd
+
+# 06. check home directory for all users
+ls -l /home
+
+
+//-- ########################################################### --//
+     3. Adding the Username to the sudoers
+//-- ########################################################### --//
+
+# 01. switch user (su) to root user
+su root
+
+# 02. edit sudo file by visudo command: add user "arthur"
+visudo /etc/sudoers
+
+# 03. User privilege specification: 
+  -- type "i" into insert mode
+  -- use down arrow key to move to line:  root ALL=(ALL:ALL) ALL 
+  -- past line: arthur  ALL=(ALL) ALL
+  -- type "esc" key to escape from insert mode
+  -- type ":" to enter quit mode
+  -- type "wq!" to exist from edit mode
+
+root	ALL=(ALL:ALL) ALL
+arthur  ALL=(ALL) ALL
+
+# 04. witch user back to arthur
+su arthur
+
+
+//-- ########################################################### --//
+     4. install Java 
+//-- ########################################################### --//
+
+# 01. install java
+sudo apt install openjdk-17-jre
+sudo apt install openjdk-17-jdk
+
+# 02. check java version
+java --version
+
+
+//-- ########################################################### --//
+     5. Setup project structure
+//-- ########################################################### --//
+
+# 00. move to home directory
+cd ~
+
+# 01. create folders
+mkdir -p ~/developer/projects
+mkdir -p ~/developer/IT-Courses
+
+# 02. check folder structure created
+tree -L 3 ~/developer
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

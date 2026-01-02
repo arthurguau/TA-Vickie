@@ -1,0 +1,90 @@
+//-- ########################################################### --//
+     Java Installation
+//-- ########################################################### --//
+
+# 01. download jdk 17 zip file
+https://jdk.java.net/archive/
+
+# 02. unzip into:
+|__ Dev
+     |__ opt
+         |__ Javas
+             |__ JDK-17
+
+# 03. set system variable: settings -> Advanced System settings
+JAVA_HOME = C:\Developer\opt\JAVAs\openjdk-17
+
+# 04. add $JAVA_HOME\bine to system variable: Path
+
+# 05. verify Java installation. open a new Windows prompt
+      check JAVA_HOME
+echo %JAVA_HOME%
+
+# check Java version
+java -version
+
+
+//-- ########################################################### --//
+     scaffolder project directory
+//-- ########################################################### --//
+
+# 01. setup project folder
+# 02. setup workspace folder
+
+tree Developer
+     |__projects
+         | Helloworld
+     |__workspaces
+         | HelloworldWS
+
+
+//-- ########################################################### --//
+     create your first Java project in Text editor
+//-- ########################################################### --//
+
+# 01. use Notepad to create a file: Helloworld.java
+# 02. create new java class, named Helloworld
+# 03. create a main method as below inside of newly created class as below:
+
+public class Helloworld {
+
+   // entry point of Java program
+   public static void main (String[] args) {
+      System.out.println("How are you, FunnyGorilla?");
+
+   }
+}
+
+
+//-- ########################################################### --//
+     Compile - build/compile time
+//-- ########################################################### --//
+
+# in command line navigate to the folder where the code sits
+javac Helloworld.java
+
+# observer that a .class file created in the same folder
+
+
+//-- ########################################################### --//
+     Execute - run time
+//-- ########################################################### --//
+
+# execute java program
+java Helloworld
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

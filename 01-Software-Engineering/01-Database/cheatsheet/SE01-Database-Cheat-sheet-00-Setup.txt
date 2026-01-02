@@ -1,0 +1,125 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+
+//-- ################################################################# --//
+     Sample Database setup: 
+     1. download sample database
+     2. pull mysql image from dockerhub (if not yet)
+     3. spin up mysql docker container
+     4. access mysqldocker container
+     5. login to mysql server
+     6. import sample database
+     7. check around table and data
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. download sample database    
+//-- ################################################################# --//
+
+# 00. create a folder and move to 
+mkdir -p ~/Developer/projects/learnsql
+cd ~/Developer/projects/learnsql
+
+# 01. download sample from link:
+wget https://www.mysqltutorial.org/wp-content/uploads/2018/03/mysqlsampledatabase.zip
+
+ls -l .
+
+unzip mysqlsampledatabase.zip
+
+ls -l .
+
+mkdir sampleDB
+
+# move file to sampleDB folder
+mv mysqlsampledatabase.sql ./sampleDB
+
+tree ./sampleDB
+
+
+//-- ################################################################# --//
+     2. pull mysql image from docker hub (if not yet)
+//-- ################################################################# --//
+
+# pull docker image
+docker pull mysql:8.4.0
+
+# check image pulled
+docker image ls
+
+
+//-- ################################################################# --//
+     3. spin up mySql docker container
+//-- ################################################################# --//
+
+# 01. start up Mysql container
+docker run -d -p 3366:3306            \
+  --name mysql-funnygorilla-container \
+  -e MYSQL_ROOT_PASSWORD=root         \
+  -e MYSQL_USER=funnygorilla          \
+  -e MYSQL_PASSWORD=funnygorilla      \
+  -v ./sampleDB:/data                 \
+mysql:8.4.0
+
+# 02. check container is up and running
+docker ps
+
+
+//-- ################################################################# --//
+     4. access docker container
+//-- ################################################################# --//
+
+# 01. access docker container in bash shell
+docker exec -it mysql-funnygorilla-container  /bin/bash
+
+# 02. check if sample database sql file in place
+ls -l /data/
+
+
+//-- ################################################################# --//
+     5. login to mysql server
+//-- ################################################################# --//
+
+# 01. login as root
+mysql -u root -p
+
+# 02. check database
+mysql> SHOW DATABASES;
+
+
+//-- ################################################################# --//
+     6. import sample database
+//-- ################################################################# --//
+
+# 01.import downloaded database
+mysql> source /data/mysqlsampledatabase.sql
+
+# 02. check if database created
+mysql> show databases;
+
+
+//-- ################################################################# --//
+     8. check around table and data
+//-- ################################################################# --//
+
+# 01. check if database created
+mysql> show databases;
+
+# 02. connect to database classicmodels
+use classicmodels;
+
+# 03. check available tables
+show tables;
+
+# 04. exit from mysql database
+exit
+
+
+//-- ############################  END  ############################# --//
+
+

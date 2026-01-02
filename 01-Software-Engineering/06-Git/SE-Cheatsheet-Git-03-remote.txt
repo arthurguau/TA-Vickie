@@ -1,0 +1,86 @@
+//-- ####################################################### --//
+     Prerequisites                 
+//-- ####################################################### --//
+
+1. Git has been installed locally
+2. Github account has been created
+
+
+//-- ####################################################### --//
+     1. Clone Remote repository    
+//-- ####################################################### --//
+
+//-- # 00. Create a repository in GitHub: Funnygorilla-01
+
+//-- # 01. make and navigate to projects folder
+cd ~/Developer/projects
+
+//-- # 02. clone the repository from remote repository
+git clone <remote-repository-url>
+
+//-- # 03. cd into project folder
+cd  <remote-repository-url>
+
+//-- # 04. Check the project content
+tree .
+
+
+//-- ####################################################### --//
+     2. Pull updates from remote repository              
+//-- ####################################################### --//
+
+//-- # 00. peer developer made some changes and push the changes to remote
+
+//-- # 01. Get updates from remote repository
+git pull
+
+//--- # 02. Check the updates from local repository
+[toDo]
+
+
+//-- ####################################################### --//
+     3. Push to remote repository              
+//-- ####################################################### --//
+
+//-- # 00. Make some changes to current code and commit the changes
+git add .
+git commit -m "some changes"
+
+//-- # 01. push to remote repository
+git push -u origin master
+
+//-- # 02. Check code changes in GitHub repository
+
+
+//-- ####################################################### --//
+     4. Set up remote repository              
+//-- ####################################################### --//
+
+//-- # 00. Create a repository in gitHub: Funnygorilla-02
+
+//-- # 00. create a local repository: Funnygorilla-02
+mkdir Funnygorilla-02 && cd Funnygorilla-02
+echo "from local Funnygorilla-02" > Hello.txt
+git init
+git add .
+git commit -m "first change"
+git branch -M master
+
+//-- # 01. add remote repository
+git remote add origin https://github.com/arthurguau/Funnygorilla-02.git
+                      
+//-- # check if remote setting exists
+git remote -v
+
+//-- # push to remote repository
+git push -u origin master
+
+//-- # check all branches: local and remote
+git branch -a
+
+
+//-- ######################### End ######################### --//
+
+
+
+

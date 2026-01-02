@@ -1,0 +1,240 @@
+//-- ################################################################## --//
+//-- ****   if-elif-else                                           **** --//
+//-- ################################################################## --//
+
+# 00. sample list
+list4 = ["Machine", "Learning", "with", "Python"]
+
+# 01. If else clause - sequentially check
+if "java" in list4:
+  print("There is java too!")
+elif "C++" in list4:
+  print("There is C++ too!")
+else:
+  print("Well, just Python there.")
+
+
+//-- ################################################################## --//
+//-- ****      Loop:                                               **** --//
+               1. for                                      
+               2. while                                     
+               3. iterable                                   
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+         1. for x in list1:
+              print(x)   # perform something logic
+
+          01. continue
+          02. break
+          03. range ()
+          04. starting point
+          05. end point
+          06. nested loop
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+     For loop clause
+//-- ================================================================== --//
+
+# 01. to loop each character over each elements
+stringX = "Hi Funnygorilla"
+for x in stringX:       
+  print(x, end = "-")  
+
+myList = ["Hi There", "Happy"]
+for x in myList:        
+  print(x, end = "-")   
+
+numberList = [8, 6, 9, 3, 2, 19, 4]
+for x in numberList:    
+  print(x, end = " ")   
+
+# 02. continue - skip this run of processing
+numberList = [8, 6, 9, 3, 2, 19, 4]
+for x in numberList:     
+  if x == 3: 
+     continue
+  print(x, end = " ")
+
+# 03. break
+numberList = [8, 6, 9, 3, 2, 19, 4]
+for x in numberList:     
+  if x == 3: 
+     break
+  print(x, end = " ")
+
+
+# 04. loop over indexes of a list: index and element value
+
+# range (start, stop, step):
+# start:  starting point. Default is 0
+# stop:   stopping point (not included) - required
+# step:   specifying the incrementation. Default is 1
+x = range(0, 20, 1)  # range (20)
+for n in x:
+  print(n)
+
+x = range(0, 20, 2)
+x = range(20)       # range(0, 20, 1)"
+
+
+# loop over indexes of a list: index and element value
+numberList = [8, 6, 9, 3, 2, 19, 4]
+size = len(numberList)
+
+indexList = range (size)      # does not include the last one;
+print ("Index range: ", indexList)
+
+for x in indexList:           # loop over indexes of a list
+  print(x,  numberList[x])   
+  
+
+//-- ################################################################## --//
+     nested loop - list all pair of members
+//-- ================================================================== --//
+
+# 00. sample list
+charList = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+# step 1: work out index list by range()
+charSize = len(charList)
+indexList = range (charSize)  # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+for x  in indexList: 
+   print (x)
+
+# step 2: define first loop logic
+for j in indexList [1:charSize]:          # List slicing
+   print (charList [0], charList [j])
+   
+
+# step 3: some enhancement: make starting position variable
+i = 0                                     # set up a variable       
+for j in indexList [i+1:charSize]:        
+   print (charList [i], charList [j])
+
+
+# step 4: add outter loop
+for i in indexList [0: charSize-1]:       # replace i=0
+   for j in indexList [i+1:charSize]:
+      print (charList [i], charList [j])
+
+
+//-- ################################################################## --//
+     looping through keys in a dictionary
+//-- ================================================================== --//
+
+# 00. sample dictionary
+dict2 = {1:"machine", 2:"learning", 3:"with python"}
+for key in dict2.keys(): 
+   val = dict2[key]
+   print('key =', key)
+   print('value =', val)
+   print()
+
+# 01. looping through keys in a dictionary
+dict2 = {1:"machine", 2:"learning", 3:"with python"}
+for key in dict2: 
+  val = dict2[key]
+  print('key =', key)
+  print('value =', val)
+  print()
+
+# 02. looping through keys and values in a dictionary
+for key, val in dict2.items():
+  print('key =', key)
+  print('value =', val)
+  print()
+
+
+//-- ################################################################## --//
+         2. while condition: 
+             print (something)     # performance some logic
+             i += 1                # update expression
+          else   
+             print (something anyway)    
+
+          00. condition
+          01. starting point
+          02. end point
+          03. update expression for each run
+          04. continue
+          05. break  
+          06. else 
+          07. nested loop
+//-- ################################################################## --//
+
+# 00. while clause (condition & else)
+i = 0              # define an indexing variable, i
+while i < 6:
+  print(i)
+  i += 1
+else:
+  print("i is no longer less than 6")
+
+# 01. continue
+i = 0
+while i < 6:
+  i += 1
+  if i == 3:
+    print ("********")
+    continue
+  # do some logic
+  print(i + 100)
+
+# 02. break
+i = 1
+while i < 6:
+  print(i)
+  if i == 3:
+    break
+  i += 1
+
+
+//-- ################################################################## --//
+     nested loop - list all pair of members
+//-- ================================================================== --//
+
+# sample list
+charList = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+# step 0: print out each element
+charSize = len(charList)
+j = 1
+while j < charSize: 
+   print (charList[j])
+   j +=1
+
+# step 1: define first loop logic
+j = 1
+while j < charSize:
+   print (charList [0], charList [j])
+   j += 1
+
+# step 2: some enhancement: make starting position variable
+i = 0
+j = i + 1
+while j < charSize:
+   print (charList [i], charList [j])
+   j += 1
+
+# step 3: add outter loop
+i = 0
+while i < charSize:
+  j = i + 1
+  while i < charSize:
+    j = i + 1
+    while j < charSize:
+       print (charList [i], charList [j])
+       j += 1 
+    i += 1 
+
+
+//-- ############################# End ################################ --//
+
+
+
+
+

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+	<title>FunnyGorilla-Student Portal</title>
+	
+    <style>
+      #nicestuff {
+        display: none;
+        margin: 10px 0;
+      }
+
+      label,
+      legend {
+        display: block;
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+  
+    <h1>Funny Gorilla - Student Portal</h1>
+
+    <form id="my-form">
+      <label for="pet-select">Select a student:</label>
+
+      <select name="nicething" id="nice-thing">
+        <option value="">--Please choose a student--</option>
+        <option value="1">Arthur</option>
+        <option value="2">Yuxi</option>
+        <option value="3">Wendy</option>
+        <option value="4">Kenny</option>
+      </select>
+	  
+      <select id="nicestuff">
+        <option value="">--Please choose a student--</option>
+      </select>
+    </form>
+	
+	<h1> Student Details </h1>
+	<div id="target">
+       <p>
+       The detailed information about student is as below:<br />
+       </p>
+    </div>
+
+
+    <script>
+		const url = 'http://localhost:8087/studentmanagement/api/v1/students/';             
+		const niceThings = document.getElementById('nice-thing');
+		const select = document.getElementById('nicestuff');
+		
+		// perform GET request when select value changes
+		niceThings.addEventListener('change', async () => {
+			// object containing select value
+			const selection = {
+				niceThing: niceThings.value
+			};
+              
+			console.log ("--> selected Student Number: " + niceThings.value);
+			
+			// GET request to server
+			const response = await fetch(url.concat(niceThings.value), 
+			{
+			  method: 'get',
+			  mode: 'cors'
+			}
+			);
+
+            console.log ("--> response code: "  + response.status);             
+			
+			// if fetch is successful
+			if (response.ok) {
+			  const result = await response.json();			   
+			  console.log ("--> response json firstname: " + result.firstName)
+			  console.log ("--> response json lastname: " + result.lastName) 
+			  
+			  
+              const myJSON = JSON.stringify(result); 
+              console.log ("--> response json value: " + myJSON)
+			  
+			  // display query result
+			  const newPara = document.createElement('p');
+              const text = document.createTextNode(myJSON);
+              newPara.appendChild(text);
+
+			  // use getElementById to access the div element
+              const div = document.getElementById('target');
+              div.appendChild(newPara);
+			  
+			  // empty the select element if not empty
+			  select.length = 0;
+			  
+			  // add a default display option with text and no value
+			  select.options[0] = new Option('--Please choose an option--', '');
+			  
+			  select.options[1] = new Option("id", "001");
+			  select.options[2] = new Option("firstName", "arthur");
+			  
+			  
+			  // populate the select with the returned values
+			  for (let i = 0; i < result.length; i += 1) {
+				select.options[1+1] = new Option(result[i], result[i]);
+				
+				console.log("--> check result list: " + result [i])
+				
+			  }
+			  
+			  // display the select element
+			  select.style.display = 'block';
+			  
+			} else {
+			  // if there's a problem fetching the data, display an error
+			  alert('Got an error ................');
+			}
+			
+		  } //end of addListener
+		);
+
+    </script>
+  </body>
+</html>
+

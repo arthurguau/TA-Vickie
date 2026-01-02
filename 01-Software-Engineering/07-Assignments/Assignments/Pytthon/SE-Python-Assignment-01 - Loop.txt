@@ -1,0 +1,89 @@
+
+//-- ############################################################# --//
+     Loop practices                 
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+//-- use for loop: 
+          find maximun/minimum number in a list
+          find longest/shortest string in a list
+//-- ############################################################# --//
+
+//-- # Eample data:
+Input: nums = [2,7,11,15, 0, 18]
+
+//-- # find maximum number in the list
+max = nums[0]
+for x in nums:
+   if max < x:
+      max = x
+
+print (max)
+
+//-- # find minimum number- [toDo]
+
+//-- # find maximun & minimum number in a list - [toDo]
+
+//-- # find index of maximun number in list - [toDo]
+
+//-- # find index of minimun number in list - [toDo]
+
+//-- # find index of maximun & minimum number in list - [toDo]
+
+
+//-- # Eample data:
+Input: nums = ["hello", "FunnyGorilla", "here", "you", "he"]
+
+//-- # find longest string in the list
+
+//-- # find shortest string [toDo]
+
+//-- # find longest & shortest string in a list - [toDo]
+
+//-- # find index of longest string in list - [toDo]
+
+//-- # find index of shortest string - [toDo]
+
+//-- # find index of longest & shortest string in list - [toDo]
+
+
+//-- ############################################################# --//
+     Use while loop: 
+          find maximun/minimum number in a list
+          find longest/shortest string in a list
+//-- ############################################################# --//
+
+//-- # Eample data:
+Input: nums = [2,7,11,15, 0, 18]
+
+//-- # find maximum number in the list
+
+//-- # find minimum number- [toDo]
+
+//-- # find maximun & minimum number in a list - [toDo]
+
+//-- # find index of maximun number in list - [toDo]
+
+//-- # find index of minimun number in list - [toDo]
+
+//-- # find index of maximun & minimum number in list - [toDo]
+
+
+//-- # Eample data:
+Input: nums = ["hello", "FunnyGorilla", "here", "you", "he"]
+
+//-- # find longest string in the list
+
+//-- # find shortest string [toDo]
+
+//-- # find longest & shortest string in a list - [toDo]
+
+//-- # find index of longest string in list - [toDo]
+
+//-- # find index of shortest string - [toDo]
+
+//-- # find index of longest & shortest string in list - [toDo]
+
+
+

@@ -1,0 +1,61 @@
+//-- ################################################################## --//
+//-- ****    Functional programming                                **** --//        
+             1. Lambda
+             2. Map
+             3. Filter             
+//-- ################################################################## --//
+
+//-- # immutable
+     # function returns a new copy of the list rather than modifying the existing list.
+
+//-- # be nested or as arguments to other functions
+     # These may be nested
+     # functions may be passed as arguments to other functions.
+
+//-- # Some advantages include:
+       - easy to parallelize because data is not modified.
+       - It enforces writing modular code.
+       - more concise and efficient.
+
+
+//-- ################################################################## --//
+     1. Lambda function: 
+         lambda arguments : expression
+//-- ################################################################## --//
+
+# A lambda function is a small anonymous function: 
+# lambda arguments : expression
+
+x = lambda a : a + 10
+print(x(5))
+
+x = lambda a, b, c : a + b + c
+print(x(5, 6, 2))
+
+
+//-- ################################################################## --//
+     2. filter function: 
+//-- ################################################################## --//
+
+# filter()
+list1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+x = filter(lambda x: x % 2 == 0, list1)   # result is a filter object
+y = list(x)                               # change it into a list
+print (y)
+
+
+//-- ################################################################## --//
+     3. Map function: 
+//-- ################################################################## --//
+
+# map()
+list1 = [2, 3, 4, 5]
+y = map(lambda x: pow(x, 2), list1)
+x= list (y)
+print(x)
+
+
+//-- #########################    END      ############################ --//
+
+
+

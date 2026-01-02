@@ -1,0 +1,181 @@
+//-- ################################################### --//
+//-- ****              Prerequisites                **** --//
+//-- ################################################### --//
+
+Docker installed, up and running
+
+
+//-- ################################################### --//
+//-- ****    Containerize web application           **** --//
+             0. setup
+             1. create network
+             2. configure database image
+             3. configure api image
+             4. test api endpoints
+             5. configure web image
+             6. test web page
+             7. clean up
+//-- ################################################### --//
+
+
+//-- ################################################### --//
+     0. setup         
+//-- ################################################### --//
+
+//-- # move to under 04-Application folder 
+//-- # create an yaml file, named as docker-compose.yml
+
+//-- # started with 
+version: '3.7'
+services:
+
+
+//-- ################################################### --//
+     1. create network         
+//-- ################################################### --//
+
+//-- # put networks section as below.  its indention level should be the same as service.
+//-- # network enables docker container be able to communicate with each other.
+networks:
+  funnygorilla-network:    
+
+
+//-- ################################################### --//
+     2. configure database image         
+//-- ################################################### --//
+
+//-- # configure database part
+//-- # copy db folder from Studentmangement project to current folder
+  student-database:
+     image: mysql/mysql-server:8.0
+     container_name: mysql-funnygorilla
+     # port mapping 
+     ports: 
+       - "3316:3306" 
+     # environment variables for starup script
+     # container will use these variables to start the container with these variables
+     environment:
+       - MYSQL_ROOT_PASSWORD=root
+       - MYSQL_USER=tester
+       - MYSQL_PASSWORD=tester
+     healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 3     
+     # Mount init.sql file to automatically run and create tabls for us.
+     # everything in docker-entrypoint-initdb.d folder
+     # is executed as soon as container is up and running.  
+     volumes:
+       - "./db/init-student-mysql.sql:/docker-entrypoint-initdb.d/init-student-mysql.sql"
+     networks: 
+      - funnygorilla-network
+
+
+//-- # run command to spin up database container
+docker-compose up
+
+//-- # check the container up and running
+docker exec -it mysql-funnygorilla bash
+
+//-- # log into database and check the database and tabke created.
+
+//-- # clean up container
+docker-compose down
+
+
+//-- ################################################### --//
+     3. configure API application        
+        -- to be changed to use python microservice application
+//-- ################################################### --//
+
+# 00. Assume: image has been built as student-management:0.0.1
+
+# 01. configure application part
+  student-app:
+     image: student-management:0.0.1
+     container_name: student-app
+     ports:
+      - "8087:8087"   # map port out
+     depends_on: 
+      student-database:
+        condition: service_healthy
+     environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-funnygorilla:3306/studentmanagement   # Docker name
+      SPRING_DATASOURCE_USERNAME: tester
+      SPRING_DATASOURCE_PASSWORD: tester    
+     networks: 
+      - funnygorilla-network
+
+
+//-- # run command to spin up database and api containers
+docker-compose up
+
+
+//-- ################################################### --//
+     4. test api endpoints         
+//-- ################################################### --//
+
+# test APIs by curl commands: GET, POST, PUT,  DELETE
+# Git bash shell - curl commands: GET, POST, PUT,  DELETE
+
+curl -X GET localhost:8087/studentmanagement/api/v1/students/
+curl -X GET localhost:8087/studentmanagement/api/v1/students/1
+
+curl -H 'Content-Type: application/json' -X POST http://localhost:8087/studentmanagement/api/v1/students/ -d '{"firstName":"Helen","lastName":"zhang","contact":"helen.zhang@hotmail.com","course":"CS"}'
+
+//-- # check response and get newly create id, e.g. 5
+curl -X GET localhost:8087/studentmanagement/api/v1/students/5
+
+//-- # update course from CS to Acconting
+curl -H 'Content-Type: application/json' -X PUT http://localhost:8087/studentmanagement/api/v1/students/5 -d '{"id":5  ,"firstName":"Helen","lastName":"zhang","contact":"helen.zhang@hotmail.com","course":"Accounting"}'
+
+//-- # delete student Helen
+//-- # check response code: 204
+curl -v -X DELETE http://localhost:8087/studentmanagement/api/v1/students/5
+
+//-- # check databse table: student Helen has been deleted.
+
+//-- # clean up container
+docker-compose down
+
+
+//-- ################################################### --//
+     5. configure web image         
+//-- ################################################### --//
+
+  funnygorilla-web:
+     image: funnygorilla-web:v1
+     container_name: funnygorilla-web
+     # port mapping 
+     ports: 
+       - "8080:80"      
+     depends_on: 
+       student-app:
+         condition: service_started
+     networks: 
+      - funnygorilla-network   
+
+
+//-- # run command to spin up 3 containers
+docker-compose up
+
+
+//-- ################################################### --//
+     6. test web page         
+//-- ################################################### --//
+
+//--- # check applications and play around
+http://localhost:8080
+
+
+//-- ################################################### --//
+     7. clean up        
+//-- ################################################### --// 
+
+//-- # run command to delete all containers
+docker-compose down
+
+
+//-- #####################   END  ###################### --//
+
+

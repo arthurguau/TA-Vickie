@@ -1,0 +1,84 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+# 00. reference
+https://linuxhandbook.com/linux-directory-structure/
+https://medium.com/ensias-it/linux-filesystem-thorough-walk-through-3b9c73efca9a
+
+# concepts: 
+kernel is a computer program that is the core of a computer’s operating system, with complete control over everything in the system. 
+It manages the following resources of the Linux system:
+- File management
+- Process management
+- I/O management
+- Memory management
+- Device management etc.
+
+# shell
+A shell is a special user program that provides an interface for the user to use operating system services.
+
+BASH (Bourne Again SHell) – It is used as default login shell in Linux systems and in macOS.
+CSH (C SHell) – The C shell’s syntax and its usage are very similar to the C programming language.
+KSH (Korn SHell) – The Korn Shell was also the base for the POSIX Shell standard specifications etc.
+
+
+//-- ########################################################### --//
+     1. First Bash Shell 
+//-- ########################################################### --//
+
+# Shebang is simply an absolute path to the bash interpreter (#!/bin/bash )
+
+# 00. Check local shell: /bin/bash
+which bash
+
+# 01. create a shell file, named hello.sh
+cat <<EOF >> hello.sh 
+#!/bin/bash            # Shebang: tells the computer: "Use Bash to run this!"  
+echo "Hello, Gorilla"  # Prints text on the screen  
+EOF
+
+
+# 02. make it executable
+chmod +x hello.sh      # Gives permission to run the script 
+
+# 03. Execute
+./hello.sh
+
+
+//-- ########################################################### --//
+     2. Variable
+         - Global variables
+         - Local variables
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     3. Passing arguments
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     4. Read User Input
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+     5. if / else / fi statements
+//-- ########################################################### --//
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

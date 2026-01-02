@@ -1,0 +1,263 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# run mysql docker (create a credential)
+docker run -d -p 3366:3306            \
+  --name mysql-funnygorilla-container \
+  -e MYSQL_ROOT_PASSWORD=root         \
+  -e MYSQL_DATABASE=funnygorilla      \
+  -e MYSQL_USER=funnygorilla          \
+  -e MYSQL_PASSWORD=funnygorilla      \
+mysql:8.4.0
+
+
+//-- ################################################################# --//
+     SQL introduction: 
+         0. login to mysql server
+         1. DDL - data definition language 
+         2. DCL - data control language
+         3. DML - data manipulation language   
+         4. Joint
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. login to mysql server
+//-- ################################################################# --//
+
+# 01. login as funnygorilla
+> mysql -u funnygorilla -p
+
+# 02. check existing databases
+SHOW DATABASES;
+
+
+//-- ################################################################# --//
+     1. DDL - data definition language           
+//-- ################################################################# --//
+
+# 01. create database
+CREATE DATABASE IF NOT EXISTS funnygorilla;
+
+# 02. check database created
+show databases;
+
+# 03. connect to database funnygorilla
+USE funnygorilla;
+
+# 04. create table
+CREATE TABLE regions ( 
+ region_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+ region_name VARCHAR( 50 ) NOT NULL 
+); 
+
+CREATE TABLE regions ( region_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, region_name VARCHAR( 50 ) NOT NULL ); 
+
+# 05. check created table
+DESCRIBE regions;  
+
+# 06. insert a row
+INSERT INTO regions (REGION_NAME) VALUES ('Europe');
+
+# 07. alter table
+ALTER TABLE funnygorilla.regions ADD comments VARCHAR(500) NOT NULL;  
+
+# 08. drop table
+Drop table regions;
+
+
+//-- ################################################################# --//
+     2. DCL - data control language
+//-- ################################################################# --//
+
+# 01. check the exiting users
+select user from mysql.user;
+
+# 02. create a new user
+CREATE user IF NOT EXISTS arthur IDENTIFIED BY '123456';  
+
+# 03. check arthur created
+select user from mysql.user;
+
+# 04. connect to database funnyGorilla
+USE funnygorilla;
+
+# 05. restore region table
+CREATE TABLE regions ( 
+ region_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+ region_name VARCHAR( 50 ) NOT NULL 
+);
+
+# 06. grant priviledges to the created user
+Grant ALTER, DROP, INSERT, UPDATE, DELETE, SELECT on regions To arthur; 
+Grant SELECT on funnygorilla.* To arthur; 
+
+# 07. exit from database as root
+exit
+
+# 08. login as Arthur
+mysql -u arthur -p
+
+# 09. Check around, and see what Arthur can see and do
+
+# 10. user another terminal to login as root, revoke priviledge from user arthuer
+REVOKE ALTER ON funnygorilla.regions FROM arthur;
+
+# 11. In previous terminal, logout and login as Arthur
+ALTER TABLE funnygorilla.regions ADD description VARCHAR(500) NOT NULL;  
+
+# 12. as root user, drop user
+DROP USER arthur;
+
+
+//-- ################################################################# --//
+     3. DML: data manipulation language      
+        00. Aggregate functions                               
+        01. group by: used with aggregate functions   
+        02. order by: used with grouping            
+        03. having: used with grouping             
+//-- ################################################################# --//
+
+
+INSERT INTO regions (REGION_NAME, COMMENTS ) VALUES ('Europe', 'how are you');
+
+# check data in table
+select * from regions;
+
+# update a specific row
+UPDATE regions SET REGION_NAME = 'Asia' WHERE REGION_ID = 1; 
+
+# delete a row
+DELETE FROM regions WHERE REGION_ID = 1; 
+
+
+//-- ################################################################# --//
+     DML-00-Aggregate functions:                             
+         01. count                                         
+         02. avg                                          
+         03. sum                                          
+//-- ================================================================= --//
+
+# 00. Connect to classicmodels database
+use classicmodels;
+
+# 01. count 
+select count(customerNumber) from customers;
+
+# 02. average
+select avg(creditLimit) as average from customers;
+
+# 03. sum
+select sum(creditLimit) as total from customers;
+
+
+//-- ################################################################# --//
+     DML-01-Group by
+//-- ================================================================= --//
+
+# 01. it does not work without aggregate function
+SELECT CustomerNumber, Country
+FROM customers
+GROUP BY Country;
+
+# 02. based on grouping
+SELECT COUNT(CustomerNumber), Country
+FROM customers
+GROUP BY Country;
+
+
+//-- ################################################################# --//
+     DML-02-Order by: 
+         01. by column
+         02. by aggregate function
+         03. by grouping
+//-- ================================================================= --//
+
+# 01. order by column
+SELECT CustomerNumber, Country
+FROM Customers
+order by country;
+
+# 02. order by aggregate function
+SELECT COUNT(CustomerNumber), Country
+FROM Customers
+GROUP BY Country
+order by COUNT(CustomerNumber);
+
+# 03. based on grouping
+SELECT COUNT(CustomerNumber), Country
+FROM Customers
+GROUP BY Country
+order by country;
+
+
+//-- ################################################################# --//
+     DML-03-Having: 
+     a way to filter data on group level  
+//-- ================================================================= --//
+
+# 01. based on grouping
+SELECT COUNT(CustomerNumber), Country
+FROM Customers
+GROUP BY Country
+HAVING COUNT(CustomerNumber) > 5;
+
+# 02. it does not work without grouping
+SELECT COUNT(CustomerNumber), Country
+FROM Customers
+HAVING COUNT(CustomerNumber) > 5;
+
+
+//-- ################################################################# --//
+     4. Joint:                                           
+        01. INNER                                      
+        02. LEFT                                        
+        03. RIGHT                                       
+        04. CROSS                                     
+//-- ################################################################# --//
+
+# 01. connect to target database
+mysql> use classicnodels;
+
+# 02. apply join logic
+select orders.orderNumber, customers.customerName, orders.orderDate 
+From orders
+INNER JOIN customers on orders.customerNumber=customers.customerNumber;
+
+# 03. inner join
+select orders.orderNumber, customers.customerName, orders.orderDate From orders INNER JOIN customers on orders.customerNumber=customers.customerNumber;
+
+# 04. left join
+select orders.orderNumber, customers.customerName, orders.orderDate From orders LEFT JOIN customers on orders.customerNumber=customers.customerNumber;
+
+# 05. right join
+select orders.orderNumber, customers.customerName, orders.orderDate From orders RIGHT JOIN customers on orders.customerNumber=customers.customerNumber;
+
+# 06. cross join
+select orders.orderNumber, customers.customerName, orders.orderDate From orders CROSS JOIN customers on orders.customerNumber=customers.customerNumber;
+
+
+//-- ################################################################# --//
+      Clean up
+//-- ################################################################# --//
+
+# 01. exit from mysql
+exit
+
+# 02. exit from docker container
+exit
+
+# 03. stop and remove container
+docker container stop mysql-funnygorilla-container
+docker container rm mysql-funnygorilla-container
+
+# 04. remove image
+docker image rm mysql:8.4.0
+
+
+//-- ##########################     END    ########################### --//
+
+

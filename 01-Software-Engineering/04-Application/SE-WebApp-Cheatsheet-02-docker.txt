@@ -1,0 +1,330 @@
+//-- ################################################### --//
+//-- ****             Prerequisites                 **** --//
+//-- ################################################### --//
+
+1. Docker installed, up and running
+2. Ubuntu up and running (Windows)
+
+//-- # for Mac Pro: install telnet network tool
+brew install telnet
+
+
+//-- ################################################### --//
+           Containerise web application         
+             0. prepare project scaffolding into Ubuntu
+             1. create a network
+             2. prepare database image
+             3. build up api image
+             4. build up web image
+             5. clean up containers
+//-- ################################################### --//
+
+
+//-- ################################################### --//
+     0. prepare project scaffolding into Ubuntu         
+//-- ################################################### --//
+ 
+# 01. move to projects:
+cd ~/Developer/projects/
+
+# 02. Prepare project file
+
+-- [Windows] 
+cp -r /mnt/c/Dev/IT-Courses/01-Software-Engineering/04-Application .
+  
+-- [Mac Pro]
+cp -r ~/Developer/IT-Courses/01-Software-Engineering/04-Application .
+     
+# 03. move into ./04-Application folder
+cd ./04-Application
+
+-- remove unnecessary files
+rm ./FunnyGorillaWeb/Dockerfile *.txt ./FunnyGorillaAPI/*.txt
+
+-- check the directory
+tree .
+.
+├── FunnyGorillaAPI
+├── FunnyGorillaWeb
+│   ├── index.css
+│   ├── index.html
+│   └── index.js
+├── db
+│   └── init-student-mysql.sql
+└── docker-compose-sample.yaml
+   
+
+//-- ################################################### --//
+     1. create network         
+        reference: https://spacelift.io/blog/docker-networking
+//-- ################################################### --//
+
+# 01. check existing networks
+docker network ls
+
+# 02. create a new one
+docker network create funnygorilla-network
+
+# 03. check the network created
+docker network ls
+
+
+//-- ################################################### --//
+     2. prepare database image         
+//-- ################################################### --//
+
+# 01. pull mysql database if not yet
+docker pull mysql:8.4
+
+# 02. check if image exists
+docker image ls
+
+# 03. spin up container (-d flag)
+docker run -d   \
+  -p 3366:3306  \
+  --name mysql-funnygorilla-container \
+  -e MYSQL_ROOT_PASSWORD=root         \
+  -e MYSQL_USER=tester                \
+  -e MYSQL_PASSWORD=tester            \
+  -v ./db/init-student-mysql.sql:/docker-entrypoint-initdb.d/init-student-mysql.sql  \
+mysql:8.4
+
+-- verify container running properly - check the container logs
+Docker logs mysql-funnygorilla-container
+
+
+# 04. connect to network
+docker network connect funnygorilla-network mysql-funnygorilla-container
+
+# 05. check if the container connects to the network?
+docker inspect mysql-funnygorilla-container
+
+# 06. check database created in container
+docker exec -it mysql-funnygorilla-container bash
+mysql -u root -p
+
+# 07. Check student database is in place
+mysql> show databases;
+
+# 08. Check port 3366 is accessible from localhost (outside of container)
+telnet localhost 3366
+
+
+//-- ################################################### --//
+     3. build up API application image         
+        01. clone application code
+        02. build application image
+        03. spin up container
+        04. test APIs by curl
+//-- ################################################### --//
+
+
+//-- ################################################### --//
+     01. clone application code         
+//-- =================================================== --//
+
+# move to project folder
+cd ~/Developer/projects
+
+# clone api application code
+git clone https://github.com/arthurguau/student-management.git
+
+# move to project folder 
+cd student-management
+
+
+//-- ################################################### --//
+     02. Test application        
+//-- =================================================== --//
+
+# 00. compile code
+mvn clean compile
+
+# 01. run unit test cases (as a placeholder, no unit test cases so far)
+mvn clean test
+
+# 02. bring up application
+mvn spring-boot:run
+
+# 03. Check log -> why it is not working?
+
+# 04. check database connection properties and replace xxx/yyy with right value
+      [hints]: running application in host machine, connect to database in container
+student-management/src/main/resources/application.properties
+spring.datasource.url=jdbc:mysql://xxx:yyy/studentmanagement
+
+# 05. restart application again
+Ctrl + C
+mvn spring-boot:run
+
+# 06. Check log, and fire traffic by curl command
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/1  | jq '.'
+
+
+//-- ################################################### --//
+     03. build application image         
+//-- =================================================== --//
+
+# 00. Change database hostname & port number (why and what?)
+      [hints]: running application and database in container environment
+# student-management/src/main/resources/application.properties
+# spring.datasource.url=jdbc:mysql://xxx:yyy/studentmanagement
+
+# 01. build docker image (Spring-boot specific. Do not need to worry about it.)
+      # exam Dockerfile
+      # docker build -t student-management:0.0.1 .
+      # docker build --platform linux/x86_64 -t test .
+      # docker run --platform linux/x86_64 test
+docker build -t student-management:0.0.1 .
+
+# 03. check created docker image
+docker image ls
+
+
+//-- ################################################### --//
+     04. spin up container         
+//-- =================================================== --//
+
+# 01. spin up student-manage container (replace xxx/yyy with right values)
+docker run -d  \
+  -p 8088:8087 \
+  --name student-container \
+  -e SPRING_DATASOURCE_URL=jdbc:mysql://xxx:yyy/studentmanagement \
+  -e SPRING_DATASOURCE_USERNAME=tester \
+  -e SPRING_DATASOURCE_PASSWORD=tester \
+  --network funnygorilla-network       \
+student-management:0.0.1
+
+# 02. check container up and running
+docker ps
+
+# 03. check if student application is up and running
+      you will  find application throws database connection error
+docker logs student-container
+
+
+//-- ################################################### --//
+     05. test APIs by curl/Postman   
+         -- GET
+         -- POST
+         -- PUT
+         -- DELETE      
+//-- =================================================== --//
+
+# 01. GET student
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/1  | jq '.'
+
+# 02. POST student - response code: 201
+curl -H 'Content-Type: application/json' -X POST http://localhost:8087/studentmanagement/api/v1/students/ -d '{"firstName":"Jojo","lastName":"Zhao","contact":"Jojo.zhao@hotmail.com","course":"CS"}'
+
+# 03. check response and get newly create id 5
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/5 | jq '.'
+
+# 04. update course from CS to Accounting
+curl -v -H 'Content-Type: application/json' -X PUT http://localhost:8087/studentmanagement/api/v1/students/5 -d '{"id":5  ,"firstName":"Jojo","lastName":"zhao","contact":"jojo.zhao@hotmail.com","course":"Accounting"}' | jq '.'
+
+# 05. delete student Helen - response code: 204
+curl -v -X DELETE http://localhost:8087/studentmanagement/api/v1/students/5
+
+# 06. check database table: student Helen has been deleted - response code: 404
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/5
+
+
+//-- ################################################### --//
+     4. build up web image         
+         01. create Dockerfile
+         02. create image
+         03. spin up a container
+         04. access web
+//-- ################################################### --//
+
+//-- ################################################### --//
+     01. create Dockerfile into <FunnyGorillaWeb> directory:
+//-- =================================================== --//
+
+# 00. Remove some files
+rm ./04-Application/FunnyGorillaWeb/*.txt ./04-Application/FunnyGorillaWeb/Dockerfile
+
+cd ./04-Application/FunnyGorillaWeb
+
+# check directory
+ls -l
+
+# 00. check content of each file
+      How these 3 files work together?
+      What does index.js do, and how?
+cat ./FunnyGorillaWeb/index.html
+cat ./FunnyGorillaWeb/index.css
+cat ./FunnyGorillaWeb/index.js
+
+# 01. create Dockerfile
+touch Dockerfile
+
+# 02. build Dockerfile
+nano Dockerfile
+
+# content of Dockerfile
+FROM httpd:latest
+COPY index.* /usr/local/apache2/htdocs/
+
+
+//-- ################################################### --//
+     02. create image
+//-- =================================================== --//
+
+# 01. create docker image
+docker build -t funnygorilla-web:v1 .
+
+# 02. check the image
+docker image ls
+
+
+//-- ################################################### --//
+     03. spin up container
+//-- =================================================== --//
+
+# 01. spin up container
+docker run --name funnygorilla-web -p 8080:80 funnygorilla-web:v1
+
+# 02. add container to network, funnygorilla-network
+docker network connect funnygorilla-network funnygorilla-web
+
+# 03. check the files, index.*, in the container
+docker ps
+docker exec -it funnygorilla-Web bash
+ls -l /usr/local/apache2/htdocs/
+
+
+//-- ################################################### --//
+     04. access web
+//-- =================================================== --//
+
+http://localhost:8080 
+
+# check index.* files downloaded into chrome browser
+# open chrome Developer Tool, and check Sources tab.
+
+
+//-- ################################################### --//
+     5. clean up containers         
+//-- ################################################### --//
+
+# stop and remove docker container 
+docker container stop funnygorilla-web
+docker container rm funnygorilla-web
+
+docker container stop student-container
+docker container rm student-container
+
+docker container stop mysql-container
+docker container rm mysql-container
+
+# remove network
+docker network rm funnygorilla-network
+
+
+//-- ##################   END   ######################## --//
+
+
+

@@ -1,0 +1,68 @@
+
+
+//-- ################################################################## --//
+//-- ****   Organise functions:                                     **** --//             
+             1. Module
+             2. Package
+             3. Import
+             4. Alians
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+        1. Module:                                                           
+            - file to install multiple functions
+//-- ################################################################## --//
+
+//-- # create a module, grocery, to store functions
+grocery.py
+
+
+//-- ################################################################## --//
+        2. Package: folder to install multiple modules                                
+//-- ################################################################## --//
+
+//-- # create a package: mlwp, to store functions, grocery
+
+
+//-- ################################################################## --//
+         3. import 
+           01. import module_name                                    
+           02. from module_name import func_name1, func_name2,   
+           03. from package.module import func_name1, func_name2,
+//-- ################################################################## --//
+
+//-- # import module
+import mlwp.grocery
+mlwp.grocery.grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+//-- # import a specific module from a package
+from mlwp import grocery
+grocery.grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+//-- # import a specific function from a module of a package
+from mlwp.grocery import grocery_to_do
+grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+
+//-- ################################################################## --//
+         4. Alians: a nickname to a                               
+             01. function,                            
+             02. module                                 
+             03. package                               
+//-- ################################################################## --//
+
+//-- # 01. give alian to a function
+from mlwp.grocery import grocery_to_do as gd
+gd(40, 'milk', 'bread', 'meat', 'tomato')
+
+//-- # 02. give alian to a module
+from mlwp import grocery as gr
+gr.grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+//-- # 03. give alian to a package
+import mlwp as mp
+mp.grocery.grocery_to_do(40, 'milk', 'bread', 'meat', 'tomato')
+
+
+//-- ############################## End ############################### --//

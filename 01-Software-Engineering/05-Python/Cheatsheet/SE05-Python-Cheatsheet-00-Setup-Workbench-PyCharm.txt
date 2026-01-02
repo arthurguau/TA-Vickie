@@ -1,0 +1,47 @@
+//-- ################################################### --//
+//-- ****    Prerequisites: Python installed        **** --//
+//-- ################################################### --//
+
+# download PyCharm zip file
+https://www.jetbrains.com/pycharm/download/other.html
+
+# reference
+https://www.jetbrains.com/guide/python/tutorials/getting-started-pycharm/
+
+
+//-- ################################################### --//
+      Mac Pro
+//-- ################################################### --//
+
+# install pycharm - community edition
+brew install --cask pycharm-ce
+
+
+//-- ################################################### --//
+      Windows
+//-- ################################################### --//
+
+
+
+
+//-- ################################################### --//
+      Create a new project
+//-- ################################################### --//
+
+00. Project scaffolding:
+mkdir ~/Developer/project/LearnPytyon
+cd ~/Developer/project/LearnPytyon
+
+
+01. New project
+Project name: HelloPython
+Location: ~/Developer/project/LearnPytyon
+Create git repository
+Create welcome script
+
+Interpreter type: Project Venv
+Python version: 3.13 [chose your latest version]
+
+
+
+//-- ########################## End ############################ --//

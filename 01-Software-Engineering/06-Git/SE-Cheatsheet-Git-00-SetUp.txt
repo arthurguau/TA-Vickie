@@ -1,0 +1,48 @@
+//-- ####################################################### --//
+//-- ****     Prerequisites                             **** --//
+//-- ####################################################### --//
+
+1. Git has been installed locally
+2. create a Github account
+
+
+//-- ####################################################### --//
+        Concepts: 
+         1. repository
+         2. object
+         3. reference        
+//-- ####################################################### --//
+
+//-- # 01. repository: 
+a collection of objects and references. 
+
+//-- # 02. Objects have relationships with each other
+commit:
+tree:
+
+//-- # 03. references point to objects and to other references.
+branches: 
+HEAD: keep track of the current point in a Git repo
+
+
+//-- ####################################################### --//
+     Config user credential
+       -- only for first time
+//-- ####################################################### --//
+
+//-- # check configuration values:
+git config --list
+
+//-- # set user name and email
+git config --global user.name "Viola"
+git config --global user.email "conzeng@outlook.com"
+
+//-- # check if changes take effects
+git config --list
+
+
+//-- ######################### End ######################### --//
+
+
+
+

@@ -1,0 +1,74 @@
+//-- ####################################################### --//
+     Prerequisites                 
+//-- ####################################################### --//
+
+1. Git has been installed locally.
+2. Your Github account has been created.
+3. have a local git repository.
+
+
+//-- ####################################################### --//
+     Create branch                    
+//-- ####################################################### --//
+
+//-- # 00. Change main (default) to Master branch
+git branch -M master
+git branch
+
+//-- # 01. create a feature branch
+git branch features/Vanilla  
+
+//-- # 02. check the created branches
+           -r: remote branches
+           -a: all branches
+git branch       
+
+
+//-- ####################################################### --//
+     Checkout branch                    
+//-- ####################################################### --//
+
+//-- # 01. checkout branch: features/vanilla
+git checkout features/vanilla
+
+//-- # 02. make some changes to the file
+echo "I am in Vanilla branch!" >> Hello.txt
+
+//-- # 03. check git status
+git status
+
+//-- # 04. stage file
+git add Hello.txt
+
+//-- # 05. commit file
+git commit -m "first commit"
+
+
+//-- ####################################################### --//
+     Merge to Master branch (pull request)                    
+//-- ####################################################### --//
+
+//-- # 01. checkout master branch
+git checkout master
+
+//-- # 02. check current branch
+git branch
+
+//-- # 03. merge feature branch into master branch
+git merge features/Vanilla
+
+
+//-- ####################################################### --//
+     Delete branch                    
+//-- ####################################################### --//
+
+//-- # delete a branch
+git branch --delete <branch-name>
+git branch --delete features/vanilla
+
+
+//-- ######################### End ######################### --//
+
+
+
+

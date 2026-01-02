@@ -1,0 +1,71 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+1. Docker Desktop installed     
+2. Docker is up and running
+
+
+//-- ########################################################### --//
+     Outlier                   
+//-- ########################################################### --//
+
+//-- # reference
+https://careerfoundry.com/en/blog/data-analytics/how-to-find-outliers/
+
+Outlier Detection： Boxplot 
+Interquartile Range(IQR): IQR= Upper Quantile(Q3) - Lower Quartile(Q1) 
+Lower Limit = Q1 - 1.5 IQR 
+Upper Limit = Q3 + 1.5 IQR
+
+# import dependencies
+import pandas as pd
+import numpy as np
+import plotly.express as px
+
+# load the data into a dataframe
+df = pd.read_csv(‘uber.csv’)
+
+# check the first 5 rows
+df.head()
+
+# drop the unnecessary columns
+df = df.drop(columns=([‘pickup_longitude’, ‘pickup_latitude’, ‘dropoff_longitude’, ‘dropoff_latitude’]))
+
+# Generating summary statistics is a quick way to help us determine whether or not the dataset has outliers
+df.describe()[[‘fare_amount’, ‘passenger_count’]]
+
+
+//-- ########################################################### --//
+     01. How do you find outlier?                    
+//-- =========================================================== --//
+
+01. Use data visualization techniques to inspect the data’s distribution and verify the presence of outliers. 
+02. Use a statistical method to calculate the outlier data points.
+03. Apply a statistical method to drop or transform the outliers.
+
+
+//-- ########################################################### --//
+     02. data visualization techniques to inspect and verify               
+//-- =========================================================== --//
+
+[toDo]
+
+
+//-- ########################################################### --//
+     03. se a statistical method to calculate               
+//-- =========================================================== --//
+
+# create a function to find outliers using IQR
+def find_outliers_IQR(df):
+   q1=df.quantile(0.25)
+   q3=df.quantile(0.75)
+   IQR=q3-q1
+   outliers = df[((df<(q1-1.5*IQR)) | (df>(q3+1.5*IQR)))]
+   return outliers
+
+
+//-- ##########################   END  ######################### --//    
+
+
+

@@ -1,0 +1,68 @@
+
+//-- ################################################################## --//
+//-- ****        Binary Tree:                                      **** --//   
+//-- ################################################################## --//
+
+# reference
+https://python.plainenglish.io/binary-trees-in-python-implementation-and-examples-425ed3c60692
+
+
+# -- 01. Node definition
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.right = None
+        self.left = None
+
+    def insert(self, data):
+        if self.data:
+
+            if data < self.data:
+                if self.left is None:
+                    self.left = Node(data)
+                else:
+                    self.left.insert(data)
+            elif data > self.data:
+                if self.right is None:
+                    self.right = Node(data)
+                else:
+                    self.right.insert(data)
+        else:
+            self.data = data
+
+
+# -- 02. Binary Tree class
+class BinaryTree:
+    def __init__(self):
+        self.head = None
+
+    #-- inorder tree traversal
+    def inOrderTraversal(self, data):
+        self.head.insert(data)
+
+//-- ################################################################## --//
+
+//-- ################################################################## --//
+
+
+
+# -- test
+# ------------------------------ test code
+binaryTree = BinaryTree()
+
+n1 = Node(8)
+binaryTree.head = n1
+
+n2 = Node(7)
+n3 = Node(10)
+n4 = Node(6)
+
+n1.left = n2
+n1.right = n3
+n2.left = n4
+
+print("root.left.left.data:", binaryTree.root.left.left.data)
+
+
+//-- ############################## End ############################### --//
+

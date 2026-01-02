@@ -1,0 +1,113 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+# reference
+https://www.youtube.com/watch?v=ogWoUU2DXBU
+https://www.youtube.com/watch?v=aKRYQsKR46I
+
+# some shortcut keys [toDo]:
+1. command+space - Bring up spotlight search
+2. Type "terminal" to bring up a terminal
+
+
+//-- ########################################################### --//
+     Development environment setup
+      1. install Homebrew & utility packages
+      2. setup project structure
+      3. install Java
+      4. install Maven
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. install Homebrew & utility packages
+//-- ########################################################### --//
+
+# 00. Install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 01. Update homebrew
+brew update
+
+# 02. Install 3 packages
+brew install unzip
+brew install tree
+brew install wget
+
+
+//-- ########################################################### --//
+     2. Setup project structure
+//-- ########################################################### --//
+
+# 01. create folders
+mkdir -p ~/Developer/projects
+
+# 02. move a file into projects
+echo "hello, Funnygorilla\!" > funnygorilla.txt
+cat funnygorilla.txt
+mv funnytorilla.txt   ~/developer/projects/
+
+# 03. check folder structure up to 3 level
+tree -L 3 ~/Developer
+
+
+//-- ########################################################### --//
+     3. install Java 
+//-- ########################################################### --//
+
+# 00. check installed openjdk
+brew search --formulae openjdk
+
+# 01. install java (if not yet)
+brew install openjdk@21
+
+# 02. check installation in the package's own directory
+ls -l /opt/homebrew/Cellar (for M1-Mac)
+ls -l /usr/local/Cellar    (for Intel Mac)
+
+# 03. check the soft link
+ls -l /opt/homebrew/opt
+ls -l /usr/local/opt       (for Intel Mac)
+
+# 04. Mac search for Java at /Library/Java/JavaVirtualMachines/
+ls -l /Library/Java/JavaVirtualMachines/
+
+# 05. setup soft link (from intallation terminal)
+sudo ln -sfn /usr/local/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk
+
+# 06. check configured javas 
+/usr/libexec/java_home -V
+
+# 07. setup environment variable
+echo 'export PATH="/usr/local/opt/openjdk@21/bin:$PATH"' >> ~/.zshrc
+
+# 08. source file to take setting change effect
+source ~/.zshrc 
+
+# 09. check java version
+java --version
+
+
+//-- ########################################################### --//
+     4. install maven 
+//-- ########################################################### --//
+
+brew install maven
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

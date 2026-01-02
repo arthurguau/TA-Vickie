@@ -1,0 +1,42 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+1. Docker Desktop installed     
+2. Docker is up and running
+
+//-- # Concepts:
+Pandas specially facilitates working with tabular data that can come in a variety of formats. 
+For this purpose, it is built around a type of data structure known as DataFrame.
+
+//-- # reference
+https://pandas.pydata.org/docs/getting_started/intro_tutorials/index.html#
+
+
+//-- ########################################################### --//
+     1. Series  
+        -- 1-dimensional array
+        -- indexed
+        -- pd.Series(data, index=index)                            
+//-- ########################################################### --//
+
+[toDo]
+
+
+
+//-- ########################################################### --//
+     2. DataFrame  
+        -- 2-dimensional array                             
+//-- ########################################################### --//
+
+//-- # DataFrame is a generalization of Series to 2-dimension
+     # Each column in a DataFrame is a Series
+
+[toDo]
+
+
+
+//-- ##########################   END  ######################### --//    
+
+
+

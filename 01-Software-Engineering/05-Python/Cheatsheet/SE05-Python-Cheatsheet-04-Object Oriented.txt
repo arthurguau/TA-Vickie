@@ -1,0 +1,231 @@
+
+//-- ################################################################## --//
+//-- ****    Object Oriented                                       **** --//
+               1. Class (properties + operations)             
+               2. built-in functions                          
+               3. functions                                   
+               4. object  
+               5. OOP principles 
+               6. Put everything together - assignment                                  
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+      1. class (properties + operations)
+//-- ################################################################## --//
+
+//-- # Python is an object oriented programming language.
+     # Everything in Python is an object ( each object has properties and operations).
+     # A Class is like a "blueprint" for creating objects.
+
+# 00. pass statement: if no context yet
+class Person:
+  pass
+
+# 01. Class definition - properties (variables) and operations (functions)
+class MyClass:
+  x = 5
+
+# 02. use MyClass to create an object
+p1 = MyClass()
+print(p1.x)  
+
+
+//-- ################################################################## --//
+     2. built-in functions
+        01. __init__() function
+        02. __str__() function:
+//-- ################################################################## --//
+
+# 01. __init__(): known as the object initializer 
+      every class has __init__(), which executed automatically when the class is being initiated.
+      assign values to object properties, or other operations that are necessary to do.
+
+class Person:
+  def __init__(self, name, position):    # self - this instance of object
+    self.name = name                     # first element of the function. can be anything as you like
+    self.position = position
+
+p1 = Person("FunnyGorilla", "Data Engineer")
+
+print(p1.name)
+print(p1.position)
+
+
+# 02. __str__():
+     specifies what should be returned when the class object is represented as a string.
+     if not, the string representation of the object is returned:
+
+# not defined
+class Person:
+  def __init__(self, name, position):
+    self.name = name
+    self.position = position
+
+p1 = Person("FunnyGorilla", "Data Engineer")
+
+print(p1)
+
+# defined
+class Person:
+  def __init__(self, name, position):
+    self.name = name
+    self.position = position
+
+  def __str__(self):
+    return f"{self.name}-{self.position}"
+
+p1 = Person("FunnyGorilla", "Data Engineer")
+
+print(p1)
+
+
+//-- ################################################################## --//
+     3. functions                                 
+//-- ################################################################## --//
+
+# 01. define function
+class Person:
+  def __init__(self, name, position):
+    self.name = name
+    self.position = position
+
+  def myfunc(self):
+    print("Hello!  my name is " + self.name)
+
+p1 = Person("FunnyGorilla", "Data Engineer")    # create an object pereson
+p1.myfunc()                                     # call a function on an object
+
+
+//-- ################################################################## --//
+     4. Object                                    
+//-- ################################################################## --//
+
+# 01. Set the position of p1 to "Data Engineer":
+p1.position = "Data Engineer"
+
+# 02. delete a property
+del p1.position
+
+# 03. delete an object
+del p1
+
+
+//-- ################################################################## --//
+     5. OOP principles:
+        01. Encapsulation
+        02. Abstraction
+        03. Inheritance
+        04. Polymorphism                                    
+//-- ################################################################## --//
+
+# define a superclass
+class super_class:
+    # attributes and method definition
+
+# inheritance
+class sub_class(super_class):
+    # attributes and method of super_class
+    # attributes and method of sub_class
+
+# base class: Animal
+class Animal:
+
+   # attribute and method of the parent class
+   name = ""
+    
+   def eat(self):
+     print("I can eat")
+
+
+//-- ################################################################## --//
+     01. Encapsulation                              
+//-- ================================================================== --//
+
+N/A
+
+//-- ################################################################## --//
+     02. Abstraction                              
+//-- ================================================================== --//
+
+N/A
+
+//-- ################################################################## --//
+     03. Inheritance                                
+//-- ================================================================== --//
+
+# 01. inherit from Animal
+class Dog(Animal):
+
+   def display(self):
+      print("My name is ", self.name)
+
+# 02. create an object of the subclass
+labrador = Dog()
+
+# 03. access superclass attribute and method 
+labrador.name = "Rohu"
+labrador.eat()
+
+# 04. call subclass method 
+labrador.display()
+
+
+//-- ################################################################## --//
+     04. Polymorphism                              
+//-- ================================================================== --//
+
+# the use of a single type entity to represent different types in different scenarios.
+
+from math import pi
+
+class Shape:
+    def __init__(self, name):
+        self.name = name
+
+    def area(self):
+        pass
+
+    def fact(self):
+        return "I am a two-dimensional shape."
+
+    def __str__(self):
+        return self.name
+
+class Square(Shape):
+    def __init__(self, length):
+        super().__init__("Square")
+        self.length = length
+
+    def area(self):
+        return self.length**2
+
+    def fact(self):
+        return "Squares have each angle equal to 90 degrees."
+
+class Circle(Shape):
+    def __init__(self, radius):
+        super().__init__("Circle")
+        self.radius = radius
+
+    def area(self):
+        return pi*self.radius**2
+
+sq = Square(4)
+ci = Circle(7)
+
+print(ci)
+print(ci.fact())
+print(sq.fact())
+print(ci.area())
+
+
+//-- ################################################################## --//
+     6. put everything together                    
+//-- ################################################################## --//
+
+# Helloworkd.py - [Assignment]
+
+
+//-- ############################ End ################################# --//
+

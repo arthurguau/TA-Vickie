@@ -1,0 +1,79 @@
+
+//-- ########################################################### --//
+     Prerequisites:
+     OpenJDK 17 installed & configured
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     String: 
+     01. create
+     02. query
+     03. modify
+     04. others
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+//-- # 01. create a string
+//-- =========================================================== --//
+
+# use a text
+String myString = "Hello, FunnyGorilla!";
+
+# use new
+String name = new String("Java String");
+
+# Join Two Java Strings
+String first = "Java ";
+String second = "Programming";
+String joinedString = first.concat(second);
+System.out.println("Joined String: " + joinedString);
+
+
+//-- ########################################################### --//
+//-- # 02. query a string
+//-- =========================================================== --//
+
+# length of a String
+
+# contains()
+
+# substring()
+
+# compare
+String first = "java programming";
+String second = "java programming";
+String third = "python programming";
+ 
+boolean result1 = first.equals(second);
+System.out.println("Strings first and second are equal: " + result1);
+
+
+//-- ########################################################### --//
+//-- # 03. modify a string
+//-- =========================================================== --//
+
+# replace()/replaceAll()
+
+# split()
+
+
+//-- ########################################################### --//
+//-- # 04. Others
+//-- =========================================================== --//
+
+//-- # toCharArray()
+
+
+
+//-- ########################################################### --//
+     Array: 
+//-- ########################################################### --//
+
+
+
+
+
+
+//-- ########################## End ############################ --//

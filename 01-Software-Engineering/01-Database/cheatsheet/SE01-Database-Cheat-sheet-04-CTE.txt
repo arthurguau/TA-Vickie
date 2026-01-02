@@ -1,0 +1,164 @@
+//-- ################################################################# --//
+//-- *****               Prerequisite                             **** --//
+//-- ################################################################# --//
+Docker installed, up and running
+
+CEP - common table expression
+
+
+//-- ################################################################# --//
+     mysql Case study:
+     1. spin up mysql docker container
+     2. login to container
+     3. Prepare tables   
+     4. Case Study 01  
+     5. Case Study 02
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. spin up mysql docker container (if not yet)
+//-- ################################################################# --//
+
+# run mySql docker (create a credential)
+docker run -d -p 3366:3306            \
+  --name mysql-funnygorilla-container \
+  -e MYSQL_ROOT_PASSWORD=root         \
+  -e MYSQL_DATABASE=funnygorilla      \
+  -e MYSQL_USER=funnygorilla          \
+  -e MYSQL_PASSWORD=funnygorilla      \
+mysql:8.4.0
+
+
+//-- ################################################################# --//
+     2. login to container
+//-- ################################################################# --//
+
+# 01. access container
+Docker exec -it mysql-funnygorilla-container /bin/bash
+
+# 02. login as funnygorilla
+> mysql -u funnygorilla -p
+
+# 03. check funnygorilla database created
+mysql> SHOW DATABASES;
+
+
+//-- ################################################################# --//
+      3. Prepare tables                                    
+//-- ################################################################# --//
+
+# 01. Connect to database
+USE funnyGorilla;
+
+# 02. create table
+CREATE TABLE Employee ( 
+ EmployeeID INT NOT NULL PRIMARY KEY, 
+ Name  VARCHAR( 50 ) NOT NULL,
+ Salary INT
+); 
+
+# 03. check table created
+show tables;
+
+# 04. check schema is right
+describe Employee;
+
+# 05. insert data
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (100011, 'Smith', 50000); 
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (100022, 'Bill', 94000); 
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (100027, 'Sam', 70550); 
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (100845, 'Walden', 80000); 
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (115585, 'Erik', 60000); 
+INSERT INTO Employee (EmployeeID, Name, Salary) VALUES (1100070, 'Kate', 69000); 
+
+# 06. check inserted data
+select * from Employee;
+
+
+//-- ################################################################# --//
+//-- ****   Case Study 01                                         **** --//
+            Find all the employee 
+            whose salary is more than the average salary of all employees.
+//-- ################################################################# --//
+
+# 01. subquery
+SELECT avg(Salary)
+from Employee;
+
+# 02. main query
+SELECT EmployeeID,Name, Salary 
+FROM Employee
+WHERE Employee.Salary > 70591.6667;
+
+# 03. With AS
+WITH temporaryTable(averageValue) as
+    (SELECT avg(Salary)
+    from Employee)
+        SELECT EmployeeID,Name, Salary 
+        FROM Employee, temporaryTable 
+        WHERE Employee.Salary > temporaryTable.averageValue;
+
+
+//-- ################################################################# --//
+//-- ****   Case Study 02                                        ***** --//
+            Find all the airlines where the total salary of all pilots in that airline
+            is more than the average of total salary of all pilots in the database. 
+            Name of the relation: Pilot 
+//-- ################################################################# --//
+
+# 01. create table
+CREATE TABLE Pilot ( 
+ EmployeeID INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+ Airline VARCHAR( 50 ) NOT NULL,
+ Name  VARCHAR( 50 ) NOT NULL,
+ Salary INT
+); 
+
+# 02. insert data
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (70007, 'Airbus 380', 'Kim', 60000); 
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (70002, 'Boeing', 'Laura', 20000); 
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (10027, 'Airbus 380', 'Will', 80050); 
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (10778, 'Airbus 380', 'Warren', 80780); 
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (115585, 'Boeing', 'Smith', 25000); 
+INSERT INTO Pilot (EmployeeID,  Airline,  Name, Salary) VALUES (114070, 'Airbus 380', 'Katy', 7800); 
+
+# 03. Query
+SELECT Airline, sum(Salary) FROM Pilot  GROUP BY Airline;
+SELECT avg(Salary) FROM Pilot;
+
+
+# 04. With AS
+WITH totalSalary(Airline, total) as
+    (SELECT Airline, sum(Salary)
+    FROM Pilot
+    GROUP BY Airline),
+    airlineAverage(avgSalary) as 
+    (SELECT avg(Salary)
+    FROM Pilot )
+    SELECT Airline
+    FROM totalSalary, airlineAverage
+    WHERE totalSalary.total > airlineAverage.avgSalary;
+
+
+//-- ################################################################# --//
+      Clean up
+//-- ################################################################# --//
+
+# 01. exit from mysql
+exit
+
+# 02. exit from docker container
+exit
+
+# 03. stop and rm container
+docker container stop mysql-funnygorilla-container
+docker container rm mysql-funnygorilla-container
+
+# 04. remove image
+docker image rm mysql:8.4.0
+
+
+//-- ##########################    EMD   ############################# --//
+
+

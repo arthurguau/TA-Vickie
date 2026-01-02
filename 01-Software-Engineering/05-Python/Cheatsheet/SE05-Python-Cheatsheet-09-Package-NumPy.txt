@@ -1,0 +1,110 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+1. Docker Desktop installed     
+2. Docker is up and running
+
+//-- # Concepts:
+NumPy is a fundamental Python package that provides efficient storage and operations for multidimensional arrays.
+the core functionality is based on its ndarray data structure (short for n-dimensional array).
+somewhat similar to built-in list type but with homogeneous elements
+
+
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+
+import numpy as np
+
+list1 = [[1,2,3], [4,5,6]]
+a1 = np.array(list1)
+
+//-- # check type
+type(a1)
+
+//-- # homogeneity restriction of elements in numpy arrays.
+list2 = [[1, 2, 3.6], [4, 5, 6]]
+a2 = np.array(list2)
+
+
+//-- ########################################################### --//
+     Array Attributes:
+       dtype
+       Size
+       Ndim
+       Shape
+       Itemsize
+//-- ########################################################### --//
+
+//-- # type
+a2.dtype
+
+a3 = np.array(list2, dtype='float32')
+
+a4 = a3.astype(int) 
+
+//-- # size
+a4.size
+
+//-- # ndim
+a4.ndim 
+
+//-- # shape
+a4.shape
+
+//-- # itemsize
+a4.itemsize
+
+
+//-- ########################################################### --//
+     Built-in Functions for Array Creation
+
+
+
+
+      random.normal(loc, scale, size)
+//-- ########################################################### --//
+
+
+
+
+
+a = np.random.normal(0, 1, size=(3,4))
+
+
+//-- ########################################################### --//
+     Array Indexing:
+        01. Single Element Indexing
+        02. Slicing
+        03. Indexing with other Arrays (Fancy Indexing)
+//-- ########################################################### --//
+
+
+
+//-- ########################################################### --//
+     Reshaping Arrays
+//-- ########################################################### --//
+
+
+
+//-- ########################################################### --//
+     Universal Functions (UFuncs)
+//-- ########################################################### --//
+
+
+
+//-- ########################################################### --//
+     Broadcasting
+//-- ########################################################### --//
+
+
+
+
+
+
+//-- ##########################   END  ######################### --// 
+
+
+
+

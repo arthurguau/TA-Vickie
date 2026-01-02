@@ -1,0 +1,24 @@
+//-- ################################################### --//
+//-- ****             Prerequisites                 **** --//
+//-- ################################################### --//
+
+1. Docker installed, up and running
+2. Ubuntu up and running
+
+
+//-- ################################################### --//
+     REST API  
+//-- ################################################### --//
+
+# 01. Spin up database
+Docker-compose up -d
+
+# 02. Start up student management application
+cd ~/Developer/projects/studentmanagement
+mvn Spring-boot:run
+
+# 03. check openapi/swagger file:
+http://localhost:8087/studentmanagement/swagger-ui/index.html
+
+
+//-- ##################   END   ######################## --//

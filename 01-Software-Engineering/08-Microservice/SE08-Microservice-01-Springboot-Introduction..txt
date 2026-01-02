@@ -1,0 +1,35 @@
+//-- ####################################################### --//
+     Prerequisites   
+//-- ####################################################### --//
+
+1. Git has been installed locally
+2. create a Github account
+
+//--  reference
+https://howtodoinjava.com/spring-boot/spring-boot-rest-api-example/
+
+
+//-- ####################################################### --//
+     1. Create a project shell
+//-- ####################################################### --//
+
+mvn archetype:generate 
+	-DgroupId=com.howtodoinjava 
+	-DartifactId=spring-boot-rest-example 
+	-DarchetypeArtifactId=maven-archetype-quickstart 
+	-DinteractiveMode=false
+
+
+//-- ####################################################### --//
+     2. Create Model and Configure Persistence
+//-- ####################################################### --//
+
+
+
+
+//-- # find dependency tree
+mvn dependency:tree
+
+
+//-- ########################  End  ######################## --//
+

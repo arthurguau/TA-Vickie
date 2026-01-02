@@ -1,0 +1,263 @@
+
+//-- ################################################################## --//
+//-- ****    Linked List:                                          **** --//   
+              0. Definition
+              1. creation                                 
+              2. Traversing                               
+              3. Insertion                                
+              4. remove                                      
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+     0. Linked List definition
+//-- ################################################################## --//
+
+# 01. Node definition
+class Node:
+   def __init__(self, dataval=None):
+      self.dataval = dataval
+      self.nextval = None
+
+# 02. List definition - just a reference
+class MyLinkedList:
+   def __init__(self):
+      self.headval = None
+
+
+//-- ################################################################## --//
+     1. create Linked List
+//-- ################################################################## --//
+
+# 01. Initialise an empty List
+list1 = MyLinkedList()
+
+# 02. create first node and assign to List
+e1 = Node("Mon")
+list1.headval = e1
+
+# 03. create second Node and link to first node
+e2 = Node("Tue")
+list1.headval.nextval = e2
+
+# 04. create third Node and link to second node
+e3 = Node("Wed")
+e2.nextval = e3
+
+
+//-- ################################################################## --//
+     2. Traverse a Linked List
+//-- ################################################################## --//
+
+class MyLinkedList:
+   def __init__(self):
+      self.headval = None
+
+   def listprint(self):
+      printval = self.headval
+      while printval is not None:
+         print (printval.dataval)
+         printval = printval.nextval
+
+list = MyLinkedList()
+
+e1 = Node("Tue")
+list.headval = e1
+
+# Link first Node to second node
+e2 = Node("Tue")
+list.headval.nextval = e2
+
+# Link second Node to third node
+e3 = Node("Wed")
+e2.nextval = e3
+
+list.listprint()
+
+
+//-- ################################################################## --//
+     3. Insert
+//-- ################################################################## --//
+
+
+# 01. Insertion at beginning -----------------------------------------#
+
+class Node:
+   def __init__(self, dataval=None):
+      self.dataval = dataval
+      self.nextval = None
+
+class MyLinkedList:
+   def __init__(self):
+      self.headval = None
+
+   # Print the linked list
+   def listprint(self):
+      printval = self.headval
+      while printval is not None:
+         print (printval.dataval)
+         printval = printval.nextval
+
+   def AtBegining(self,newdata):
+      NewNode = Node(newdata)
+
+      # Update the new nodes next val to existing node
+      NewNode.nextval = self.headval
+      self.headval = NewNode
+
+list = MyLinkedList()
+list.headval = Node("Mon")
+e2 = Node("Tue")
+e3 = Node("Wed")
+
+list.headval.nextval = e2
+e2.nextval = e3
+
+list.AtBegining("Sun")
+list.listprint()
+
+
+# 02. insert at end ---------------------------------------------------#
+
+class Node:
+   def __init__(self, dataval=None):
+      self.dataval = dataval
+      self.nextval = None
+
+class MyLinkedList:
+   def __init__(self):
+      self.headval = None
+
+   # Function to add newnode
+   def AtEnd(self, newdata):
+      NewNode = Node(newdata)
+      if self.headval is None:
+         self.headval = NewNode
+         return
+      laste = self.headval
+      while(laste.nextval):
+         laste = laste.nextval
+      laste.nextval=NewNode
+
+   # Print the linked list
+   def listprint(self):
+      printval = self.headval
+      while printval is not None:
+         print (printval.dataval)
+         printval = printval.nextval
+
+
+list = MyLinkedList()
+list.headval = Node("Mon")
+e2 = Node("Tue")
+e3 = Node("Wed")
+
+list.headval.nextval = e2
+e2.nextval = e3
+
+list.AtEnd("Thu")
+
+list.listprint()
+
+
+# 03. Inserting in between two Data Nodes ------------------------#
+
+class Node:
+   def __init__(self, dataval=None):
+      self.dataval = dataval
+      self.nextval = None
+
+class MyLinkedList:
+   def __init__(self):
+      self.headval = None
+
+   # Function to add node
+   def Inbetween(self,middle_node,newdata):
+      if middle_node is None:
+         print("The mentioned node is absent")
+         return
+
+      NewNode = Node(newdata)
+      NewNode.nextval = middle_node.nextval
+      middle_node.nextval = NewNode
+
+   # Print the linked list
+   def listprint(self):
+      printval = self.headval
+      while printval is not None:
+         print (printval.dataval)
+         printval = printval.nextval
+
+list = MyLinkedList()
+list.headval = Node("Mon")
+e2 = Node("Tue")
+e3 = Node("Thu")
+
+list.headval.nextval = e2
+e2.nextval = e3
+
+list.Inbetween(list.headval.nextval,"Fri")
+
+list.listprint()
+
+
+//-- ################################################################## --//
+     4. Remove an Item
+//-- ################################################################## --//
+
+class Node:
+   def __init__(self, data=None):
+      self.data = data
+      self.next = None
+
+class MyLinkedList:
+   def __init__(self):
+      self.head = None
+
+   def Atbegining(self, data_in):
+      NewNode = Node(data_in)
+      NewNode.next = self.head
+      self.head = NewNode
+
+   # Function to remove node
+   def RemoveNode(self, Removekey):
+      HeadVal = self.head
+         
+      if (HeadVal is not None):
+         if (HeadVal.data == Removekey):
+            self.head = HeadVal.next
+            HeadVal = None
+            return
+
+      while (HeadVal is not None):
+         if HeadVal.data == Removekey:
+            break
+         prev = HeadVal
+         HeadVal = HeadVal.next
+
+      if (HeadVal == None):
+         return
+
+      prev.next = HeadVal.next
+      HeadVal = None
+
+   def LListprint(self):
+      printval = self.head
+      while (printval):
+         print(printval.data),
+         printval = printval.next
+
+
+llist = MyLinkedList()
+llist.Atbegining("Mon")
+llist.Atbegining("Tue")
+llist.Atbegining("Wed")
+llist.Atbegining("Thu")
+llist.RemoveNode("Tue")
+
+llist.LListprint()
+
+
+//-- ############################### End ############################## --//
+
+

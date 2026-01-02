@@ -1,0 +1,239 @@
+
+//-- ################################################################## --//
+//-- ****    Built-in Data Structures                              **** --//   
+             1. List                                   
+             2. Tuple                                   
+             3. Dictionary                             
+             4. Set  
+             5. Iterator - Access collection                   
+//-- ################################################################## --//
+
+
+//-- ################################################################## --//
+     1. List:
+        01. index - starts from 0
+        02. can contain any data types
+        03. mutable - append, update, delete
+        04. concatenation
+        05. nesting
+        06. slicing
+        07. sorting
+        08. native methods
+//-- ################################################################## --//
+
+//-- reference
+https://cs111.wellesley.edu/content/lectures/lec_list_diagrams/files/lec_list_diagrams_solns/lec_list_diagrams_solns.html
+
+
+# 01. index ----------------------------------------------------------#
+
+# index from 0 to len()-1
+x = [5, 3.0, 10, 200.2]
+z = ['how', 'are', 'You', 'I am good']
+x[0] 
+
+# length of list
+len(x)
+
+# index -1 returns the last item in the list; -
+# index -2 returns the, second item from the end, and so forth
+x[-1] 
+
+
+# 02. data types ------------------------------------------------------#
+
+# can contain objects of any data types
+x = ['JupytherNB', 75, None, True, [34, False], {'one':1, 'two':2}] 
+
+
+# 03. mutable ---------------------------------------------------------#
+
+# append
+x.append("Funny Gorilla")    
+print(x)
+
+# update element
+x[4] = 52
+print(x)
+
+# delete element
+# remove item by element
+x.remove($element)
+
+# remove by index: pop(), del
+x.pop(1)
+del x[0]
+
+
+# 04. concatenation ----------------------------------------------------#
+
+y = [9, 0, 4, 2]
+print(x + y) # to concatenate two lists, + operator is used
+print(y * 3) # to concatenate multiple copies of the same list, *,operator is used
+
+
+# 05. nesting ----------------------------------------------------------#
+z = [y, x] 
+
+//-- # query element
+z[1][0]
+
+
+# 06. slicing ----------------------------------------------------------#
+     # start point (inclusive) and end point (non-inclusive)
+     # the last element seen in the output is at index 3
+x[0:4] 
+
+x[:4]   # equivalent to x[0:4]
+x[4:]   # equivalent to x[4: last element]
+
+print(x)
+x[-2:]
+
+
+# 07. sorting ----------------------------------------------------------#
+
+# sorting: list_name.sort(reverse=..., key=... )
+programming_languages = ["Python", "Swift","Java", "C++", "Go", "Rust"]
+programming_languages.sort(reverse=True)
+print(programming_languages)
+
+programming_languages.sort(key=len, reverse=True)
+print(programming_languages)
+
+
+# 08. List native functions --------------------------------------------#
+
+append()      # Adds an element at the end of the list
+clear()       # Removes all the elements from the list
+copy()	      # Returns a copy of the list
+count()	      # Returns the number of elements with the specified value
+extend()      # Add the elements of a list (or any iterable), to the end of the current list
+index()	      # Returns the index of the first element with the specified value
+insert()      # Adds an element at the specified position
+pop()	      # Removes the element at the specified position
+remove()      # Removes the item with the specified value
+reverse()     # Reverses the order of the list
+sort()	      # Sorts the list
+
+
+//-- ################################################################## --//
+     2. Tuple: 
+        01. index - starts from 0
+        02. slicing
+        03. immutable                                   
+        04. convert to List
+//-- ################################################################## --//
+
+//-- # 00. round brackets ()
+tuple1 = ("apple", "banana", "cherry", "orange", "kiwi", "melon", "mango")
+
+
+# 01. index ----------------------------------------------------------#
+
+print(tuple1[1])
+print(tuple1[-1])
+
+
+# 02. slicing/range --------------------------------------------------#
+
+print(tuple1[2:5])
+print(tuple1[:4])
+
+
+# 03. immutable ------------------------------------------------------# 
+
+# you can not change it
+
+
+# 04. convert into List ----------------------------------------------# 
+
+x = tuple1
+y = list(x)
+y[1] = "kiwi"
+x = tuple(y)
+
+print(x)
+
+# but you can add a tuple to another tuple
+
+
+//-- ################################################################## --//
+     3. Dictionary:  Key => Value                    
+//-- ################################################################## --//
+
+dict1 = {1:'value for key 1', 'key for value 2':2, (1,0):True, False:[100,50], 2.5:'Hello'}
+
+# query value by key
+dict1['key for value 2']
+
+# update value by key
+dict1['key for value 2'] = 30 
+
+# delete a key value pair
+del dict1['key for value 2']
+
+
+//-- ################################################################## --//
+     4. Set: collection of objects                    
+        01. non-ordered                                
+        02. unique                                     
+        03. immutable                                  
+//-- ################################################################## --//
+
+//-- # create an empty set
+Set0 = set()
+
+set1 = {'a', 'b', 'c', 'd', 'e'}
+set2 = {'b', 'b', 'c', 'f', 'g'}
+
+# Union
+print (set1 | set2 )
+
+# intersection
+Print (set1 & set2 )
+
+# difference
+set1 - set2 
+
+# check membership
+'b' in set1 
+
+# check available methods
+help(set1)
+
+
+//-- ################################################################## --//
+     5. Iterator:                                  
+        01. Iterable object                         
+        02. access next element                     
+//-- ################################################################## --//
+
+
+# 01. Iterator vs Iteratable object ---------------------------------#
+
+# Iterator object: represents a stream of data and provides the access to the next object in this stream.
+# Creating an iterator from an iterable object: List, Tuple, ...
+
+list_a = ['a', 'b', 'c', 'd'] # iterable object
+iter_a = iter(list_a)         # iterator object
+
+print (list_a)
+print (iter_a)
+
+# 02. access next element -------------------------------------------#
+
+# access next element by passing the iterator
+# execute 4 times, and check the return value
+next(iter_a) 
+
+# access next element by calling iterable method
+# the iterator is exhausted, one more call raises StopIteration exception
+iter_a.__next__() 
+
+# variable X is either an iterator or an iterable
+for variable in X:
+  # the body of the loop
+
+
+//-- ############################# End ################################ --//

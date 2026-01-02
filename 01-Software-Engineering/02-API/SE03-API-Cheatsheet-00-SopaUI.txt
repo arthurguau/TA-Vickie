@@ -1,0 +1,36 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+
+# reference
+https://www.guru99.com/soapui-tutorial-project-testsuite-testcase.html
+
+
+//-- ################################################################# --//
+     Install SoapUI                           
+//-- ################################################################# --//
+
+# 01. install - Windows
+https://www.soapui.org/getting-started/installing-soapui/installing-on-windows/
+
+# 01. install - Mac Pro
+brew update
+brew install --cask soapui
+
+
+//-- ################################################################# --//
+      Download sample project                    
+//-- ################################################################# --//
+
+# 01. Open SoapUI
+
+# 02. New SOAP project: 
+     - project name: funnygorilla-soap-test
+     - wsdl url: http://www.dneonline.com/calculator.asmx?wsdl
+
+# 03. New request
+
+
+//-- ############################# End ############################### --//

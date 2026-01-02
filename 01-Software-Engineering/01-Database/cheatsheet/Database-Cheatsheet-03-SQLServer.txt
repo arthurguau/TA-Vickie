@@ -1,0 +1,100 @@
+//-- ########################################################### --//
+//-- ****     Prerequisite:                                 **** --//
+//-- ########################################################### --//
+
+Docker Desktop is up and running
+
+
+//-- ########################################################### --//
+     Required Azure resources: 
+     1. Prepare sample databases  
+     2. Spin up mssql database container 
+     3. Install mmsm & connect to mssql database
+     4. Load into mssql  
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+     1. Prepare sample databases                                
+//-- ########################################################### --//
+
+# download sample SQLServer database
+  unzip and copy into C\Dev\projects\sqlserver
+https://github.com/microsoft/sql-server-samples/tree/master
+
+# download database backups
+https://github.com/Microsoft/sql-server-samples/releases/tag/adventureworks
+
+# download database bacpac
+https://github.com/Microsoft/sql-server-samples/releases/tag/wide-world-importers-v1.0
+
+
+//-- ########################################################### --//
+     2. Spin up mssql database container                       
+//-- ########################################################### --//
+
+//-- # scardfold mssql base dirctory: C\Dev\projects\sqlserver
+//-- # put docker-compose-sqlserver.yml into C\Dev\projects\sqlserver
+
+//-- # put 2 backups into ${base_dir}\mssql\backups
+
+//-- # spin up SQLServer 
+docker-compose -f docker-compose-mssql.yml up
+
+
+//-- ########################################################### --//
+     3. Install mmsm & connect to mssql database                 
+//-- ########################################################### --//
+
+# download and install mssm
+https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16
+
+# SSMS connect to local sqlserver database
+server type: database engine
+server name: localhost,1433
+authentication: SQL Server Authentication
+login: sa
+password: Passw0rd
+
+# check if "Full text Search" enabled 
+  enabled if return 0
+--Check whether Full text Search is Installed or not
+SELECT SERVERPROPERTY('IsFullTextInstalled') AS [Full Text Search Installed];  
+GO
+
+
+//-- ########################################################### --//
+     3. Install Azure Data Studio & connect to mssql database                 
+//-- ########################################################### --//
+
+# Mac: Azure Data Studio
+brew install --cask azure-data-studio
+
+# new connection
+Server: localhost
+Authentication Type: SQL 
+Login User Name: SA
+Password: Passw0rd
+
+
+//-- ########################################################### --//
+     4. Load into mssql                                         
+//-- ########################################################### --//
+
+# 01. load inot SQLServer database: adventureworksLT
+1. manually create databaes in mmsm, adventureworksLT
+2. right click on database name, to create database
+Task -> restore -> database -> Devise -> Add:  backup file from /var/backups/
+
+# 02. WideWorldImporters-Standard
+     https://microsoft.github.io/PartsUnlimited/db/200.6x-Database-SetupWWIsampledb.html
+1. mmsm -> right click Databases
+2. Import Data-Tier application ->
+
+
+# 03. restore Database [Data warehouse]
+1. mmsm -> right click Databases
+2. restore Databases -> [General]: Device -> select backup devices
+
+   
+//-- ########################## End ############################ --//
+

@@ -1,0 +1,90 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+N/A
+
+
+//-- ########################################################### --//
+     Linux setup
+      1. install Java in Windows
+      2. install utility packages
+      3. setup project structure
+      4. install Java
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+     1. install Java in Windows
+//-- ########################################################### --//
+
+[toDo]
+
+
+//-- ########################################################### --//
+     2. install  WSL2/Ubuntu
+//-- ########################################################### --//
+
+# 01. WSL2/Ubuntu installed
+https://ubuntu.com/tutorials/install-ubuntu-on-wsl2-on-windows-10#1-overview
+
+
+//-- ########################################################### --//
+     3. install utility packages
+//-- ########################################################### --//
+
+# 01. Open up Ubuntu CLI, and update Ubuntu kernel
+sudo apt update
+sudo apt upgrade
+
+# 02. install tree package
+sudo apt-get install unzip
+sudo apt-get install tree
+sudo apt-get install wget
+
+
+//-- ########################################################### --//
+     4. Setup project structure
+//-- ########################################################### --//
+
+# 01. create folders
+mkdir -p ~/Developer/projects
+
+# 02. move a file into projects
+echo "hello, Funnygorilla\!" > funnygorilla.txt
+cat funnygorilla.txt
+mv funnytorilla.txt   ~/developer/projects/
+
+# 03. check folder structure
+tree -L 3 ~/Developer
+
+# 04. copy files from Windows to Ubuntu
+cp /mnt/c/Dev/Projects/<target-folder>   ~/developer/projects/
+
+
+//-- ########################################################### --//
+     5. install Java (WSL2-Ubuntu)
+//-- ########################################################### --//
+
+# 01. install java
+sudo apt install openjdk-17-jre
+sudo apt install openjdk-17-jdk
+
+# 02. check java version
+java --version
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,30 @@
+//-- ################################################### --//
+//-- ****             Prerequisites                 **** --//
+//-- ################################################### --//
+
+1. Docker installed, up and running
+2. Ubuntu up and running
+
+
+//-- ################################################### --//
+     swagger - online editor
+//-- ################################################### --//
+
+//-- # sample swagger file
+https://editor.swagger.io/
+
+
+//-- ################################################### --//
+     OpenAPI / swagger
+//-- ################################################### --//
+
+# 01. check student openapi file
+http://localhost:8087/studentmanagement/v3/api-docs
+
+# 02. Copy to online swagger editor
+
+# 03. check inline openapi/swagger file:
+http://localhost:8087/studentmanagement/swagger-ui/index.html
+
+
+//-- ##################   END   ######################## --//

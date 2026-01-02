@@ -1,0 +1,47 @@
+//-- ################################################### --//
+//-- ****             Prerequisites                 **** --//
+//-- ################################################### --//
+
+1. Docker installed, up and running
+2. Ubuntu up and running
+
+
+//-- ################################################### --//
+           Real world APIs        
+//-- ################################################### --//
+
+# Real world APIs
+https://github.com/public-apis/public-apis    
+
+# Weather -> weather-api
+https://goweather.herokuapp.com/weather/xian
+
+# reference
+https://learning.postman.com/docs/getting-started/exploring-public-api-network/
+
+# HTTP Demo
+http proxy show
+
+
+//-- ################################################### --//
+     SOAP API       
+//-- ################################################### --//
+
+# SOAP Demo
+WSDL -> SOAP Request/Response
+https://blog.postman.com/making-http-soap-requests-with-postman/
+https://www.w3schools.com/xml/tempconvert.asmx
+
+# sample WSDL file
+https://github.com/monodot/camel-demos/blob/master/simple-tests/src/main/resources/wsdl/BookService.wsdl
+
+
+//-- ################################################### --//
+     REST API
+//-- ################################################### --//
+
+# REST API
+
+
+
+//-- ##################   END   ######################## --//

@@ -1,0 +1,126 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+Docker is up and running
+
+
+//-- ########################################################### --//
+     Workstation (Linux) setup
+       0. Pull Ubuntu image from Docker hub
+       1. Spin up Ubuntu container
+       2. install utility packages
+       3. try some commands
+       4. get help
+       5. Clean up
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     0. Pull Ubuntu image from Docker hub
+//-- ########################################################### --//
+
+# pull Ubuntu(Linux) image if not yet
+docker pull ubuntu:25.04
+
+
+//-- ########################################################### --//
+     1. Spin up Ubuntu container
+//-- ########################################################### --//
+
+# spin up a container and access it as root user
+docker run -it --name gorilla-ubuntu ubuntu:25.04 /bin/bash
+
+
+//-- ########################################################### --//
+     2. install utility packages
+//-- ########################################################### --//
+
+# update Ubuntu kernel
+apt update
+apt upgrade
+
+# apt - linux package manager
+apt-get install vim
+apt-get install tree
+apt-get install wget
+apt-get install jq
+
+
+//-- ########################################################### --//
+     3. Try some commands
+//-- ########################################################### --//
+
+# where am I?
+pwd
+
+# move to home directory
+cd ~
+
+# create project folder
+mkdir -p ~/developer/projects
+
+//-- # 01. Create a file 
+echo "hello, Funnygorilla\!" > funnygorilla.txt
+ls -l .
+cat funnygorilla.txt
+
+//-- # 02. Attach content to an existing file 
+echo "I am here for you\!" >> funnygorilla.txt
+cat funnygorilla.txt
+
+//-- # 03. move file to a different dicrectory
+mv funnytorilla.txt   ~/developer/projects/
+
+//-- # 04. check folder structure
+tree -L 3 ~/developer
+
+
+//-- ########################################################### --//
+     4. Get help for the usage of commands - man
+//-- ########################################################### --//
+
+[toDo ----- not working yet].instead use Google
+
+//-- # 01. Docker Ubuntu comes with minimal version of Linux
+apt-get install -y unminimize
+
+//-- # 02. install man document
+apt-get install man-db
+
+//-- # 03. find the usage for tree command
+man tree
+
+//-- # 04. Quit from help manual: type q
+q
+
+
+//-- ########################################################### --//
+     5. Clean up
+//-- ########################################################### --//
+
+# exit from container
+exit
+
+# remove container
+docker container rm gorilla-ubuntu
+
+# delete image
+docker image rm ubuntu:25.04
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

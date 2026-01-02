@@ -1,0 +1,98 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+
+
+//-- ################################################################# --//
+     Sample Database setup: 
+     0. download sample database
+     1. spin up postgres docker container
+     2. access postgres container
+     3. login to postgres server
+     4. import sample database
+     5. check around table and data
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. download sample database    
+//-- ################################################################# --//
+
+# 01. Download sample database from following website
+https://www.kaggle.com/datasets/kapturovalexander/pagila-postgresql-sample-database
+
+1. pagila-schema.sql
+2. pagila-insert-data.sql
+
+# 02. Optional
+https://github.com/devrimgunduz/pagila
+
+
+//-- ################################################################# --//
+     1. spin up postgres docker container
+//-- ################################################################# --//
+
+# Windows machine
+docker-compose -f docker-compose-postgres.yml up -d
+
+# Mac machine
+docker compose -f docker-compose-postgres.yml up -d
+
+
+//-- ################################################################# --//
+     2. access docker container
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+     3. login to postgres server
+//-- ################################################################# --//
+
+# login
+psql -U ${userName}
+
+# List all databases via \l (or \list), or \l+ for more details
+${userName}=# \l
+
+# quit from terminal
+${userName}=# :q
+
+# List all databases under login user
+SELECT datname FROM pg_database;
+
+# Connect to database via \c (or \connect)
+  Take note of the change of database name in the command prompt.
+${userName}=# \c apicurio-registry
+
+# Display all tables (aka relations) via \dt or \dt+ for more details
+${userName}=# \dt
+
+# Display details of a particular table.
+${userName}=# \d+ ${table}
+
+# Query (SELECT)
+${userName}=# SELECT * FROM {tableName};
+
+
+//-- ################################################################# --//
+     4. import sample database
+//-- ################################################################# --//
+
+# apply database creation and data insertion
+1. pagila-schema.sql
+2. pagila-insert-data.sql
+
+
+//-- ################################################################# --//
+     5. check around table and data
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ######################## END #################################### --//
+
+

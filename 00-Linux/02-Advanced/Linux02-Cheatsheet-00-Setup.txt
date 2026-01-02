@@ -1,0 +1,67 @@
+
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+//-- # 00. reference
+https://linuxhandbook.com/linux-directory-structure/
+https://medium.com/ensias-it/linux-filesystem-thorough-walk-through-3b9c73efca9a
+
+//-- # 01. WSL2/Ubuntu installed
+https://ubuntu.com/tutorials/install-ubuntu-on-wsl2-on-windows-10#1-overview
+
+//-- # 02. update Ubuntu kernel
+sudo apt update
+sudo apt upgrade
+
+//-- # 03. install tree package
+sudo apt-get install tree
+
+
+//-- ########################################################### --//
+     Setup project structure in Ubuntu
+//-- ########################################################### --//
+
+# 01. create folders
+mkdir ~/developer
+mkdir ~/developer/projects
+
+# 02. move a file into projects
+mv funnytorilla.txt   ~/developer/projects/
+
+# 03. check folder structure
+tree -L 3 ~/developer
+
+# 04. copy files from Windows to Ubuntu --- in case
+cp /mnt/c/Dev/Projects/<target-folder>   ~/developer/projects/
+
+
+//-- ########################################################### --//
+     Java Installation 
+//-- ########################################################### --//
+
+# 01. install java
+sudo apt install openjdk-17-jre
+sudo apt install openjdk-17-jdk
+
+# 02. check java version
+java --version
+
+# uninstall java (if you want to)
+uninstall openjdk-17-jre/jdk
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

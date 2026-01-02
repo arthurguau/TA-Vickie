@@ -1,0 +1,59 @@
+//-- ########################################################### --//
+     Java Installation
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     scaffolder project directory
+//-- ########################################################### --//
+
+# 01. setup project folder
+# 02. setup workspace folder
+
+tree Developer
+     |__projects
+         | OOAssignment
+     |__workspaces
+         | OOAssignmentWS
+
+
+//-- ########################################################### --//
+     create Java project in eclipse
+//-- ########################################################### --//
+
+# 01. use Notepad to create a file: Helloworld.java
+
+
+
+//-- ########################################################### --//
+     Compile - build/compile time
+//-- ########################################################### --//
+
+# in command line navigate to the folder where the code sits
+javac Helloworld.java
+
+# observer that a .class file created in the same folder
+
+
+//-- ########################################################### --//
+     Execute - run time
+//-- ########################################################### --//
+
+# execute java program
+java Helloworld
+
+
+//-- ########################## End ############################ --//
+
+
+
+
+
+
+
+
+
+
+
+
+

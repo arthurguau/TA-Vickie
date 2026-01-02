@@ -1,0 +1,135 @@
+
+//-- ############################################################# --//
+     LeedCode practices                 
+//-- ############################################################# --//
+
+
+//-- ############################################################# --//
+     Exaple - Two Sum: 
+              https://leetcode.com/problems/two-sum/description/
+//-- ############################################################# --//
+
+//-- # problem:
+Given an array of integers nums and an integer target, 
+return indices of the two numbers such that they add up to target.
+
+
+//-- # test data:
+
+Example 1:
+
+Input: nums = [2,7,11,15], target = 9
+Output: [0,1]
+Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
+Example 2:
+
+Input: nums = [7, 8, 3, 2, 4], target = 6
+Output: [3, 4]
+Example 3:
+
+Input: nums = [4, 8, 1, 7, 5, 3, 9], target = 6
+Output: [2,4]
+
+
+//-- # Code snippet:
+
+class Solution:
+    
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+
+
+//-- ############################################################# --//
+     Pseudo Code
+//-- ############################################################# --//
+
+
+
+//-- ############################################################# --//
+     sample solution:
+//-- ############################################################# --//
+
+//-- # sample solution:
+from typing import List
+
+class TwoSumSolution:
+    
+    def twoSum(self, nums: List[int], target: int):
+
+        indexes = range (len(nums))
+        for i in indexes:
+           j = i +1
+           while j < len(nums): 
+             print (j)
+             if (target == (nums[i] + nums[j])):
+                print (nums[i], nums[j])
+                found = True
+                break
+             j +=1
+           if found:
+              break
+        return [i, j]    
+
+//-- # testing code
+num = [2,7,11,15]
+target = 9
+
+mySolution = TwoSumSolution()
+result = mySolution.twoSum(num, target)
+print (result)
+
+
+//-- ############################################################# --//
+     solution explaination: 
+//-- ############################################################# --//
+
+nums = [2,7,11,15]
+target = 9
+
+//-- # step 0: work out index list
+nums = [2,7,11,15]
+target = 9
+indexes = range (len(nums))
+
+//-- # step 0: the first loop
+j = 1
+while j < len(nums): 
+   print (j)
+   if (target == (nums[0] + nums[j])):
+       print (nums[0], nums[j])
+       found = True
+       break
+   
+   j += 1
+
+print (0, j)
+
+//-- # step 1: sigle loop
+j = 1
+while j < len(nums): 
+   print (j)
+   if (target == (nums[0] + nums[j])):
+       print (nums[0], nums[j])
+       found = True
+       break
+   
+   j += 1
+
+print (0, j)
+
+
+//-- # step 2: add outter loop
+for i in indexes:
+   j = i +1                # nested loop starts with next element
+   while j < len(nums): 
+      print (j)
+      if (target == (nums[i] + nums[j])):
+          print (nums[i], nums[j])
+          found = True
+          break            # break from inner loop
+      j +=1
+   
+   if found:
+      break               # break from outter loop
+
+print (i, j)
+

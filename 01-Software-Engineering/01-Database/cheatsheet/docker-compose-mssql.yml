@@ -1,0 +1,22 @@
+
+version: '3.4'
+services:
+  mssql:
+    container_name: mssql-db
+    user: root
+    hostname: mssql-db
+    image: mcr.microsoft.com/mssql/server:2022-preview-ubuntu-22.04
+    environment:
+     ACCEPT_EULA: 'Y'
+     MSSQL_SA_PASSWORD: 'Passw0rd'
+     MSSQL_DATA_DIR: /var/opt/mssql/data
+     MSSQL_PID: 'Developer'
+     MSSQL_TCP_PORT: 1433 
+    ports: 
+      - 1433:1433
+    volumes:
+      - .\mssql\data:/var/opt/mssql/data
+      - .\mssql\log:/var/opt/mssql/log
+      - .\mssql\secrets:/var/opt/mssql/secrets
+      - .\mssql\backups:/var/backups
+      

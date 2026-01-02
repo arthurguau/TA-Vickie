@@ -1,0 +1,123 @@
+//-- ############################################################# --//
+//-- ****      Introduction                                   **** --//
+//-- ############################################################# --//
+
+1. Python is a dynamic, interpreted (bytecode-compiled) language. 
+
+2. There are no type declarations of variables, parameters, functions, or methods in source code. 
+
+3. This makes the code short and flexible, and you lose the compile-time type checking of the source code. 
+
+4. Python tracks the types of all values at runtime and flags code that does not make sense as it runs.
+
+
+//-- ############################################################# --//
+//-- ****       First python program: Hello World!            **** --//
+//-- ############################################################# --//
+
+# -- Hello World: first program
+# -- create a file (module), Helloworld.py, in Python project directory, eg. C:\Dev\Projects\Python-docker 
+
+# import modules used here -- sys is a very standard one
+import sys
+
+# Python main function is a starting point of any program.
+def main():
+    print('Hello ', sys.argv[1])
+    # Command line args are in sys.argv[1], sys.argv[2] ...
+    # sys.argv[0] is the script name itself and can be ignored
+
+# Standard boilerplate to call the main() function to begin the program.
+  -- The __name__ variable: a special attribute managed by the Python runtime.
+  -- If the script is run as a standalone application, __name__ is set to __main__.
+  -- If the script is imported, __name__ is set to the name of the module.
+if __name__ == '__main__':
+  main()
+
+# run python code
+python Helloworld.py Arthur
+
+
+//-- ############################################################# --//
+//-- ****       Basic Types                                   **** --//
+//-- ############################################################# --//
+
+# numeric types
+x = 1 # an integer
+x = 0.3 # a floating-point
+
+# boolean types
+x = True # a boolean variable (True or False)
+
+# none type
+x = None # None type (the absence of any value)
+
+# String type
+string1 = 'This is a string'
+string2 = "Well, this is 'string' too!"
+string3 = 'Johnny said: "How are you?"'
+string3 = string1 + ". " + string2
+
+# tab: \t  
+# line: \n
+print("Here we use a newline\nto go to the next\t line")
+
+
+//-- ############################################################# --//
+//-- ****       casting type                                  **** --//
+//-- ############################################################# --//
+
+# be aware of the underline logic
+x = str(3)    # x will be '3'
+y = int(3)    # y will be 3
+z = float(3)  # z will be 3.0
+
+# illogical
+Y = int ("how are you")
+
+
+//-- ############################################################# --//
+//-- *****  Operators:                                        **** --//
+            1. Arithmetic                       
+            2. Relational                      
+            3. Logical                         
+            4. Membership                       
+//-- ############################################################# --//
+
+# Arithmetic Operators
+
+x = 5
+y = 2
+print(x + y) # addition
+print(x - y) # subtraction
+print(x * y) # multiplication
+print(x / y) # dividion
+
+print(x // y) # floor division (removing fractional parts)
+print(x % y)  # modulus (integer remanider of division)
+print(x ** y) # x to the power of y
+
+# Relational Operators
+
+print(x < 5) # less than (> is greater than)
+print(x <= 5) # less than or equal to (>= is greater than or equal to)
+print(x == 5) # equal to
+print(x != 5) # not equal to
+print((x > 4) and (y < 3)) # "and" keyword is used for logical and (it is highlighted to be distinguished from other texts)
+
+# Logical Operators: or
+print((x < 4) or (y > 3)) # "or" keyword is used for logical or
+
+# Logical Operators:  not
+print(not (x > 4)) # "not" keyword is used for logical not
+
+# membership Operator: in
+  -- String Membership Operators
+print('Hello' in 'HelloWorlds!') # 'HelloWorlds!' is a string and 'Hello' ,is part of that
+
+  -- List memebership
+print(320 in ['Hi', 320, False, 'Hello'])
+
+
+//-- ########################## End ############################ --//
+

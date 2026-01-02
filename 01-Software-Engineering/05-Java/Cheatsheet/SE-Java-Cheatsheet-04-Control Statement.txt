@@ -1,0 +1,126 @@
+//-- ########################################################### --//
+     Prerequisites:
+     1. OpenJDK 17 installed & configured
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     COntrol statements:
+     1. if-else if-else
+     2. switch (expression)
+     3. For loop
+     4. For each loop
+     5. While loop
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+     1. If-else
+//-- ########################################################### --//
+
+int time = 20;
+if (time < 18) {
+  System.out.println("Good day.");
+} else {
+  System.out.println("Good evening.");
+}
+
+
+//-- ########################################################### --//
+     2. Switch (expression)
+//-- ########################################################### --//
+
+int day = 4;
+switch (day) {
+  case 6:
+    System.out.println("Today is Saturday");
+    break;
+  case 7:
+    System.out.println("Today is Sunday");
+    break;
+  default:
+    System.out.println("Looking forward to the Weekend");
+}
+
+
+//-- ########################################################### --//
+     3. For loop
+        01. start point
+        02. stop condition (evaluation expression)
+        03. advance index
+        04. break 
+        05. continue
+//-- ########################################################### --//
+
+# For loop
+for (int i = 0; i < 5; i++) {
+  System.out.println(i);
+}
+
+# break
+for (int i = 0; i < 5; i++) {
+  if (i==3) break;
+  System.out.println(i);
+}
+
+# continue
+for (int i = 0; i < 5; i++) {
+  if (i==3) continue;
+  System.out.println(i);
+}
+
+
+//-- ########################################################### --//
+     4. For each loop
+//-- ########################################################### --//
+
+for (type variableName : arrayName) {
+  // code block to be executed
+}
+
+String[] cars = {"Volvo", "BMW", "Ford", "Mazda"};
+for (String i : cars) {
+     System.out.println(i);
+}
+
+
+//-- ########################################################### --//
+     5. while loop:
+        01. start point
+        02. stop condition (evaluation expression)
+        03. advance index
+        04. break 
+        05. continue
+//-- ########################################################### --//
+
+# Syntax
+while (condition) {
+  // code block to be executed
+}
+
+# initial condition
+# stop condition
+# advance index
+int i = 0;
+while (i < 5) {
+  System.out.println(i);
+  i++;
+}
+
+# break
+int i = 0;
+while (i < 5) {
+  if (i==3) break;
+  System.out.println(i);
+  i++;
+}
+
+# continue
+int i = 0;
+while (i < 5) {
+  if (i==3) continue;
+  System.out.println(i);
+  i++;
+}
+
+//-- ########################## End ############################ --//
+
