@@ -5,64 +5,52 @@
 1. Git has been installed locally
 2. create a Github account
 
-//-- # project folder structure
-C:\Dev\projects\
+# project folder structure
+~/Dev/projects
+
+
+//-- ####################################################### --//
+       Basic git operations
+        1. create a local repo
+        2. Basic operations
+        3. Deal with commitment history
+//-- ####################################################### --//
 
           
 //-- ####################################################### --//
-     Clone Remote repository: FunnyGorilla     
+     1. create a local repo
 //-- ####################################################### --//
 
-
-//-- # assume you have remote repository, a Github project, to download
-       url: https://github.com/arthurguau/funnygorilla-calculator.git
-copy <remote-repository-url> from Github 
-
-//-- # in Windows prompt
-C:\Dev\projects
-
-//-- # clone the repository from remote repository
-git clone https://github.com/arthurguau/funnygorilla-calculator.git
-
-
-//-- ####################################################### --//
-     create a repo in Github
-//-- ####################################################### --//
-
-assume you have a Github account already
-
-
-//-- ####################################################### --//
-     create a local repo
-//-- ####################################################### --//
-
-//-- # make and navigate to your preferred project folder
+# make and navigate to your preferred project folder
 mkdir ~/Developer/projects/testgit && cd ~/Developer/projects/testgit
 
-//-- # create a file
-echo "# FunnyGorilla here \!" > Howareyou.txt
+# create a new file:
+echo "# FunnyGorilla here \!" > Hello.txt
 
-//-- # initialize a local git repository: .git folder is created
+# initialize a local git repository: 
 git init
 
-//-- # check status
+# .git folder is created (hidden folder)
+ls -al
+
+# check status
 git status
 
 
 //-- ####################################################### --//
-     Basic operations:
-        01. add    -- add to working area
-        02. commit -- commit into local repository
+     2. Basic operations:
+         01. add    -- add to working area
+         02. commit -- commit into local repository
 //-- ####################################################### --//
 
 //-- ####################################################### --//
      01. add    -- add to working area                 
 //-- =======================================================--//
 
-//-- # 01. add files to staging area
+# 01. add files to staging area
 git add <file-name>              # Hello.txt
 
-//-- # 02. check git status
+# 02. check git status
 git status
 
 
@@ -70,53 +58,55 @@ git status
      02. commit -- commit into local repository                
 //-- =======================================================--//
 
-//-- # 01. commit code to local repository
+# 01. commit code to local repository
 git commit -m "first commit"
 
-//-- # 02. check git status
+# 02. check git status
 git status
 
-//-- # 03. make some changes to the file
-echo "I am in master branch!" >> Hello.txt
+# 03. make some changes to the file
+echo "I am in master branch\!" >> Hello.txt
 cat Hollo.txt
 
-//-- # 04. check git status
+# 04. check git status
 git status
 
-//-- # 05. add file to staging area
+# 05. add file to staging area
 git add <file-name>              # Hello.txt
 
-//-- # 06. check git status
+# 06. check git status
 git status
 
-//-- # 07. commit code
+# 07. commit code
 git commit -m "the second commit"
 
-//-- # 08. check git status
+# 08. check git status
 git status
 
 
 //-- ####################################################### --//
-     2. Deal with commitment history                    
+     3. Deal with commitment history                    
 //-- ####################################################### --//
 
-//-- # 00. check commitment history. lists the commits in reverse chronological order
+# 00. check commitment history. lists the commits in reverse chronological order
 git log --pretty=oneline
  
-//-- # 01. checkout a specific commitment. you are in "detached HEAD" state
+# 01. checkout a specific commitment. you are in "detached HEAD" state
             where you can check the history of the code, and make experimental changes
 git checkout <commit-checksum>
 
-//-- # 02. check the content of file
+# 02. check the content of file
 cat Hello.txt
 
-//-- # 03. Check git status - in detached mode
+# 03. Check git status - in detached mode
 git status
 
-//-- # 04. Go back to "tached HEAD"
+# 04. Go back to "tached HEAD"
+      - main: branch name (by default)
 git switch <current-branch>  
+git switch main
 
-//-- # 05. Check git status - back to cached Head
+# 05. Check git status - back to cached Head
 git status
 
 

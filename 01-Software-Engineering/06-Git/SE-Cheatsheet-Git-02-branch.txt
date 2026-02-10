@@ -11,16 +11,16 @@
      Create branch                    
 //-- ####################################################### --//
 
-//-- # 00. Change main (default) to Master branch
+# 00. Change the name from "main" (default) to "Master"
 git branch -M master
 git branch
 
-//-- # 01. create a feature branch
+# 01. create a feature branch
 git branch features/Vanilla  
 
-//-- # 02. check the created branches
-           -r: remote branches
-           -a: all branches
+# 02. check the created branches
+      -r: remote branches
+      -a: all branches
 git branch       
 
 
@@ -28,19 +28,19 @@ git branch
      Checkout branch                    
 //-- ####################################################### --//
 
-//-- # 01. checkout branch: features/vanilla
+# 01. checkout branch: features/vanilla
 git checkout features/vanilla
 
-//-- # 02. make some changes to the file
-echo "I am in Vanilla branch!" >> Hello.txt
+# 02. make some changes to the existing file, Hello.txt
+echo "I am in Vanilla branch\!" >> Hello.txt
 
-//-- # 03. check git status
+# 03. check git status
 git status
 
-//-- # 04. stage file
+# 04. stage file
 git add Hello.txt
 
-//-- # 05. commit file
+# 05. commit file
 git commit -m "first commit"
 
 
@@ -48,13 +48,13 @@ git commit -m "first commit"
      Merge to Master branch (pull request)                    
 //-- ####################################################### --//
 
-//-- # 01. checkout master branch
+# 01. checkout master branch
 git checkout master
 
-//-- # 02. check current branch
+# 02. check current branch
 git branch
 
-//-- # 03. merge feature branch into master branch
+# 03. merge feature branch into master branch
 git merge features/Vanilla
 
 
@@ -62,7 +62,7 @@ git merge features/Vanilla
      Delete branch                    
 //-- ####################################################### --//
 
-//-- # delete a branch
+# delete a branch
 git branch --delete <branch-name>
 git branch --delete features/vanilla
 

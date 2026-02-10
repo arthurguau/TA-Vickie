@@ -1,5 +1,5 @@
 //-- ####################################################### --//
-     Prerequisites                 
+       Prerequisites                 
 //-- ####################################################### --//
 
 1. Git has been installed locally
@@ -7,76 +7,116 @@
 
 
 //-- ####################################################### --//
-     1. Clone Remote repository    
+       1. Start from remote repository  
+       2. Start from local repository
+       3. Work with remote repository
 //-- ####################################################### --//
 
-//-- # 00. Create a repository in GitHub: Funnygorilla-01
 
-//-- # 01. make and navigate to projects folder
+//-- ####################################################### --//
+       1. Start from remote repository  
+//-- ####################################################### --//
+
+//-- ####################################################### --//
+       01. Clone Remote repository    
+//-- ======================================================= --//
+
+# 00. Find a GitHub project: 
+
+# 01. make and navigate to projects folder
 cd ~/Developer/projects
 
-//-- # 02. clone the repository from remote repository
+# 02. clone the repository from remote repository
 git clone <remote-repository-url>
 
-//-- # 03. cd into project folder
+# 03. cd into project folder
 cd  <remote-repository-url>
 
-//-- # 04. Check the project content
+# 04. Check the project content
 tree .
 
 
-//-- ####################################################### --//
-     2. Pull updates from remote repository              
+//-- ####################################################### --// 
+       2. Start from local repository
 //-- ####################################################### --//
 
-//-- # 00. peer developer made some changes and push the changes to remote
 
-//-- # 01. Get updates from remote repository
+//-- ####################################################### --//
+     1. Set up local repository          
+//-- ======================================================= --//
+
+# 01. create a local repository: Funnygorilla-02
+mkdir Funnygorilla-02 && cd Funnygorilla-02
+echo "from local Funnygorilla-02" > Hello.txt
+
+git init
+git add .
+git commit -m "first change"
+
+# change the local brach name from "main" to "master"
+git branch -M master
+
+
+//-- ####################################################### --//
+     2. Set up remote repository          
+//-- ======================================================= --//
+
+# 02. Create a repository in gitHub: Funnygorilla-02
+       - private
+       - leave other choices as default
+
+
+//-- ####################################################### --//
+     3. Add remote repository          
+//-- ======================================================= --//
+
+# 03. add remote repository
+git remote add origin https://github.com/arthurguau/Funnygorilla-02.git
+                      
+# check if remote setting is right
+git remote -v
+
+
+# 04. push to remote repository
+git push -u origin master
+
+# 05. check all branches: local and remote
+git branch -a
+
+
+//-- ####################################################### --//
+       3. Work with remote repository
+           -- pull update
+           -- push changes
+//-- ####################################################### --//
+
+
+//-- ####################################################### --//
+     01. Pull updates from remote repository              
+//-- ======================================================= --//
+
+# 00. In github remote repository, make some changes to hello.txt and commit changes
+      -- emulate peer developer made some changes and push the changes to remote
+
+# 01. Get updates from remote repository
 git pull
 
-//--- # 02. Check the updates from local repository
+# 02. Check the updates from local repository
 [toDo]
 
 
 //-- ####################################################### --//
-     3. Push to remote repository              
-//-- ####################################################### --//
+     02. Push your work to remote repository              
+//-- ======================================================= --//
 
-//-- # 00. Make some changes to current code and commit the changes
+# 00. Make some changes to current code and commit the changes
 git add .
 git commit -m "some changes"
 
-//-- # 01. push to remote repository
+# 01. push to remote repository
 git push -u origin master
 
-//-- # 02. Check code changes in GitHub repository
-
-
-//-- ####################################################### --//
-     4. Set up remote repository              
-//-- ####################################################### --//
-
-//-- # 00. Create a repository in gitHub: Funnygorilla-02
-
-//-- # 00. create a local repository: Funnygorilla-02
-mkdir Funnygorilla-02 && cd Funnygorilla-02
-echo "from local Funnygorilla-02" > Hello.txt
-git init
-git add .
-git commit -m "first change"
-git branch -M master
-
-//-- # 01. add remote repository
-git remote add origin https://github.com/arthurguau/Funnygorilla-02.git
-                      
-//-- # check if remote setting exists
-git remote -v
-
-//-- # push to remote repository
-git push -u origin master
-
-//-- # check all branches: local and remote
-git branch -a
+# 02. Check code changes in GitHub repository
 
 
 //-- ######################### End ######################### --//
