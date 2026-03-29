@@ -1,0 +1,76 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+1. VS Code installed.
+2. NPM & Node installed.
+
+
+//-- ########################################################### --//
+     First project - helloworld
+       1. write test case
+       2. run test case
+       3. prepare report
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. write test case
+//-- ########################################################### --//
+
+# 01. create test case file under tests folder
+helloworld.spec.ts
+
+
+# 02. Using Test Hooks
+      01. test.describe
+      02. test.beforeAll & test.afterAll
+      03. test.beforeEach & test.afterEach
+
+
+
+
+//-- ########################################################### --//
+     2. Run test case 
+        01. command line
+        02. VS Code
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     01. command line
+//-- =========================================================== --//
+
+# reference: https://playwright.dev/docs/test-ui-mode
+
+# 01. test all/a cases with all/a browsers in UI mode
+npx playwright test --ui
+npx playwright test helloworld.spec.ts --ui
+npx playwright test helloworld.spec.ts --project=chromium --ui
+
+# 02. select test case and click run
+
+
+//-- ########################################################### --//
+     02. VS Code
+//-- =========================================================== --//
+
+# reference
+https://playwright.dev/docs/getting-started-vscode
+
+# 00. install VS Code extension
+
+# 01. Debug tests in UI mode
+
+# 02. Debug tests with the Playwright Inspector
+
+
+//-- ########################################################### --//
+     3. Prepare test report 
+//-- ########################################################### --//
+
+# 01. open last HTML report run:
+npx playwright show-report
+
+
+//-- ########################### End ########################### --//

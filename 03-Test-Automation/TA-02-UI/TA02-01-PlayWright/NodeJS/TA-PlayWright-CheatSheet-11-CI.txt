@@ -1,0 +1,138 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+1. Azure account is available 
+2. VS Code is installed
+
+
+//-- ########################################################### --//
+     1. Create a project in Azure DevOps
+//-- ########################################################### --//
+
+# 00. Register Azure account -> Azure DevOPs
+
+# 01. Create organisation
+
+# 02. Create project - Playwright-UI
+
+# 03. Initialise master branch with README.md and no .gitignore.
+
+# 04. Generate token and copy to your local machine
+
+
+//-- ########################################################### --//
+     2. Build base project
+//-- ########################################################### --//
+
+# 01. Clone project scaffolding, with token from Azure DevOps
+cd ~/Developer/projects/playwright
+git clone <project-url-azure>
+
+# 02. Initialise project
+cd Playwright-UI
+npm init playwright@latest
+
+# 03. quick test in headless mode
+      tests folder contains a basic example test to help get started with testing
+npx playwright test
+
+# 04. bring up Test Report
+npx playwright show-report
+
+# 05. Push to remote repo
+git add .
+git commit -m "first commit"
+git push origin main
+
+
+//-- ########################################################### --//
+     3. Create CI pipeline
+         - manual 
+         - starter template
+//-- ########################################################### --//
+
+//-- ########################################################### --//
+         Manual process
+//-- =========================================================== --//
+
+See Integrate Playwright with Azure DevOps document.
+
+
+//-- ########################################################### --//
+         Starter template
+//-- =========================================================== --//
+
+# 01. Pipelines -> Create pipeline -> Azure Repo Git
+
+# 02. select a repository: Playwright-UI
+
+# 03. Configure your pipeline: Starter pipeline
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18'
+  displayName: 'Install Node.js'
+- script: npm ci
+  displayName: 'npm ci'
+- script: npx playwright install --with-deps
+  displayName: 'Install Playwright browsers'
+- script: npx playwright test
+  displayName: 'Run Playwright tests'
+  env:
+    CI: 'true'
+
+- task: PublishTestResults@2
+  displayName: 'Publish test results'
+  inputs:
+    searchFolder: 'test-results'
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'e2e-junit-results.xml'
+    mergeTestResults: true
+    failTaskOnFailedTests: true
+    testRunTitle: 'My End-To-End Tests'
+  condition: succeededOrFailed()
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: playwright-report
+    artifact: playwright-report
+    publishLocation: 'pipeline'
+  condition: succeededOrFailed()
+
+
+# 04. Save and run -> commit to main branch
+
+# 05. Azure DevOps Parallelism Request
+https://aka.ms/azpipelines-parallelism-request
+
+
+//-- ########################################################### --//
+     4. Implement test cases
+//-- ########################################################### --//
+
+# 01. create feature branch
+git branch features/mywork
+
+# 02. Create test cases
+[toDo]
+
+# 03. push to remote repo
+git push origin features/mywork
+
+# 04. create pull request - Azure DevOps
+
+# 05. Merge feature branch with main branch
+
+
+//-- ########################################################### --//
+     5. Check CI pipeline in action
+//-- ########################################################### --//
+
+
+//-- ########################### End ########################### --//

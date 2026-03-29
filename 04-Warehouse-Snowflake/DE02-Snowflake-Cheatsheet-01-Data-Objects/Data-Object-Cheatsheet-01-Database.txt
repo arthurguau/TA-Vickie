@@ -1,0 +1,110 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     0. Set up database
+         transient database                            
+//-- ################################################################# --//
+
+-- 00. login to Snowflake and open a worksheet
+SHOW databases;
+SHOW warehouses;
+SHOW users;
+SHOW roles;
+
+-- 01. Setup a transient DB (using a data warehouse?) 
+USE ROLE SYSADMIN;
+
+Create WAREHOUSE funny_WH; 
+Use WAREHOUSE funny_WH; 
+
+
+CREATE OR REPLACE TRANSIENT DATABASE FUNNY_TRANSIENT_DB 
+Comment = 'Transient Database for Funnygorilla';
+
+CREATE OR REPLACE DATABASE FUNNY_DB 
+Comment = 'Database for Funnygorilla';
+
+-- 02. Switch to ACCOUNTADMIN role to view databases  
+USE ROLE ACCOUNTADMIN;
+SHOW DATABASES;
+
+-- 03. Alter database to have 10 day data retention time
+       Failed, why?
+USE ROLE SYSADMIN;
+ALTER DATABASE FUNNY_TRANSIENT_DB  
+SET DATA_RETENTION_TIME_IN_DAYS=10;
+
+
+CREATE OR REPLACE DATABASE FUNNY_DB; 
+ALTER DATABASE FUNNY_DB  
+SET DATA_RETENTION_TIME_IN_DAYS=10;   
+
+
+-- 04. create table
+USE ROLE SYSADMIN;
+CREATE OR REPLACE TABLE FUNNY_TRANSIENT_DB.PUBLIC.SUMMARY 
+   (CASH_AMT number,
+    RECEIVABLES_AMT number,
+    CUSTOMER_AMT number);
+
+
+//-- ################################################################# --//
+     2. Set up schema & table                         
+//-- ################################################################# --//
+
+USE ROLE SYSADMIN; 
+USE DATABASE FUNNY_DB;
+
+-- 01. Create schema
+CREATE OR REPLACE SCHEMA BANKING;
+
+SHOW SCHEMAS; 
+
+-- 02. Create tables
+CREATE OR REPLACE TABLE CUSTOMER_ACCT (Customer_Account int, Amount int, transaction_ts timestamp);
+CREATE OR REPLACE TABLE CASH (Customer_Account int, Amount int, transaction_ts timestamp);
+CREATE OR REPLACE TABLE RECEIVABLES (Customer_Account int, Amount int, transaction_ts timestamp);
+
+SHOW TABLES; 
+
+
+//-- ################################################################# --//
+     4. Set up Sequence               
+//-- ################################################################# --//
+
+USE ROLE SYSADMIN; 
+USE DATABASE FUUNY_DB;
+
+CREATE OR REPLACE SEQUENCE SEQ_01 START = 1 INCREMENT = 1;  ???
+CREATE OR REPLACE TABLE SEQUENCE_TEST(i integer);
+
+SELECT SEQ_01.NEXTVAL;
+
+CREATE OR REPLACE SEQUENCE SEQ_02 START = 1 INCREMENT = 2;
+CREATE OR REPLACE TABLE SEQUENCE_TEST(i integer);
+
+SELECT SEQ_02.NEXTVAL;  
+
+SELECT SEQ_02.NEXTVAL a, SEQ_02.NEXTVAL b,SEQ_02.NEXTVAL c,SEQ_02.NEXTVAL d;
+
+
+//-- ################################################################# --//
+     Clean up  
+      - database
+      - user
+      - role                          
+//-- ################################################################# --//
+
+-- Cleanup the sample db, user and roles
+
+drop database FUNNY_TRANSIENT_DB;
+drop database FUNNY_DB;
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,32 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+# reference
+https://www.lambdatest.com/learning-hub/playwright-javascript
+
+# VSCode editor installed
+
+
+//-- ########################################################### --//
+     1. Project introduction
+//-- ########################################################### --//
+
+# website
+https://ecommerce-playground.lambdatest.io/
+
+# user cases
+1. Open the site https://ecommerce-playground.lambdatest.io/.
+2. Clicking on ‘Mega Menu’ -> Desktop.
+3. Click on 'Palm Treo Pro’.
+4. Add item 'Palm Treo Pro’ into Cart.
+5. Verify item 'Palm Treo Pro’ is displayed.
+
+
+
+
+
+
+
+
+//-- ########################### End ########################### --//

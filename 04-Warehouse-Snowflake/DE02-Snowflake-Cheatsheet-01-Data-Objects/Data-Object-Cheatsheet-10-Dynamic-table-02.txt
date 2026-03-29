@@ -1,0 +1,13 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://www.snowflake.com/en/developers/guides/comprehensive-guide-to-dynamic-tables/
+
+
+
+//-- ############################# End ############################## --//
+

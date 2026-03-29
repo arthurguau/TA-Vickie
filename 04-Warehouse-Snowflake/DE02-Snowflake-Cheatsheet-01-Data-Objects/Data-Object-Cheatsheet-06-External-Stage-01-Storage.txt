@@ -1,0 +1,95 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+1. Azure account setup     
+2. Azure CLI
+3. Azure Resource group
+4. A Web App
+
+# reference
+https://docs.snowflake.com/en/user-guide/data-load-snowpipe-auto-azure
+https://claudyconsulting.com/2023/09/08/2023-how-to-set-up-snowpipe-with-azure-blob-storage-for-continuous-data-ingestion-into-snowflake-2/
+
+
+//-- ################################################################# --//
+      1. Create Azure resources:
+        - resource group
+        - 2 storage account
+        - a storage container (Azure)
+        - a storage queue
+//-- ################################################################# --//
+
+
+//-- ########################################################### --//
+     1. resource group
+//-- ########################################################### --//
+
+# 01. login to azure from a terminal
+az login
+
+export resourcegroupname=healthcare-rg
+export location=australiaeast
+
+# 02. create a resource group
+az group create                         \
+    --resource-group $resourcegroupname \
+    --location $location
+
+
+//-- ########################################################### --//
+     5. create storage account - for data file
+//-- ########################################################### --//
+
+export storagenamedata=healthcarestoragedata
+
+# create storage account
+az storage account create              \
+   --name $storagenamedata             \
+   --resource-group $resourcegroupname \
+   --location $location                \
+   --sku Standard_LRS 
+
+export storagedataid=$(az storage account show     \
+                        --name $storagenamedata    \
+                        --resource-group $resourcegroupname \
+                        --query id                 \
+                        --output tsv)
+
+
+//-- ########################################################### --//
+     6. create storage container
+//-- =========================================================== --//
+
+export containername=healthcare-container
+
+az storage container create   \
+   --name $containername      \
+   --account-name $storagenamedata
+
+
+//-- ########################################################### --//
+     9. Testing - upload files into storage container
+//-- ########################################################### --//
+
+# 01. upload file into storage container: 
+resource group:
+  -> storage account 
+  -> data storage 
+  -> container -> upload file
+
+
+//-- ########################################################### --//
+     10. clear up resources - optional
+//-- ########################################################### --//
+
+az group delete --resource-group $resourcegroupname
+
+
+//-- ########################### End ########################### --//
+
+
+  
+
+
+

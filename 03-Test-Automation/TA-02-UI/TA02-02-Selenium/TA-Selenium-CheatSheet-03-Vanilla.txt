@@ -1,0 +1,81 @@
+
+//-- ########################################################### --//
+//-- ****     Vanilla Selenium                              **** --//
+//-- ########################################################### --//
+
+# project name: funnygorilla-calculator
+
+
+//-- ########################################################### --//
+     Life cyle methods
+//-- ########################################################### --//
+
+@BeforeAll
+static void setup(){
+    System.out.println("@BeforeAll executed");
+    driver = new ChromeDriver();
+    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+}
+
+@BeforeEach
+static void tear(){
+    System.out.println("@AfterAll executed");
+    driver.close();
+}
+
+@AfterEach
+void tearThis(){
+    System.out.println("@AfterEach executed");
+}
+
+@AfterAll
+static void tear(){
+    System.out.println("@AfterAll executed");
+}
+
+
+//-- ########################################################### --//
+     Test methods
+//-- ########################################################### --//
+
+    @Test
+    public void test01()
+    {
+    	System.out.println("@Test-01 executed");
+
+       //-- # 01. Launch website
+       driver.navigate().to(appUrl);
+     
+       //Maximize the browser
+       driver.manage().window().maximize();
+
+       //-- # 02. Click on Math Calculators
+       driver.findElement(By.xpath(".//div[@id = 'contentout']//*[text()='7']")).click();
+       driver.findElement(By.xpath(".//div[@id = 'contentout']//*[text()='+']")).click();
+       driver.findElement(By.xpath(".//div[@id = 'contentout']//*[text()='8']")).click();
+       
+       //-- # 03. Get the Result Text based on its xpath
+       String result = driver.findElement(By.xpath("//div[@id = 'sciOutPut']")).getText();
+
+       int expectedResult = 15;
+
+       // Print a Log In message to the screen
+       System.out.println(" The Result is: [" + result + "]  Exoected result is: [" + expectedResult + "]");
+       
+       //-- # 04. Assert
+       Assertions.assertEquals(Integer.parseInt(result.trim()), expectedResult);
+    }  
+
+
+//-- ########################################################### --//
+     Execute test cases
+//-- ########################################################### --//
+
+# open Widows/Mac terminal, move to project folder:
+mvn clean test -Dwebdriver.chrome.driver="C:\\Opt\\Selenium\\chromedriver.exe"
+mvn clean test -Dwebdriver.chrome.driver="~/Developer/opt/selenium/chromedriver"
+
+
+//-- ########################### End ########################### --//
+
+

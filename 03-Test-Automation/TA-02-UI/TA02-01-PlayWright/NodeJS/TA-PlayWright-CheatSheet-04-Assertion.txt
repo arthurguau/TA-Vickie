@@ -1,0 +1,24 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+[toDo]
+
+//-- ########################################################### --//
+     Assertion: 
+     1. expect(locator).toBeChecked()	   Checkbox is checked
+     2. expect(locator).toBeEnabled()	   Control is enabled
+     3. expect(locator).toBeVisible()	   Element is visible
+     4. expect(locator).toContainText()	   Element contains text
+     5. expect(locator).toHaveAttribute()  Element has attribute
+     6. expect(locator).toHaveCount()	   List of elements has given length
+     7. expect(locator).toHaveText()	   Element matches text
+     8. expect(locator).toHaveValue()	   Input element has value
+     9. expect(page).toHaveTitle()	   Page has title
+     10.expect(page).toHaveURL()	   Page has URL
+//-- ########################################################### --//
+
+
+
+
+//-- ########################### End ########################### --//

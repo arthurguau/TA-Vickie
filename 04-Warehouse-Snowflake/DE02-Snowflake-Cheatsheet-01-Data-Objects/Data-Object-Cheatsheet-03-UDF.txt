@@ -1,0 +1,115 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      Prepare database & schema          
+//-- ################################################################# --//
+
+create database SAMPLE_DATA
+use database sample_data
+create schema TPCH_SF1
+use schema TPCH_SF1
+
+
+//-- ################################################################# --//
+      User Defined Function (UDF)  
+       - SQL
+       - Python                       
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+       1. UDF - SQL                  
+//-- ################################################################# --//
+
+# 00. definition
+create or replace function <name>( [<arg_name> <arg_data_type> ] [ , ... ])
+returns <result_data_type>
+language <language>
+as
+   $$
+      <actual_code>
+   $$
+;
+
+
+# 01. create a function with input value
+
+SET default_year = 1995;
+create or replace function get_order_volume(chosen_year NUMBER)
+returns NUMBER
+AS
+$$
+    select count(*) 
+    from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+    where year(o_orderdate) = chosen_year
+$$
+;
+
+# call function
+select get_order_volume(1995);
+
+# 02. create a function without input value
+
+create or replace function get_order_volume()
+returns NUMBER
+AS
+$$
+    select count(*) 
+    from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+    where year(o_orderdate) = $default_year
+$$
+;
+
+# call function
+select get_order_volume();
+
+# 03. create a function with input value and default value
+
+create or replace function get_order_volume(chosen_year NUMBER default 1995)
+returns NUMBER
+AS
+$$
+    select count(*) 
+    from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+    where year(o_orderdate) = chosen_year
+$$
+;
+
+# call function
+select get_order_volume();
+
+
+//-- ################################################################# --//
+       2. UDF - Python                  
+//-- ################################################################# --//
+
+
+create or replace function calc_order_increase(order_y1 INTEGER, order_y2 INTEGER)
+  returns DOUBLE
+  language python
+  runtime_version = '3.8'
+  handler = 'main'
+  as
+  $$
+     def main(order_y1, order_y2):
+         return (order_y2-order_y1)*100/order_y1
+  $$;
+
+
+# call function
+select calc_order_increase();
+
+
+//-- ################################################################# --//
+     Clean up                         
+//-- ################################################################# --//
+
+
+
+//-- ############################# End ############################## --//
+

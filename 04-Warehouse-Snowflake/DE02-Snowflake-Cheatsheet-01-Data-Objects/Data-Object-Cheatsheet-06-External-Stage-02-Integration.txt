@@ -1,0 +1,121 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Azure portal account created
+
+# reference
+https://claudyconsulting.com/2023/09/08/2023-how-to-set-up-snowpipe-with-azure-blob-storage-for-continuous-data-ingestion-into-snowflake-2/
+
+
+//-- ################################################################# --//
+      Create storage integration in Snowflake:
+        1. Get Entra ID & blob container URL
+        2. Create a Storage Integration
+        3. Register Snowflake storage integration with Azure as Enterprise application
+        4. Grant Storage access to the Snowflake storage integration
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      1. Get Entra ID & blob container URL        
+//-- ################################################################# --//
+
+1. Azure Entra ID: Tenant ID 
+2. URL of Azure Blob Container:
+
+Tenant ID: b97c54b4-4655-48e1-bf4e-c5570779fb48
+healthcare-container -> settings -> properties -> url: 
+https://healthcarestoragedata.blob.core.windows.net/healthcare-container
+
+
+//-- ################################################################# --//
+      2. Create a Storage Integration
+//-- ################################################################# --// 
+
+# 00. Definition
+      -- storage url: ('azure://<account>.blob.core.windows.net/<container>/<path>/');
+
+CREATE STORAGE INTEGRATION <integration_name>
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = <cloud_provider> -- AWS, AZURE, or GCS
+  ENABLED = TRUE
+  AZURE_TENANT_ID = '<tenant-id>'
+  STORAGE_ALLOWED_LOCATIONS = ('<cloud_storage_url>', ...);
+
+
+# 01. create storage integration
+CREATE STORAGE INTEGRATION HEALTHCARE_STORAGE_INTEGRATION
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = AZURE
+  ENABLED = TRUE
+  AZURE_TENANT_ID = 'b97c54b4-4655-48e1-bf4e-c5570779fb48'
+  STORAGE_ALLOWED_LOCATIONS = ('azure://healthcarestoragedata.blob.core.windows.net/healthcare-container');
+
+
+# 02. check storage integration created
+SHOW INTEGRATIONS 
+
+
+# optional - drop storage-integration - if you need to drop integrations
+DROP INTEGRATION [IF EXISTS] <integration_name>;
+drop storage integration if exists HEALTHCARE_STORAGE_INTEGRATION
+
+# Remove the role assignment for the Snowflake service principal on the storage container.
+
+
+//-- ################################################################# --//
+      3. Register Snowflake storage integration with Azure as Enterprise application           
+//-- ################################################################# --//
+
+# 01. execute command
+DESCRIBE INTEGRATION HEALTHCARE_STORAGE_INTEGRATION;
+
+# down file and copy from file
+AZURE_CONSENT_URL
+https://login.microsoftonline.com/b97c54b4-4655-48e1-bf4e-c5570779fb48/oauth2/authorize?client_id=e1c13a12-269f-4eb9-aefb-8c5a21cda4b8&response_type=code	
+
+AZURE_MULTI_TENANT_APP_NAME
+iztusysnowflakepacint_1771141442307
+
+
+-- be used to establish a protocol between Azure Account and Snowflake Account.
+
+# 02. Copy the AZURE_CONSENT_URL, and paste it into the browser, where you have already logged into Azure Portal.
+
+# 03. Click on Accept.
+
+# 04. Confirm Snowflake is authorized [added as an Enterprise application]
+Azure Portal -> Entra ID -> manage -> Enterprise Applications
+
+# 05: Copy the name of the Snowflake Enterprise Application.
+Name: iztusysnowflakepacint
+
+
+//-- ################################################################# --//
+      4. Grant Storage read access to the Snowflake storage integration (Azure)
+          -- assign Snowflake application as Storage Blob Data Reader role.
+//-- ################################################################# --//
+
+Azure portal:
+
+# 01: Storage Account (your storage account) -> Access Control (IAM)
+       Add -> Add Role Assignment:
+healthcarestoragedata01:
+   -> IAM
+   -> Add 
+   -> Add Role Assignment:
+
+# 02: search & select: Storage Blob Data Reader
+
+# 03: select members: iztusysnowflakepacint
+      Select: iztusysnowflakepacint -> Review + assign
+
+# 04. Verify access
+healthcarestoragedata01 -> IAM -> access check:
+   User, group or service principle: iztusysnowflakepacint
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,110 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+[working on progress .... ]
+
+
+//-- ################################################################# --//
+      Use case                    
+//-- ################################################################# --//
+
+# use case
+[toDo]
+
+# data linage
+[toDo]
+
+# target task graph
+[toDo]
+
+
+//-- ################################################################# --//
+      0. Create task_admin_role                    
+//-- ################################################################# --//
+
+-- 00. use ACCOUNTADMIN role
+USE ROLE ACCOUNTADMIN;
+
+-- 01. create a new role for this exercise and grant to applicable users
+CREATE OR REPLACE ROLE TASK_ADMIN_ROLE;
+
+-- 02. grant related permissions
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE TASK_ADMIN_ROLE;
+GRANT EXECUTE MANAGED TASK ON ACCOUNT TO ROLE TASK_ADMIN_ROLE;
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE TASK_ADMIN_ROLE;
+
+GRANT DATABASE ROLE SNOWFLAKE.USAGE_VIEWER TO ROLE TASK_ADMIN_ROLE;
+GRANT DATABASE ROLE SNOWFLAKE.OBJECT_VIEWER TO ROLE TASK_ADMIN_ROLE;
+
+-- 03. grant to login user (you)
+GRANT ROLE TASK_ADMIN_ROLE to USER <YOUR_USER>;
+
+
+//-- ################################################################# --//
+      1. Create 
+           - warehouse
+           - database  
+           - schema                  
+//-- ################################################################# --//
+
+-- 01. create our virtual warehouse
+CREATE OR REPLACE WAREHOUSE TASK_GRAPH_WH AUTO_SUSPEND = 60;
+
+GRANT ALL ON WAREHOUSE TASK_GRAPH_WH TO ROLE TASK_ADMIN_ROLE;
+
+-- 02. Next create a new database and schema,
+CREATE OR REPLACE DATABASE TASK_GRAPH_DATABASE;
+CREATE OR REPLACE SCHEMA TASK_GRAPH_SCHEMA;
+
+
+//-- ################################################################# --//
+      2. Setup git integration               
+//-- ################################################################# --//
+
+-- 01. Create git integration to load Snowflake notebook
+CREATE API INTEGRATION IF NOT EXISTS GITHUB_PUBLIC
+  API_PROVIDER = GIT_HTTPS_API
+  API_ALLOWED_PREFIXES = ('https://github.com/')
+  ENABLED = TRUE;
+
+-- 02. Create a git repository
+CREATE OR REPLACE GIT REPOSITORY SNOWFLAKE_LABS 
+  ORIGIN = 'https://github.com/Snowflake-Labs/getting-started-with-task-graphs' 
+  API_INTEGRATION = 'GITHUB_PUBLIC';
+
+-- 03. Grant permission and ownership to role TASK_ADMIN_ROLE
+GRANT READ ON GIT REPOSITORY SNOWFLAKE_LABS TO ROLE TASK_ADMIN_ROLE;
+GRANT OWNERSHIP ON DATABASE TASK_GRAPH_DATABASE TO ROLE TASK_ADMIN_ROLE COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON ALL SCHEMAS IN DATABASE TASK_GRAPH_DATABASE TO ROLE TASK_ADMIN_ROLE COPY CURRENT GRANTS;
+
+
+//-- ################################################################# --//
+      3. Create Task Graph Notebook              
+//-- ################################################################# --//
+
+-- Change role to TASK_GRAPH_ROLE
+USE ROLE TASK_GRAPH_ROLE;
+
+-- create a Notebook
+1. Navigate to DATA > TASK_GRAPH_DATABASE > TASK_GRAPH_SCHEMA > Git Repositories > SNOWFLAKE_LABS
+
+2. From the SNOWFLAKE_LABS repository, navigate to the notebooks folder
+
+3. Create notebook 0_start_here.ipynb by clicking the three dots 
+   > Create notebook. The database, schema, and warehouse should prepopulate.
+
+
+//-- ################################################################# --//
+      5. Clean up                
+//-- ################################################################# --//
+
+ALTER TASK FUNNY_TASK_DB.TASKSDEMO.SALES_TASK SUSPEND;
+
+DROP DATABASE FUNNY_TASK_DB;
+
+
+//-- ############################# End ############################## --//
+

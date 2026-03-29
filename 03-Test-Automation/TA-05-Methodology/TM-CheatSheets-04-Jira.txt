@@ -1,0 +1,58 @@
+
+//-- ########################################################### --//
+//-- ****    Prerequisite: Docker Desktop                   **** --//
+//-- ########################################################### --//
+
+# Jira tutorial
+https://www.atlassian.com/software/jira/guides/getting-started/introduction#what-is-jira-software
+https://www.guru99.com/jira-tutorial-a-complete-guide-for-beginners.html
+
+
+//-- ########################################################### --//
+      Setup
+        - Jira account
+        - docker version
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+      Jira account
+//-- =========================================================== --//
+
+# create a free account
+https://id.atlassian.com/login?continue=https%3A%2F%2Fwww.atlassian.com%2Fgateway%2Fapi%2Fstart%2Fauthredirect
+
+
+//-- ########################################################### --//
+      Docker version
+//-- =========================================================== --//
+
+# reference
+https://www.dgrebb.com/post/dockerizing-jira-10/
+
+# 00. spin up jira & postgreSQL containers
+Docker compose -f docker-compose-jira.yaml up -d
+
+# 01. access url
+Localhost:8080/
+
+
+//-- ########################################################### --//
+      Test Lifecycle
+       0. Introduction
+       1. test plan
+       2. test case
+       3. raise defect
+//-- ########################################################### --//
+
+# 00. Jira introduction
+https://medium.com/@eveciana21/optimizing-qa-with-jira-a-step-by-step-guide-b6bc2cc3802b
+
+# 01. Create and Manage Test Case
+https://medium.com/@eveciana21/create-and-manage-test-plans-using-xray-in-jira-a-step-by-step-guide-0e68b26d9623
+
+# 03. Raise defect
+https://kor01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fm.youtube.com%2Fwatch%3Fv%3DtPj-u1EEsyM%26pp%3DygUXSmlyYSByYWlzZSByYWlzZSBkZWZlY3Q%253D&data=05%7C02%7C%7C53564f8480ac4d0b0a7308ddcf63fb83%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C638894750516772239%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=b2g3PstDJCgob1To4cSNymkXmgJ5xGOw04OmuxSJ3GY%3D&reserved=0
+
+
+//-- ####################### End ############################## --//

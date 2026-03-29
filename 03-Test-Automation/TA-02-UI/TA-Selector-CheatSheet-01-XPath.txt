@@ -1,0 +1,153 @@
+//-- ################################################### --//
+//-- ****        Prerequisites                      **** --//
+//-- ################################################### --//
+
+# reference
+https://www.guru99.com/xpath-selenium.html
+https://www.w3schools.com/xml/xpath_intro.asp
+https://www.browserstack.com/guide/xpath-in-selenium
+https://www.headspin.io/blog/using-xpath-in-selenium-effectively
+
+
+//-- ################################################### --//
+     Basic XPath Syntax
+//-- ################################################### --//
+
+# Selects from the root node.
+/ 
+
+# Selects nodes anywhere in the document.
+// 
+
+ # Represents the current node.
+. 
+
+# Represents the parent of the current node.
+.. 
+
+
+//-- ################################################### --//
+     Selectors
+//-- ################################################### --//
+
+# Selects all elements with the given name.
+element
+
+# Selects the value of the specified attribute.
+@attribute
+
+# Selects all child elements.
+*
+
+# Selects the text within an element.
+text()
+
+# Adds a condition to filter nodes.
+[predicate]
+
+
+//-- ################################################### --//
+     Predicates:
+//-- ################################################### --//
+
+# Selects nodes with the specified attribute value.
+[name='value']
+
+# Selects nodes based on their position.
+[position()]
+
+# Selects the last node of a given type.
+[last()]
+
+# Selects nodes with attribute values containing 'value'.
+[contains(@attribute, 'value')]
+
+# Negates a condition.
+[not(predicate)]
+
+
+//-- ################################################### --//
+     Axes
+//-- ################################################### --//
+
+# Selects all ancestors.
+ancestor::
+
+# Selects ancestors and the current node.
+ancestor-or-self::
+
+# Selects all children.
+child::
+
+# Selects all descendants.
+descendant::
+
+# Selects descendants and the current node.
+descendant-or-self::
+
+# Selects all following nodes.
+following::
+
+# Selects following siblings.
+following-sibling::
+
+# Selects the parent node.
+parent::
+
+# Selects all preceding nodes.
+preceding::
+
+# Selects preceding siblings.
+preceding-sibling::
+
+# Selects the current node.
+self::
+
+
+//-- ################################################### --//
+     Functions (Examples)
+//-- ################################################### --//
+
+# Returns the name of the current node.
+name()
+
+# Returns the number of nodes in the node-set.
+count(nodes)
+
+# Concatenates two strings.
+concat(string1, string2)
+
+# Returns a substring.
+substring(string, start, length)
+
+# Checks if a string contains a substring.
+contains(string, substr) 
+
+# Removes leading/trailing whitespace and collapses spaces.
+normalize-space(string)
+
+
+//-- ################################################### --//
+     Examples
+//-- ################################################### --//
+
+# Selects all book elements in the root bookstore.
+/bookstore/book
+
+# Selects title elements with text 'XPath' anywhere in the document.
+//title[text()='XPath']
+
+# Selects elements with the attribute id equal to 'myId'.
+//*[@id='myId']
+
+# Selects the first book element.
+/bookstore/book[position()=1]
+
+# Selects p elements within div with class 'highlight'.
+//div[@class='highlight']//p
+
+# Selects a elements with 'example.com' in the href attribute.
+//a[contains(@href, 'example.com')]
+
+
+//-- ########################### End ########################### --//

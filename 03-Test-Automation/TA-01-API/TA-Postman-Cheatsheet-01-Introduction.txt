@@ -1,0 +1,51 @@
+//-- ########################################################### --//
+//-- ****          Prerequisites                            **** --//
+//-- ########################################################### --//
+
+# reference
+https://learning.postman.com/docs/getting-started/exploring-public-api-network/
+
+
+//-- ########################################################### --//
+     1. Real world APIs
+//-- ########################################################### --//
+
+# 01. explore popular APIs
+https://github.com/public-apis/public-apis    
+
+# 02. try Weatherstack
+https://goweather.herokuapp.com/weather/xian
+
+
+//-- ########################################################### --//
+     2. SOAP APIs
+//-- ########################################################### --//
+
+# reference
+https://blog.postman.com/making-http-soap-requests-with-postman/
+https://www.w3schools.com/xml/tempconvert.asmx
+
+# sample WSDL file
+https://github.com/monodot/camel-demos/blob/master/simple-tests/src/main/resources/wsdl/BookService.wsdl
+
+
+//-- ########################################################### --//
+     3. Restfull APIs
+//-- ########################################################### --//
+
+# reference
+https://blog.postman.com/rest-api-examples/
+
+
+//-- ########################################################### --//
+     4. Swagger/OpenAPI Specification
+//-- ########################################################### --//
+
+# check Swagger/OpenAPI Specification
+https://editor.swagger.io/
+
+
+//-- ######################## End ############################## --//
+
+
+

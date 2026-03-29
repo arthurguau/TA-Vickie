@@ -1,0 +1,41 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+
+//-- ################################################################# --//
+     1. Spining up Student Management API Service
+//-- ################################################################# --//
+
+# 01. move to Student Management project folder
+cd ~/developer/projects/04-Application/
+
+# 02. spin up containers: database and application
+docker compose up -d mysql-funnygorilla student-app
+
+
+//-- ################################################################# --//
+     2. Test end points
+//-- ################################################################# --//
+
+# 01. GET student
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/1  | jq '.'
+
+# 02. POST student (response code: 201)
+curl -H 'Content-Type: application/json' \
+-X POST http://localhost:8087/studentmanagement/api/v1/students/ \
+-d '{"firstName":"Jojo","lastName":"Zhao","contact":"Jojo.zhao@hotmail.com","course":"CS"}'
+
+# 03.  update course from CS to Accounting
+curl -v -H 'Content-Type: application/json' \
+ -X PUT http://localhost:8087/studentmanagement/api/v1/students/5 
+-d '{"id":5  ,"firstName":"Jojo","lastName":"zhao","contact":"jojo.zhao@hotmail.com","course":"Accounting"}' | jq '.'
+
+# 04.  delete student Helen (response code: 204)
+curl -v -X DELETE http://localhost:8087/studentmanagement/api/v1/students/5
+
+
+//-- ############################# End ############################### --//

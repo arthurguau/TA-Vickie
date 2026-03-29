@@ -1,0 +1,159 @@
+//-- ########################################################### --//
+//-- ****                Prerequisites                      **** --//
+//-- ########################################################### --//
+
+# Reference
+https://karatelabs.io/
+https://github.com/karatelabs/karate#quickstart
+
+# sample api website
+https://reqres.in/
+
+# get API keys and add to http header
+x-api-key: reqres-free-v1
+
+
+//-- ########################################################### --//
+     Project Setup
+//-- ########################################################### --//
+
+# 01. prepare scaffolding 
+cd ~/Developer/projects
+mkdir learnkarate && cd learnkarate
+mkdir learnkarateWS
+
+
+# 02. use archytype to setup project folder structure
+
+mvn archetype:generate                 \
+-DarchetypeGroupId=io.karatelabs       \
+-DarchetypeArtifactId=karate-archetype \
+-DarchetypeVersion=1.5.1    \
+-DgroupId=com.funnygorilla  \
+-DartifactId=learnkarate
+
+
+# 03. prepare for eclipse
+cd learnkarate
+mvn eclipse:eclipse
+
+
+//-- ########################################################### --//
+     Project Scaffolding
+//-- ########################################################### --//
+
+# folder structure - sample
+src/test/java
+    |
+    +-- karate-config.js
+    +-- logback-test.xml
+    |
+    \-- examples
+        +-- AnimalsTest.java
+        |
+        \-- users
+            +-- UsersRunner.java
+            +-- user.feature
+
+
+//-- ########################################################### --//
+     Create overall test runner under test/java folder
+//-- ########################################################### --//
+
+class ExamplesTest {
+
+    @Test
+    void testParallel() {
+        Results results = Runner.path("classpath:examples")
+                //.outputCucumberJson(true)
+                .parallel(5);
+        assertEquals(0, results.getFailCount(), results.getErrorMessages());
+    }
+
+}
+
+
+//-- ########################################################### --//
+     Feature file
+        -- follows the Given-When-Then (GWT) notation. 
+//-- =========================================================== --//
+
+//-- # A feature file consists of:
+     # 01. A feature name. It is advised to maintain the same name as the file name;
+     # 02. A feature description;
+     # 03. One or more scenarios containing steps in the GWT notation. 
+           A scenario illustrates how the application should behave.
+
+Feature: sample karate test script
+  for help, see: https://github.com/karatelabs/karate/wiki/IDE-Support
+
+  Background:
+    * url 'https://jsonplaceholder.typicode.com'
+
+  Scenario: get all users and then get the first user by id
+    Given path 'users'
+    When method get
+    Then status 200
+
+    * def first = response[0]
+
+    Given path 'users', first.id
+    When method get
+    Then status 200
+
+  Scenario: create a user and then get it by id
+    * def user =
+      """
+      {
+        "name": "Test User",
+        "username": "testuser",
+        "email": "test@user.com",
+        "address": {
+          "street": "Has No Name",
+          "suite": "Apt. 123",
+          "city": "Electri",
+          "zipcode": "54321-6789"
+        }
+      }
+      """
+
+    Given url 'https://jsonplaceholder.typicode.com/users'
+    And request user
+    When method post
+    Then status 201
+
+    * def id = response.id
+    * print 'created id is: ', id
+
+    Given path id
+    # When method get
+    # Then status 200
+    # And match response contains user
+
+
+//-- ########################################################### --//
+     Write test runner under user directory
+       -- for user api end points
+       -- can be other apis (e.g. animals)
+//-- ########################################################### --//
+
+class UsersRunner {
+    
+    @Karate.Test
+    Karate testUsers() {
+        return Karate.run("users").relativeTo(getClass());
+    }    
+
+}
+
+
+//-- ########################################################### --//
+     Run the tests
+//-- ########################################################### --//
+
+# run test cases
+mvn clean test
+
+
+
+//-- ########################### End ########################### --//

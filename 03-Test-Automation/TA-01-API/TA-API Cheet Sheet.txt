@@ -1,0 +1,61 @@
+
+
+//----- test status code
+pm.test('Success', function(){
+    pm.response.to.have.status(200);
+    
+});
+
+
+//----- test header
+pm.test('Header Content-Type', function(){
+    pm.response.to.have.header("Content-Type", "application/json");
+});
+
+
+
+//********************** http://localhost:3000/blogposts/1 **** --//
+
+
+
+//------ test body
+var jsonData = pm.response.json();
+var firstBlogPost = {
+    "id": 1,
+    "name": "The xx blog post",
+    "body": "This is my first blog post. Look I modified it!",
+    "profileId": 1
+}
+pm.test("Check first Blogpost Data", function () {    
+    //assume that the first blogpost won't change
+    pm.expect(jsonData[0]).to.eql(firstBlogPost);
+});
+
+pm.test("check body including string", function(){
+    pm.expect(pm.response.text()).to.include("blog");
+})
+
+pm.test("check body value", function(){
+    pm.expect(pm.response.height).to.equal("100");
+})
+
+//-- set log
+console.log(jsonData);
+
+
+
+//------- test response time
+
+pm.test("test Response time is less than limit", function() {
+    var limit = 10;
+
+    pm.expect(pm.response.responseTime).to.be.below(limit);  
+
+    if (pm.response.responseTime < limit) {      
+        console.log("Response Time: " + pm.response.responseTime + " ms" + " / Response Date: " + pm.response.headers.get("Date"));
+    } else {
+        console.log("Response time was longer than " + limit + " ms.");
+    }
+});
+
+

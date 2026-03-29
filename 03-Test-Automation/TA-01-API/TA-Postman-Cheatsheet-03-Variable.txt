@@ -1,0 +1,61 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# reference
+https://www.postman.com/postman/postman-answers/collection/29znama/passing-data-between-requests
+https://jamesmessinger.com/postman-bdd/OLD_README.html
+
+
+//-- ################################################################# --//
+     1. Pass value across subsequent API calls - smoke testing                      
+//-- ################################################################# --//
+
+# 01. Define a collection level variable: id_created
+Collection -> Variables     
+      
+# 02. set variable in Post request call
+scope: Post-response -> Scripts:          
+var jsonData = pm.response.json();
+var id = jsonData.id;
+pm.collectionVariables.set("id_created", id);
+
+console.log(pm.collectionVariables.get("id_created")
+
+
+# 02. Query request
+http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/{{id_created}}
+
+# 03. Update request
+http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/{{id_created}}
+Request body - update id with  {{id_created}}
+"id": {{id_created}},
+
+# 04. Delete request
+http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/{{id_created}}
+
+
+//-- ################################################################# --//
+     2. Automate tests in Newman
+//-- ################################################################# --//
+
+# 01. export collection: studentmanagement-collection.json
+
+# 02. export environment variable: Studentmanagement-env.json
+
+# 03. execute Newman command:
+newman run Studentmanagement-collection.json \
+     -e Studentmanagement-env.json           \
+     -n 1                                    \
+     -r htmlextra                            \
+     --reporter-html-export report.html
+
+# 04. check test report
+./newman/report.html
+
+# 05. Check test report. Everything is green
+
+
+//-- ############################# End ############################### --//

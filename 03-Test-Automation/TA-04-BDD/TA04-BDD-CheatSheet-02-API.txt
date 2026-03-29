@@ -1,0 +1,81 @@
+//-- ########################################################### --//
+//-- ****                Prerequisites                      **** --//
+//-- ########################################################### --//
+
+//-- # Reference
+https://dzone.com/articles/effective-java-application-testing-with-cucumber
+
+
+//-- ########################################################### --//
+     Project Setup
+//-- ########################################################### --//
+
+//-- # use archytype to setup project folder structure
+
+$ mvn archetype:generate                      \
+   "-DarchetypeGroupId=io.cucumber"           \
+   "-DarchetypeArtifactId=cucumber-archetype" \
+   "-DarchetypeVersion=7.17.0"                \
+   "-DgroupId=com.funnygorilla"               \
+   "-DartifactId=funnygorillacucumber"        \
+   "-Dpackage=com.funnygorilla.funnygorillacucumber"  \
+   "-Dversion=1.0.0-SNAPSHOT"                 \
+   "-DinteractiveMode=false"
+
+
+//-- ########################################################### --//
+     IntelliJ - Open project
+//-- ########################################################### --//
+
+
+
+
+
+//-- ########################################################### --//
+     Run the tests
+//-- ########################################################### --//
+
+
+
+
+
+//-- ########################################################### --//
+     Write Scenario
+//-- ########################################################### --//
+
+
+//-- # 
+01. add an employee;
+02. retrieve the complete list of employees;
+03. remove all employees;
+
+
+//-- ########################################################### --//
+     Feature file
+        -- follows the Given-When-Then (GWT) notation. 
+//-- =========================================================== --//
+
+//-- # A feature file consists of:
+     # 01. A feature name. It is advised to maintain the same name as the file name;
+     # 02. A feature description;
+     # 03. One or more scenarios containing steps in the GWT notation. 
+           A scenario illustrates how the application should behave.
+
+Feature: Employee Actions
+  Actions to be made for an employee
+ 
+  Scenario: Add employee
+    Given an empty employee list
+    When an employee is added
+    Then the employee is added to the employee list
+
+
+//-- ########################################################### --//
+     Add Step Definitions
+//-- =========================================================== --//
+
+
+
+
+
+//-- ########################### End ########################### --//

@@ -1,0 +1,84 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+[toDo]
+
+//-- ########################################################### --//
+     Page Object Model
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+//-- # 1. Set Up Your Project
+//-- ########################################################### --//
+
+# 01. Create project folder
+mkdir pageobjectmodel && cd pageobjectmodel
+
+# 02. create a new folder for your project and initialize a new Node.js project:
+npm init
+
+# 03. install and setup Playwright as a dependency in your project
+npm init playwright@latest
+
+
+//-- ########################################################### --//
+//-- # 3 Step: Create Web Page Object
+//-- ########################################################### --//
+
+# 01. create a pages folder
+mkdir pages
+
+# 02. create a login page class, login.js, into pages folder
+
+exports.LoginPage = class LoginPage {
+
+    constructor(page) {
+
+        this.page = page
+        this.username_field = page.getByPlaceholder('Username')
+        this.password_field = page.getByPlaceholder('Password')
+        this.login_button = page.getByRole('button', { name: 'Login' })
+    }
+
+    async gotoLoginPage() { 
+        await this.page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    }
+
+    async login(username, password){
+
+        await this.username_field.fill(username);
+        await this.password_field.fill(password);
+        await this.login_button.click()
+    }
+}
+
+
+//-- ########################################################### --//
+//-- # 4 Step: Create Test Script
+//-- ########################################################### --//
+
+# 01. create test case into tests folder: trypom.spec.ts
+
+import { test } from '@playwright/test';
+import {LoginPage} from '../pages/login.js';
+
+test('test', async ({ page }) => {
+
+  const  Login = new LoginPage(page)
+
+  await Login.gotoLoginPage()
+  await Login.login('Admin', 'admin123' )
+
+});
+
+
+//-- ########################################################### --//
+//-- # 5 Step: Execute The Test
+//-- ########################################################### --//
+
+npx playwright test
+
+
+//-- ########################### End ########################### --//

@@ -1,0 +1,98 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://www.snowflake.com/en/developers/guides/comprehensive-guide-to-dynamic-tables/
+
+# sample data: TPCH data provided within the Snowflake sample database
+
+# concept: Dynamic tables
+a type of table in Snowflake that automatically materialize the results of a query as a table.
+
+Dynamic Tables can join and aggregate across multiple source objects and incrementally update results as sources change. 
+
+You could also chain dynamic tables and thereby create a simple ETL pipeline.
+
+Dynamic tables only support SQL
+
+
+//-- ################################################################# --//
+     1. Base tables              
+//-- ################################################################# --//
+
+create database RAW
+create schema RAW.RETAIL
+
+create or replace TABLE RAW.RETAIL.ORDERS (
+  O_ORDERKEY NUMBER(38,0),
+  O_CUSTKEY NUMBER(38,0),
+  O_ORDERSTATUS VARCHAR(1),
+  O_TOTALPRICE NUMBER(12,2),
+  O_ORDERDATE DATE,
+  O_ORDERPRIORITY VARCHAR(15)
+);
+
+create or replace TABLE RAW.RETAIL.CUSTOMERS (
+  C_CUSTKEY NUMBER(38,0),
+  C_NAME VARCHAR(25),
+  C_ADDRESS VARCHAR(40),
+  C_NATIONKEY NUMBER(38,0),
+  C_MKTSEGMENT VARCHAR(10)
+);
+
+
+insert into RAW.RETAIL.CUSTOMERS
+  select C_CUSTKEY, C_NAME, C_ADDRESS, C_NATIONKEY, C_MKTSEGMENT 
+  from SNOWFLAKE_SAMPLE_DATA.TPCH_SF100.CUSTOMER;
+
+insert into RAW.RETAIL.ORDERS
+  select O_ORDERKEY, O_CUSTKEY, O_ORDERSTATUS, O_TOTALPRICE, '2024-01-01', O_ORDERPRIORITY
+  from SNOWFLAKE_SAMPLE_DATA.TPCH_SF100.ORDERS where date(O_ORDERDATE)='1992-01-01';
+
+
+//-- ################################################################# --//
+     2. Create Dynamic table             
+//-- ################################################################# --//
+
+create or replace dynamic table <table name>
+  lag = ' 1 hour'
+  warehouse = COMPUTE_WH
+  as <select... query>;
+
+
+reate or replace dynamic table RAW.RETAIL.ORDER_SUMMARY
+  TARGET_LAG = '5 minutes'
+  WAREHOUSE = COMPUTE_WH
+  AS
+    select 
+       o_orderstatus, 
+       c_mktsegment, 
+       sum(o_totalprice) as TOTAL_PRICE 
+    from RAW.RETAIL.orders o
+       inner join RAW.RETAIL.CUSTOMERS c on c.c_custkey=o.o_custkey 
+    group by all;
+
+
+# check table
+select * from RAW.RETAIL.ORDER_SUMMARY;
+
+# insert more data
+insert into RAW.RETAIL.ORDERS
+  select O_ORDERKEY, 
+         O_CUSTKEY, 
+         O_ORDERSTATUS, 
+         O_TOTALPRICE, 
+         '2024-01-02', 
+         O_ORDERPRIORITY
+  from SNOWFLAKE_SAMPLE_DATA.TPCH_SF100.ORDERS 
+  where date(O_ORDERDATE)='1992-01-02';
+
+# check table
+select * from RAW.RETAIL.ORDER_SUMMARY;
+
+
+//-- ############################# End ############################## --//
+

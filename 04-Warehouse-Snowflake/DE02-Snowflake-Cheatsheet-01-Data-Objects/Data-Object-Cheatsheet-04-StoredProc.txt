@@ -1,0 +1,125 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+
+//-- ################################################################# --//
+      Stored procedure   
+        - SQL
+        - Python                       
+//-- ################################################################# --//
+
+# definition
+create or replace procedure <name>( [<arg_name> <arg_data_type> ] [ , ... ])
+returns <result_data_type>
+language <language>
+execute as [CALLER | OWNER]
+as
+   $$
+      <actual_code>
+   $$
+;
+
+
+//-- ################################################################# --//
+      Stored procedure - SQL                     
+//-- ################################################################# --//
+
+# 01. create a function
+create or replace function get_order_volume(chosen_year NUMBER default 1995)
+returns NUMBER
+AS
+$$
+    select count(*) 
+    from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+    where year(o_orderdate) = chosen_year
+$$
+;
+
+# call function
+select get_order_volume();
+
+
+# 02. create stored procedure
+
+create or replace procedure get_order_increase(chosen_year NUMBER)
+  returns FLOAT NOT NULL
+  language sql
+  execute as caller
+  as
+  $$
+
+  declare
+    order_vol_base_year   NUMBER DEFAULT 0;
+    order_vol_chosen_year NUMBER DEFAULT 0;
+    res1 RESULTSET DEFAULT (select get_order_volume(:chosen_year) as count);
+    res2 RESULTSET DEFAULT (select get_order_volume() as count);
+    c1 CURSOR for res1;
+    c2 CURSOR for res2;
+
+  begin
+    for row_variable in c1 do
+        order_vol_base_year := row_variable.count;
+    end for;
+
+    for row_variable in c2 do
+        order_vol_chosen_year := row_variable.count;
+    end for;
+
+    return (order_vol_base_year-order_vol_chosen_year)*100/order_vol_base_year;
+  END;
+$$
+;
+
+
+# 02. Test
+call get_order_increase(1997);
+
+
+//-- ################################################################# --//
+     Stored procedure - Python                        
+//-- ################################################################# --//
+
+create or replace procedure get_order_increase(chosen_year int)
+  returns VARCHAR
+  language python
+  runtime_version = '3.8'
+  packages=('snowflake-snowpark-python')
+  handler = 'main'
+  as
+  $$
+    DEFAULT_YEAR = 1995;
+
+    def main(session, chosen_year):
+       df_order_vol_chosen_year = session.sql(
+          "select count(*) as count 
+              from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+              where year(o_orderdate) = ?", 
+           params=[chosen_year])
+
+       df_order_vol_base_year = session.sql(
+          "select count(*) as count 
+              from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS 
+              where year(o_orderdate) = ?", 
+          params=[DEFAULT_YEAR])
+
+    # this is when the query executes; lazy loading; collect returns an immutable named tuple
+    order_vol_chosen_year = df_order_vol_chosen_year.collect()[0]['COUNT']
+    order_vol_base_year = df_order_vol_base_year.collect()[0]['COUNT']
+
+    res = session.sql(
+             "select calc_order_increase(?,?) as result",
+             [order_vol_base_year, order_vol_chosen_year])
+
+    return res.collect()[0]['RESULT']
+$$;
+
+# call stored procedure
+call get_order_increase(1997);
+
+
+//-- ############################# End ############################## --//
+

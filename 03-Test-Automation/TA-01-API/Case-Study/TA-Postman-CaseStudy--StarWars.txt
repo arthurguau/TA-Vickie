@@ -1,0 +1,119 @@
+//-- ################################################### --//
+//-- ****    API Case Study - Starwar API           **** --//
+//-- ################################################### --//
+
+# Target APIs
+https://swapi.dev/api/
+
+
+//-- ################################################### --//
+     1. check response header
+//-- ################################################### --//
+
+# specify test case name
+pm.test("status code-200", function(){ })
+
+# check response status code
+pm.response.to.have.statusCodeClass(2);
+pm.response.to.have.statusReason('OK');
+
+pm.response.to.have.status(200);
+pm.response.to.have.status('OK');  
+
+# check response content type
+pm.response.to.have.header("Content-Type");
+pm.response.to.have.header ("Content-Type", "application/json;");
+
+
+//-- ################################################### --//
+     2. Check response property
+//-- ################################################### --//
+
+# has a body
+pm.response.to.be.withBody;
+
+# is in json format
+pm.response.to.be.json;
+
+# .body  -- for small messages
+pm.response.to.have.body("some text");
+pm.response.to.have.body(<regex>);
+pm.response.to.have.body({key:value});
+
+# .jsonBody  -- good one
+pm.response.to.have.jsonBody;
+pm.response.to.have.jsonBody({a:1});
+
+# response time
+pm.response.to.have.responseTime(150)
+pm.response.to.have.responseTime.above(150);
+pm.response.to.have.responseTime.below(150);
+pm.response.to.have.responseTime.within(100,150);
+
+# response size
+pm.response.to.have.responseSize(50);
+pm.response.to.have.responseSize.above(50);
+pm.response.to.have.responseSize.below(100);
+pm.response.to.have.responseSize.within(50,100);
+
+
+//-- ################################################### --//
+     3. Test business logic
+//-- ################################################### --//
+
+# post
+var jsonData = pm.response.json();
+console.log(jsonData);
+
+# array
+pm.expect(jsonData).to.be.an("array");
+
+console.log(jsonData.length);
+pm.expect(jsonData.length).to.equal(13);
+
+# people/1
+pm.expect(jsonData.name).to.eql("Luke Skywalker");
+pm.expect(jsonData.height).to.eql("172");
+
+
+# dynamic
+
+var residentList = pm.collectionVariables.get('residentList');
+var randomResident = residentList[1];
+console.log(randomResident);
+
+var splitResidentStr = randomResident.split('/');
+console.log(splitResidentStr);
+
+var personId = splitResidentStr[splitResidentStr.length - 2];
+
+var currentCount = pm.environment.get("counter");
+
+console.log(personId);
+
+pm.environment.set("person_id", personId-1);
+console.log(pm.environment.get("person_id"));
+
+
+//-- ################################################### --//
+     4. Automate tests in Newman
+//-- ################################################### --//
+
+# 01. export collection
+
+# 02. export environment variable
+
+# 03. execute Newman command:
+newman run StarWar_collection.json   \
+      -e StarWar_Env.json            \
+      -n 1                           \
+      -r htmlextra                   \
+      --reporter-html-export report.html
+
+# 04. check test report
+report.html
+
+
+//-- ######################## End ###################### --//
+
+

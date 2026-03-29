@@ -1,0 +1,115 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+2. Java installed
+3. Maven installed
+
+
+//-- ################################################################# --//
+     1. Install Postman                           
+//-- ################################################################# --//
+
+# 00. register an account in https://www.postman.com/
+
+# 01. install postman - Windows
+https://learning.postman.com/docs/getting-started/installation/installation-and-updates/
+
+# 01. install postman - Mac Pro
+brew update
+brew install --cask postman
+
+
+//-- ################################################################# --//
+     2. Install Newman                           
+//-- ################################################################# --//
+
+# 01. Node and NPM installation
+https://nodejs.org/en/download/package-manager
+brew install npm
+
+# 02. install Newman
+npm install -g newman
+
+# 03. Install HTML Reporter
+npm install -g newman-reporter-htmlextra
+
+
+//-- ################################################################# --//
+     3. Bring up testing target - Student management                           
+//-- ################################################################# --//
+
+# 00. Clone project
+cd ~/Developer/projects
+git clone https://github.com/arthurguau/student-management.git
+cd student-management
+
+# 01. spin up database
+docker compose up -d
+
+# 02. startup application (be aware of database port number)
+mvn clean compile
+mvn spring-boot:run
+
+# 03. quick test api is working
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/1 | jq
+
+
+//-- ################################################################# --//
+     4. Setup Postman project:
+         01. workspace - project
+         02. collection - application/api
+         03. environment - deployment
+//-- ################################################################# --//
+
+# 01. create a workspace: funnygorilla-student-project
+
+# 02. create collection: student-management-collection
+
+# 03. create folder structure for smoke testing
+funnygorilla-student-project
+    |__student-management-collection
+          |__ smoker-test
+          |__ SIT
+          |__ UAT
+
+# 04. Create an environment: student-test-env
+hostname: localhost
+portname: 8087
+
+# 05. Apply environment variables to the urls
+
+
+//-- ################################################################# --//
+     Smoke test
+      01. test CRUD by curl commands
+      02. create CRUD requests under smoke-test folder
+      03. test each call
+      04. save each call
+//-- ################################################################# --//
+
+# 01. test CRUD by curl commands
+
+# CREATE  student
+curl -v -H 'Content-Type: application/json' -X POST       \
+http://localhost:8087/studentmanagement/api/v1/students/  \
+-d '{"firstName":"Jojo","lastName":"Zhao","contact":"Jojo.zhao@hotmail.com","course":"CS"}'
+
+# GET student, ${id} - from response message of above call.
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/${id} | jq '.'
+
+# update course from CS to Accounting
+curl -v -H 'Content-Type: application/json' -X PUT http://localhost:8087/studentmanagement/api/v1/students/5 -d '{"id":5  ,"firstName":"Jojo","lastName":"zhao","contact":"jojo.zhao@hotmail.com","course":"Accounting"}' | jq '.'
+
+# delete student Helen - response code: 204
+curl -v -X DELETE http://localhost:8087/studentmanagement/api/v1/students/5
+
+# 02. Create CRUD into smoke-test folder
+
+# 03. Create each call into smoke-test folder and test each call
+
+# 04. save each call
+
+
+//-- ############################# End ############################### --//

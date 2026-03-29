@@ -1,0 +1,83 @@
+//-- ####################################################### --//
+//-- ****    Prerequisites                              **** --//
+//-- ####################################################### --//
+
+1. Docker is up and running;
+
+2. download Selenium fat jar - selenium-server-${version}.jar: 
+   - https://www.selenium.dev/downloads/
+
+3. place the jar file into C:\Opt\Selenium
+$Selenium_HOME = C:\Opt\Selenium
+
+4. place docker-compose-selenium-grid.yaml into C:\Opt\Selenium-Grid
+$Selenium_GRID_HOME = C:\Opt\Selenium-Grid
+
+5. git clone Funnygorilla-Calculator project
+
+
+//-- ####################################################### --//
+     3. Distributed Grid
+//-- ####################################################### --//
+
+# 01. Start the Event Bus
+java -jar selenium-server-4.21.0.jar event-bus \
+   --publish-events tcp://localhost:4442       \
+   --subscribe-events tcp://localhost:4443     \
+   --port 5557
+
+# 02. Start the New Session Queue
+java -jar selenium-server-4.21.0.jar sessionqueue --port 5559
+
+# 03. Start the Session Map.                   \
+java -jar selenium-server-4.21.0.jar sessions  \
+    --publish-events tcp://localhost:4442      \
+    --subscribe-events tcp://localhost:4443    \
+    --port 5556
+
+# 04. Start the Distributor
+java -jar selenium-server-4.21.0.jar distributor \
+    --publish-events tcp://localhost:4442        \
+    --subscribe-events tcp://localhost:4443      \
+    --sessions http://localhost:5556             \
+    --sessionqueue http://localhost:5559         \
+    --port 5553                                  \
+    --bind-bus false
+
+# 05. Start the Router
+java -jar selenium-server-4.21.0.jar router  \
+    --sessions http://localhost:5556         \
+    --distributor http://localhost:5553      \
+    --sessionqueue http://localhost:5559     \
+    --port 4444
+
+# 06. Start the Nodes
+java -jar selenium-server-4.21.0.jar node   \
+    --publish-events tcp://localhost:4442   \
+    --subscribe-events tcp://localhost:4443
+
+
+//-- ####################################################### --//
+     4. docker-compose
+//-- ####################################################### --//
+
+# bring up full grid
+docker-compose -f selenium-grid-distributed-docker-compose.yaml up -d
+
+
+//-- ####################################################### --//
+     5. run test cases
+//-- ####################################################### --//
+
+# 01. access Grid console
+http://127.0.0.1:4444
+
+# 02. define remote webDriver
+driver = new RemoteWebDriver((new URL("http://localhost:4444/")), (new ChromeOptions()));
+
+# 03. run test cases (Note: without specifying local webDriver)
+mvn clean test -Dtest=com.funnygorilla.calculator.AppTest
+
+
+//-- ########################### End ####################### --//
+

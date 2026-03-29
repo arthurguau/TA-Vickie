@@ -1,0 +1,39 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites                                 **** --//
+//-- ########################################################### --//
+
+VSCode installed
+
+
+//-- ########################################################### --//
+     1. Set up React application
+//-- ########################################################### --//
+
+# 01. Run the below command in the terminal.
+npx create-react-app funnygorilla-app
+
+# 02: Run the below command to launch React app in the root directory.
+cd funnygorilla-app 
+npm start
+
+# 03. access application from browser
+http://localhost:3000/
+
+
+//-- ########################################################### --//
+     2. Set up Playwright testing
+//-- ########################################################### --//
+
+# Step 1: Now run the below command
+npm init playwright@latest -- --ct
+
+
+//-- ########################################################### --//
+     3. Testing React Component
+//-- ########################################################### --//
+
+[toDo]
+
+
+
+//-- ########################### End ########################### --//

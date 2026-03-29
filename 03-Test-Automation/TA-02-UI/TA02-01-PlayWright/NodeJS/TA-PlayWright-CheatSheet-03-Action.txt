@@ -1,0 +1,132 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+//-- # DOM structure
+
+[toDo]
+
+//-- ########################################################### --//
+     Action: 
+      01.Text input
+      02. Checkboxes and radio buttons
+      03. Select options 
+      04. Mouse click 
+      05. Type characters 
+      06. Keys and shortcuts
+      07. Upload files  
+      08. Focus element
+      09. Drag and Drop
+      10. Scrolling
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. Text input
+//-- ########################################################### --//
+
+//-- # Text input
+await page.getByRole('textbox').fill('Peter');
+
+// Date input
+await page.getByLabel('Birth date').fill('2020-02-02');
+
+//-- # Time input
+await page.getByLabel('Appointment time').fill('13:15');
+
+//-- # Local datetime input
+await page.getByLabel('Local time').fill('2020-03-02T05:15');
+
+
+//-- ########################################################### --//
+     2. Checkboxes and radio buttons
+//-- ########################################################### --//
+
+//-- # Check the checkbox
+await page.getByLabel('I agree to the terms above').check();
+
+//-- # Assert the checked state
+expect(page.getByLabel('Subscribe to newsletter')).toBeChecked();
+
+//-- # Select the radio button
+await page.getByLabel('XL').check();
+
+
+//-- ########################################################### --//
+     3. Select options
+//-- ########################################################### --//
+
+
+
+//-- ########################################################### --//
+     4. Mouse click
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     5. Type characters
+//-- ########################################################### --//
+
+
+
+
+//-- ########################################################### --//
+     6. Keys and shortcuts
+//-- ########################################################### --//
+
+
+
+
+//-- ########################################################### --//
+     7. Upload files
+//-- ########################################################### --//
+
+
+
+//-- ########################################################### --//
+     8. Focus element
+//-- ########################################################### --//
+
+await page.getByLabel('Password').focus();
+
+
+//-- ########################################################### --//
+     9. Drag and Drop
+//-- ########################################################### --//
+
+//-- # perform drag&drop operation with locator.dragTo(). This method will:
+       -- Hover the element that will be dragged.
+       -- Press left mouse button.
+       -- Move mouse to the element that will receive the drop.
+       -- Release left mouse button.
+
+await page.locator('#item-to-be-dragged').dragTo(page.locator('#item-to-drop-at'));
+
+
+//-- # If you want precise control over the drag operation, use lower-level methods like
+await page.locator('#item-to-be-dragged').hover();
+await page.mouse.down();
+await page.locator('#item-to-drop-at').hover();
+await page.mouse.up();
+
+
+//-- ########################################################### --//
+     10. Scrolling
+//-- ########################################################### --//
+
+# Scrolls automatically so that button is visible
+await page.getByRole('button').click();
+
+# Scroll the footer into view, forcing an "infinite list" to load more content
+await page.getByText('Footer text').scrollIntoViewIfNeeded();
+
+
+# Position the mouse and scroll with the mouse wheel
+await page.getByTestId('scrolling-container').hover();
+await page.mouse.wheel(0, 10);
+
+# Alternatively, programmatically scroll a specific element
+await page.getByTestId('scrolling-container').evaluate(e => e.scrollTop += 100);
+
+
+//-- ########################### End ########################### --//

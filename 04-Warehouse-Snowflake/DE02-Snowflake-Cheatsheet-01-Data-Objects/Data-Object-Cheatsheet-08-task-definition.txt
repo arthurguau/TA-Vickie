@@ -1,0 +1,204 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      0. Create task admin role                    
+//-- ################################################################# --//
+
+-- create a task admin role
+USE ROLE SECURITYADMIN;
+CREATE ROLE TASKADMIN;
+
+-- grant privilege
+USE ROLE ACCOUNTADMIN;
+GRANT EXECUTE TASK, EXECUTE MANAGED TASK ON ACCOUNT TO ROLE TASKADMIN;
+
+-- grant role TASKADMIN TO ROLE SYSADMIN;
+USE ROLE SECURITYADMIN;
+GRANT ROLE TASKADMIN TO ROLE SYSADMIN;
+
+
+//-- ################################################################# --//
+      1. Create database                       
+//-- ################################################################# --//
+
+
+-- 00. create a database and schema
+USE ROLE ACCOUNTADMIN;
+USE WAREHOUSE COMPUTE_WH;
+
+CREATE OR REPLACE DATABASE FUNNY_TASK_DB; 
+
+USE DATABASE FUNNY_TASK_DB;
+CREATE OR REPLACE SCHEMA TASKSDEMO;
+
+-- 01. create a table: product 
+CREATE OR REPLACE TABLE FUNNY_TASK_DB.TASKSDEMO.PRODUCT
+   (Prod_ID int,
+    Prod_Desc varchar(),
+    Category varchar(30),
+    Segment varchar(20),
+    Mfg_ID int,
+    Mfg_Name varchar(50));
+
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1201, 'Product 1201', 'Category 1201', 'Segment 1201', '1201', 'Mfg 1201');
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1202, 'Product 1202', 'Category 1202', 'Segment 1202', '1202', 'Mfg 1202');
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1203, 'Product 1203', 'Category 1203', 'Segment 1203', '1203', 'Mfg 1203');
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1204, 'Product 1204', 'Category 1204', 'Segment 1204', '1204', 'Mfg 1204');
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1205, 'Product 1205', 'Category 1205', 'Segment 1205', '1205', 'Mfg 1205');
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.PRODUCT values (1206, 'Product 1206', 'Category 1206', 'Segment 1206', '1206', 'Mfg 1206');
+
+select * from FUNNY_TASK_DB.TASKSDEMO.PRODUCT;
+
+
+-- 02. create a table: SALES [emlate source data]
+CREATE OR REPLACE TABLE FUNNY_TASK_DB.TASKSDEMO.SALES
+  (Prod_ID int,
+   Customer varchar(),
+   Zip varchar(),
+   Qty int,
+   Revenue decimal(10,2));
+
+
+//-- ################################################################# --//
+      2. Create Stream on table                      
+//-- ################################################################# --//
+
+-- 01. create a stream on sales table
+CREATE OR REPLACE STREAM FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM
+  ON TABLE FUNNY_TASK_DB.TASKSDEMO.SALES
+  APPEND_ONLY = TRUE;
+
+-- 02. insert data into sale table
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1201, 'Amy Johnson', 45466, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1201, 'Harold Robinson', 89701, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1203, 'Chad Norton', 33236, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1206, 'Horatio Simon', 75148, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1205, 'Misty Crawford', 10001, 45, 2345.67);
+
+-- 03. check stream table
+SELECT * FROM FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM;
+
+
+
+//-- ################################################################# --//
+      3. Create Transact table                      
+//-- ################################################################# --//
+
+
+-- create sales transaction table which combines the SALES_STREAM with the product table 
+   adds a timestamp so that we can know when the sales data was recorded:
+
+CREATE OR REPLACE TABLE FUNNY_TASK_DB.TASKSDEMO.SALES_TRANSACT
+   (Prod_ID int,
+    Prod_Desc varchar(),
+    Category varchar(30),
+    Segment varchar(20),
+    Mfg_ID int,
+    Mfg_Name varchar(50),
+    Customer varchar(),
+    Zip varchar(),
+    Qty int,
+    Revenue decimal (10, 2),
+    TS timestamp);
+
+-- 02. mannual add some raws into transact talbe
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES_TRANSACT
+        (Prod_ID,Prod_Desc,Category,Segment,Mfg_Id,Mfg_Name,Customer,Zip,Qty,Revenue,TS)
+  SELECT
+    s.Prod_ID,
+    p.Prod_Desc,
+    p.Category,
+    p.Segment,
+    p.Mfg_ID,
+    p.Mfg_Name,
+    s.Customer,
+    s.Zip,
+    s.Qty,
+    s.Revenue,
+    current_timestamp
+  FROM
+    FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM s JOIN FUNNY_TASK_DB.TASKSDEMO.PRODUCT p ON s.Prod_ID = p.Prod_ID;
+
+
+SELECT * FROM FUNNY_TASK_DB.TASKSDEMO.SALES_TRANSACT;
+
+
+//-- ################################################################# --//
+      4. Create task                      
+//-- ################################################################# --//
+
+-- 01. create a task
+
+CREATE OR REPLACE TASK FUNNY_TASK_DB.TASKSDEMO.SALES_TASK
+     WAREHOUSE = compute_wh 
+     SCHEDULE  = '1 minute'
+WHEN system$stream_has_data('FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM')
+AS
+INSERT INTO
+    FUNNY_TASK_DB.TASKSDEMO.SALES_TRANSACT
+        (Prod_ID,Prod_Desc,Category,Segment,Mfg_Id,Mfg_Name,Customer,Zip,Qty,Revenue,TS)
+SELECT
+    s.Prod_ID,
+    p.Prod_Desc,
+    p.Category,
+    p.Segment,
+    p.Mfg_ID,
+    p.Mfg_Name,
+    s.Customer,
+    s.Zip,
+    s.Qty,
+    s.Revenue,
+    current_timestamp
+FROM
+    FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM s JOIN FUNNY_TASK_DB.TASKSDEMO.PRODUCT p ON s.Prod_ID = p.Prod_ID;
+
+-- 02. check create task
+
+-- 03. test and execute task a single time
+use role sysadmin;
+execute task SALES_TASK;
+
+-- 04. view previous and scheduled task executions
+select *
+  from table(information_schema.task_history())
+  order by scheduled_time desc;
+
+-- 05. put task into action
+alter task SALES_TASK resume;
+
+-- 06. resume task (as inactive by default)
+ALTER TASK FUNNY_TASK_DB.TASKSDEMO.SALES_TASK RESUME;
+
+
+-- 07. test task: insert data into sales table
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1201, 'Edward Jameson', 45466, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1201, 'Margaret Volt', 89701, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1203, 'Antoine Lancaster', 33236, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1204, 'Esther Baker', 75148, 45, 2345.67);
+INSERT INTO FUNNY_TASK_DB.TASKSDEMO.SALES VALUES (1206, 'Quintin Anderson', 10001, 45, 2345.67);
+
+-- 08. check stream table
+SELECT * FROM FUNNY_TASK_DB.TASKSDEMO.SALES_STREAM;
+
+-- 09. check transact table
+SELECT * FROM FUNNY_TASK_DB.TASKSDEMO.SALES_TRANSACT;
+
+
+//-- ################################################################# --//
+      5. Clean up                
+//-- ################################################################# --//
+
+# suspend task
+ALTER TASK FUNNY_TASK_DB.TASKSDEMO.SALES_TASK SUSPEND;
+
+# drop database
+DROP DATABASE FUNNY_TASK_DB;
+
+
+//-- ############################# End ############################## --//
+

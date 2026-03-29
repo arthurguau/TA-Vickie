@@ -1,0 +1,35 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+
+ -> Technical inner workings
+    -> Right testing solution
+       -> to implement: The right operation steps by right tooling.
+
+
+
+//-- ################################################################# --//
+      Chrome Developer Tool                         
+//-- ################################################################# --//
+
+# reference
+https://dev.to/ishakmohmed/scared-of-chrome-dev-tools-how-to-inspect-api-calls-without-getting-overwhelmed-64g
+
+
+
+//-- ################################################################# --//
+      WireShark                         
+//-- ################################################################# --//
+
+pen-source network protocol analyzer 
+that allows users to capture and interactively browse the traffic running on a computer network
+
+
+# reference
+https://www.wireshark.org/docs/wsug_html_chunked/ChapterIntroduction.html
+
+
+
+//-- ############################# End ############################### --//

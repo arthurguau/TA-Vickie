@@ -1,0 +1,54 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     1. Set up Stream               
+//-- ################################################################# --//
+
+USE ROLE SYSADMIN;
+
+-- 00. create table
+CREATE OR REPLACE DATABASE FUNNY_06_DB;
+CREATE OR REPLACE SCHEMA BANKING;
+CREATE OR REPLACE TABLE BRANCH (ID varchar, City varchar, Amount number(20,2));
+
+INSERT INTO BRANCH (ID, City, Amount)
+  values
+    (12001, 'Abilene', 5387.97),
+    (12002, 'Barstow', 34478.10),
+    (12003, 'Cadbury', 8994.63);
+
+SELECT * FROM BRANCH;
+
+-- 01. create stream
+CREATE OR REPLACE STREAM STREAM_A ON TABLE BRANCH;
+CREATE OR REPLACE STREAM STREAM_B ON TABLE BRANCH;
+
+SHOW STREAMS;
+
+SELECT * FROM STREAM_A;
+SELECT * FROM STREAM_B;
+
+-- 02. insert data into table
+INSERT INTO BRANCH (ID, City, Amount)
+  values
+    (12004, 'Denton', 41242.93),
+    (12005, 'Everett', 6175.22),
+    (12006, 'Fargo', 443689.75);
+
+SELECT * FROM STREAM_A;
+SELECT * FROM STREAM_B;
+
+
+-- 03. Row data gets deleted as consumed
+[toDo]
+
+
+
+
+//-- ############################# End ############################## --//
+

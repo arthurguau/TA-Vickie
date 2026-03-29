@@ -1,0 +1,104 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+
+//-- ################################################################# --//
+     1. spin up influxdb & grafana
+//-- ################################################################# --//
+
+//-- # spin up containers
+docker compose up -d influxdb grafana
+
+//-- # access dashboard
+http://localhost:3000/
+
+
+//-- ################################################################# --//
+     Model the workload:
+       01. virtual users (VUs)
+       02. requests per second-to simulate raw, real-world throughput
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+       01. virtual users (VUs)
+           -- to simulate concurrent users
+           -- Each VU in k6 is a separate JS VM
+//-- ================================================================= --//
+
+//-- # create file: virtualUser.js
+     # vus
+     # duration
+     # iterations
+
+import http from 'k6/http';
+
+export const options = {
+  vus: 20,
+  duration: '30s',
+  iterations: 60,
+};
+
+export default function () {
+  const payload = JSON.stringify({
+    name: 'lorem',
+    surname: 'ipsum',
+  });
+  const headers = { 'Content-Type': 'application/json' };
+  http.post('https://httpbin.test.k6.io/post', payload, { headers });
+}
+
+
+//-- ################################################################# --//
+        02. requests per second
+            -- to simulate raw, real-world throughput
+            rate = RequestsRate / RequestsPerIteration
+//-- ================================================================= --//
+
+//-- # create file: RequestRate.js
+
+//-- # executor: 
+     # -- ramping-arrival-rate 
+     # -- constant-arrival-rate
+
+import http from 'k6/http';
+
+export const options = {
+  scenarios: {
+    my_scenario1: {
+      executor: 'constant-arrival-rate',    // ramping-arrival-rate
+      duration: '30s',                      // total duration
+      preAllocatedVUs: 50,                  // to allocate runtime resources     preAll
+      rate: 50,                             // number of constant iterations given `timeUnit`
+      timeUnit: '1s',
+    },
+  },
+};
+
+export default function () {
+  const payload = JSON.stringify({
+    name: 'lorem',
+    surname: 'ipsum',
+  });
+  const headers = { 'Content-Type': 'application/json' };
+  http.post('https://httpbin.test.k6.io/post', payload, { headers });
+}
+
+
+
+//-- ################################################################# --//
+     run test script
+//-- ################################################################# --//
+
+//-- # run script
+docker compose run --rm k6 run /scripts/FunnyGorilla-Ewoks.js
+
+//-- # check dashboard
+     # load test streaming across the page in real-time
+http://localhost:3000/d/k6/k6-load-testing-results
+
+
+//-- ############################# End ############################### --//

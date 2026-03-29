@@ -1,0 +1,176 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# sample data file
+
+# COPY INTO command: 
+used to bulk load data from staged files into a table. 
+The basic syntax requires specifying:
+ - the target table
+ - the source stage/location
+ - the file format
+
+provides file-level transaction granularity and hence it provides different ON_ERROR handling options:
+ - CONTINUE continues loading the file even if there are errors.
+ - SKIP_FILE skips only the files with errors.
+ - ABORT_STATEMENT aborts the load operation if an error is encountered in any of the data files.
+
+
+# user stage
+
+
+# table stage
+-- automatically created with the table and cannot be dropped or altered independently.
+-- tied specifically to one table; files in a table stage cannot be loaded into a different table.
+-- Do not support data transformations during the COPY INTO process.
+
+# named internal state
+
+
+//-- ################################################################# --//
+       internal stage   
+         01. user stage
+         02. table stage
+         03. named internal stage      
+//-- ################################################################# --//
+
+# 00. Prepare role
+use role SYSADMIN;
+
+# 01. Create warehouse
+create warehouse FUNNYGORILLA_WH with warehouse_size = 'XSMALL'; 
+
+# 02. Create database, schema, and table
+CREATE OR REPLACE DATABASE healthcare_db; 
+
+USE DATABASE healthcare_db;
+CREATE OR REPLACE SCHEMA INGEST;
+
+USE schema INGEST;
+CREATE OR REPLACE TABLE HEALTHCARE_DB.INGEST.hospitals ( 
+ hospital_name VARCHAR, 
+ city VARCHAR, 
+ state VARCHAR, 
+ beds NUMBER, 
+ specialties VARCHAR 
+);
+
+# 03. Create file format
+CREATE OR REPLACE FILE FORMAT healthcare_db.ingest.fileformat 
+ TYPE = CSV 
+ FIELD_DELIMITER = ',' 
+ SKIP_HEADER = 1;
+
+
+//-- ################################################################# --//
+       01. user stage
+//-- ################################################################# --//
+
+# commands
+LIST @~;
+ 
+# snowflake CLI - push file to user stage 
+put file://healthcare_data.csv @~
+
+# check content of user stage
+LIST @~;
+
+# copy into table
+COPY INTO HEALTHCARE_DB.INGEST.hospitals 
+  FROM @~/healthcare_data.csv FILE_FORMAT = (TYPE = CSV);
+
+# check table
+Select * from HEALTHCARE_DB.INGEST.hospitals
+
+# remove file from user stage
+REMOVE @~/healthcare_data.csv;
+
+# delete data from table
+delete from HEALTHCARE_DB.INGEST.hospitals
+
+
+//-- ################################################################# --//
+        02. table stage  
+//-- ################################################################# --//
+
+# commands
+SHOW STAGES IN DATABASE <db_name>;
+LIST @%<table_name>;
+DESCRIBE TABLE <table_name> TYPE = STAGE;
+
+# list table stage
+list @%hospitals
+
+# describe table stage
+DESCRIBE TABLE hospitals TYPE = STAGE;
+
+# snowflake CLI - push file to table stage 
+put file://healthcare_data.csv @%hospitals
+
+# list table stage
+list @%hospitals
+
+# check the content of file
+SELECT h.$1, h.$2, h.$3, h.$4, h.$5 FROM @%hospitals h
+
+# load file into table stage
+COPY INTO HEALTHCARE_DB.INGEST.hospitals 
+   FROM @%hospitals
+   FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat')
+   ON_ERROR = 'CONTINUE';
+
+# check table
+Select * from HEALTHCARE_DB.INGEST.hospitals
+
+# delete data from table
+Delete from HEALTHCARE_DB.INGEST.hospitals
+
+
+//-- ################################################################# --//
+        03. named internal stage  
+//-- ################################################################# --//
+
+# 01. Create stage (named internal stage)
+create stage HEALTHCARE_STAGE;
+list @HEALTHCARE_STAGE;
+
+# 02. Upload file into stage
+  
+
+# 03. Test data loading from stage into table
+
+# make sure you can see the file
+LIST @healthcare_db.ingest.HEALTHCARE_STAGE;
+
+# inspect the staged data before loading it into a table
+SELECT $1, $2, $3, $4, $5 FROM @healthcare_db.ingest.HEALTHCARE_STAGE;
+
+# load file into landing table
+COPY INTO HEALTHCARE_DB.INGEST.hospitals
+  FROM(
+      SELECT $1, $2, $3, $4, $5
+      FROM @HEALTHCARE_DB.INGEST.HEALTHCARE_STAGE 
+)
+FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat')
+ON_ERROR = 'CONTINUE'; 
+
+# check table
+Select * from HEALTHCARE_DB.INGEST.hospitals
+
+
+//-- ################################################################# --//
+     Clean up                         
+//-- ################################################################# --//
+
+# delete data from table
+delete from HEALTHCARE_DB.INGEST.hospitals
+
+# drop stage
+drop stage if exists healthcare_db.ingest.HEALTHCARE_STAGE
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,100 @@
+//-- ####################################################### --//
+//-- ****    Prerequisites                              **** --//
+//-- ####################################################### --//
+
+1. Docker is up and running;
+
+2. download Selenium fat jar - selenium-server-${version}.jar: 
+   - https://www.selenium.dev/downloads/
+
+3. place the jar file into C:\Opt\Selenium
+$Selenium_HOME = C:\Opt\Selenium
+
+4. place docker-compose-selenium-grid.yaml into C:\Opt\Selenium-Grid
+$Selenium_GRID_HOME = C:\Opt\Selenium-Grid
+
+5. git clone Funnygorilla-Calculator project
+
+
+//-- ####################################################### --//
+     Selenium Grid Deployment Architecture         
+        1. Standalone server                        
+        2. Hub Node    
+        3. Distributed Grid                      
+//-- ####################################################### --//
+
+
+//-- ####################################################### --//
+     1. Standalone server
+//-- ####################################################### --//
+
+# 01. bring up server from ${Selenium_HOME}
+java -jar selenium-server-4.0.0.jar standalone
+
+# 02. access Grid console:
+http://localhost:4444
+
+# 03. define remote webDriver
+driver = new RemoteWebDriver((new URL("http://localhost:4444/")), (new ChromeOptions()));
+
+# 04. run test cases
+mvn clean test -Dtest=com.funnygorilla.calculator.AppTest
+
+
+//-- ####################################################### --//
+     2. startup Selenium Grid-Hub-Nodes in 2 ways  
+         01. from Windows Command Line                         
+         02. docker-compose                     
+//-- ####################################################### --//
+
+
+//-- ####################################################### --//
+//-- 01. startup from Windows Command Line
+//-- ======================================================= --//
+
+# 01. bring up grid hub-nod server
+java -jar selenium-server-4.0.0.jar hub
+java -jar selenium-server-4.0.0.jar node –hub http://localhost:4444 
+
+# 02. access Grid console:
+http://localhost:4444
+
+# 03. define remote webDriver
+driver = new RemoteWebDriver((new URL("http://localhost:4444/")), (new ChromeOptions()));
+
+# 04. run test cases
+mvn clean test -Dtest=com.funnygorilla.calculator.AppTest
+
+
+//-- ####################################################### --//
+//-- # 02. docker-compose
+//-- ======================================================= --//
+
+# 01. bring up selenium grid from Selenium-Grid-home
+docker-compose -f docker-compose-seleniumGrid.yml up
+
+# 02. access Grid console
+http://127.0.0.1:4444
+
+# 03. define remote webDriver
+driver = new RemoteWebDriver((new URL("http://localhost:4444/")), (new ChromeOptions()));
+
+# 04. run test cases
+mvn clean test -Dtest=com.funnygorilla.calculator.AppTest
+
+
+//-- ####################################################### --//
+     run Selenium Test Cases
+//-- ####################################################### --//
+
+[toDo..]
+
+# Jenkins is in different network from the one with Selenium Grid
+# access host Selenium Grid: http://host.docker.internal:4444/wd/hub
+
+mvn verify -Dremote=true -Dbrowser=firefox -DgridURL=http://127.0.0.1:4444/wd/hub
+mvn verify -Dremote=true -Dbrowser=chrome -DgridURL=http://127.0.0.1:4444/wd/hub -Dthreads=2 
+
+
+//-- ########################### End ####################### --//
+

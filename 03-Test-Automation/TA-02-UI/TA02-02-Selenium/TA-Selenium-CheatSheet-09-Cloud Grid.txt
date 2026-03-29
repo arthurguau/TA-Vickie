@@ -1,0 +1,58 @@
+//-- ####################################################### --//
+//-- ****    Prerequisites                              **** --//
+//-- ####################################################### --//
+
+
+//-- ####################################################### --//
+     1. register with LambdaTest                            
+//-- ####################################################### --//
+
+# 01. Register LambdaTest account
+https://accounts.lambdatest.com/login
+
+# 02. Find access key: Account setting
+username: gusongqing
+accesskey: Mc5zY1Wpqtuz4uBAUD2NHDDAAZAi6dmpMujWhayoCrrWcMnL1R
+gridURL = "@hub.lambdatest.com/wd/hub";
+
+
+//-- ####################################################### --//
+     2. define remote driver                            
+//-- ####################################################### --//
+
+# 01. define cloud webDriver url
+String gridURL = "https://" + ${username} + ":" + ${accesskey} + ${gridURL};
+
+# 02. capabilities
+DesiredCapabilities capabilities = new DesiredCapabilities();
+capabilities.setCapability("browserName", "chrome");     // To specify the browser
+capabilities.setCapability("version", "121.0");          // To specify the browser version
+capabilities.setCapability("platform", "win10");         // To specify the OS
+capabilities.setCapability("build", "SongqingTest");     // To identify the test
+capabilities.setCapability("name", "FunnyGorillaTest");
+capabilities.setCapability("network", true);             // To enable network logs
+capabilities.setCapability("visual", true);              // To enable step by step screenshot
+capabilities.setCapability("video", true);               // To enable video recording
+capabilities.setCapability("console", true);             // To capture console logs
+  
+# 03. remote web-driver
+driver = new RemoteWebDriver(new URL(gridUrl), capabilities);
+
+
+//-- ####################################################### --//
+     3. run Selenium Test Cases
+//-- ####################################################### --//
+
+# execute test cases
+mvn clean test -Dtest=com.funnygorilla.calculator.AppTest
+
+
+//-- ####################################################### --//
+     4. check test report
+//-- ####################################################### --//
+
+# check test result from Dashboard of LamdaTest 
+Automation -> WebAutomation
+
+
+//-- ########################### End ####################### --//

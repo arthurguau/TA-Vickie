@@ -1,0 +1,256 @@
+{
+	"info": {
+		"_postman_id": "a96a405a-998a-4aac-9322-c315537d7630",
+		"name": "StudentManagement",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12461802"
+	},
+	"item": [
+		{
+			"name": "Get all students",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test(\"Normal reponse code\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{portnumber}}",
+					"path": [
+						"studentmanagement",
+						"api",
+						"v1",
+						"students",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Student 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"name is JackMa\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.firstName).to.eql(\"Arthur\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/1",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{portnumber}}",
+					"path": [
+						"studentmanagement",
+						"api",
+						"v1",
+						"students",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a Student - George",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"CREATE_ID\", jsonData.id);\r",
+							"\r",
+							"console.log(jsonData)\r",
+							"\r",
+							"console.log(pm.collectionVariables.get(\"CREATE_ID\")\r",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"Kenna\",\r\n    \"lastName\": \"Yang\",\r\n    \"contact\": \"Kenna@hotmail.com\",\r\n    \"course\": \"CS\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{portnumber}}",
+					"path": [
+						"studentmanagement",
+						"api",
+						"v1",
+						"students",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Student - George",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 202\", function () {\r",
+							"    pm.response.to.have.status(202);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var CREATE_ID=pm.collectionVariables.get(\"CREATE_ID\"); \r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{CREATE_ID}},\r\n    \"firstName\": \"Kenna\",\r\n    \"lastName\": \"Yang\",\r\n    \"contact\": \"Kenna@hotmail.com\",\r\n    \"course\": \"CS\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/{{CREATE_ID}}",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{portnumber}}",
+					"path": [
+						"studentmanagement",
+						"api",
+						"v1",
+						"students",
+						"{{CREATE_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Student 66",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var CREATE_ID=pm.collectionVariables.get(\"CREATE_ID\"); "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://{{hostname}}:{{portnumber}}/studentmanagement/api/v1/students/{{CREATE_ID}}",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{portnumber}}",
+					"path": [
+						"studentmanagement",
+						"api",
+						"v1",
+						"students",
+						"{{CREATE_ID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "CRATE_ID",
+			"value": ""
+		},
+		{
+			"key": "CREATE_ID",
+			"value": ""
+		}
+	]
+}

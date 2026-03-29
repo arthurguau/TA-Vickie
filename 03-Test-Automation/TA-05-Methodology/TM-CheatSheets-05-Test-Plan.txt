@@ -1,0 +1,15 @@
+
+//-- ########################################################### --//
+//-- ****    Prerequisite: Docker Desktop                   **** --//
+//-- ########################################################### --//
+
+
+
+https://community.atlassian.com/forums/App-Central-articles/6-steps-to-set-up-requirements-and-tests-in-Jira/ba-p/2255297
+
+
+
+
+
+
+//-- ############################## End ######################## --//

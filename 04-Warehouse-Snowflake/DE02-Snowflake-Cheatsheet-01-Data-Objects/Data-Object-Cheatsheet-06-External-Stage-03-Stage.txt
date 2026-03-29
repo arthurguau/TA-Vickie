@@ -1,0 +1,88 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+1. Snowflake account created
+2. Azure portal account created
+
+
+//-- ################################################################# --//
+      Create stages in Snowflake          
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      1. Define file format for CSV data        
+//-- ################################################################# --//
+
+# create file format
+CREATE OR REPLACE FILE FORMAT healthcare_db.ingest.fileformat 
+ TYPE = CSV 
+ FIELD_DELIMITER = ',' 
+ SKIP_HEADER = 1;
+
+
+//-- ################################################################# --//
+      2. Blob Service URL            
+//-- ################################################################# --//
+
+Storage Account -> settings -> Endpoints -> Blob Services:
+
+healthcarestoragedata:
+  -> settings 
+  -> Endpoints 
+  -> Blob Services:
+  -> Blob Service Endpoint: https://healthcarestoragedata.blob.core.windows.net/
+
+
+//-- ################################################################# --//
+      3. Create stage in Snowflake
+//-- ################################################################# --//
+
+USE SCHEMA HEALTHCARE_DB.ingest;
+
+# 01. based on storage integration
+CREATE OR REPLACE STAGE healthcare_db.ingest.healthcare_stage_json
+ STORAGE_INTEGRATION = HEALTHCARE_STORAGE_INTEGRATION
+ URL = 'azure://healthcarestoragedata.blob.core.windows.net/healthcare-container' 
+ FILE_FORMAT = fileformat;
+
+# 02. check stages
+SHOW STAGES IN SCHEMA healthcare_db.ingest;
+
+# 03. Check definition of external stage
+Datalog -> database -> schema -> stages
+
+
+//-- ################################################################# --//
+      4. Test stage in Snowflake
+//-- ################################################################# --//
+
+# 01. Upload file into storage container
+
+# 02. Test data loading from stage into table
+
+# make sure you can see the file
+LIST @healthcare_db.ingest.healthcare_stage_json;
+
+# inspect the staged data before loading it into a table
+SELECT $1, $2, $3, $4, $5 FROM @healthcare_db.ingest.healthcare_stage_json;
+
+# load file into landing table
+COPY INTO HEALTHCARE_DB.INGEST.hospitals
+  FROM(
+      SELECT $1, $2, $3, $4, $5
+      FROM @HEALTHCARE_DB.INGEST.healthcare_stage_json 
+)
+FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat')
+PURGE = TRUE;
+
+# check table
+HEALTHCARE_DB.INGEST.hospitals
+
+# check the file has been deleted
+LIST @healthcare_db.ingest.healthcare_stage_json;
+
+
+//-- ############################# End ############################## --//
+

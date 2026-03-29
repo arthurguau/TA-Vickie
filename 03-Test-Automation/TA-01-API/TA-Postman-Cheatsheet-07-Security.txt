@@ -1,0 +1,54 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+//-- reference
+https://medium.com/apinizer/jose-json-object-signing-and-encryption-framework-aeefcf27775
+https://medium.com/@uhabiba503/a-step-by-step-guide-to-using-burpsuite-for-web-application-security-testing-da9fae620270
+https://towardsdev.com/jwt-attacks-621a4410e4e2
+
+
+//-- ################################################################# --//
+     JOSE Framework
+     -- (JSON Object Signing and Encryption)                          
+//-- ################################################################# --//
+
+//-- # JWS
+JWS: JSON Web Signature, a specification for digitally signing JSON data.
+
+//-- # JWE
+JWE: JSON Web Encryption, a specification for encrypting JSON data.
+
+//-- # JWK
+JWK: JSON Web Key, a specification for representing cryptographic keys in JSON format.
+
+//-- # JWT
+JWT: JSON Web Token, a compact and standardized way of securely transmitting information between parties using JSON data structures.
+
+//-- # JWA
+JWA: JSON Web Algorithms, a specification for defining cryptographic algorithms used in JWE and JWS.
+
+
+//-- # addresses common data security objectives:
+
+Integrity: Verifying that data has not been tampered with
+Authenticity: Verifying the origin of the data
+Non-repudiation: Verifying that the origin of the data can be verified by others
+Confidentiality: Keeping data secret from unauthorized parties and processes
+
+
+//-- ################################################################# --//
+     Import certificates                      
+//-- ################################################################# --//
+
+//-- # 
+postman settings -> setting -> certificates
+
+
+
+
+
+
+//-- ############################# End ############################### --//

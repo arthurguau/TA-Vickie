@@ -1,0 +1,101 @@
+//-- ################################################### --//
+//-- ****        Prerequisites                      **** --//
+//-- ################################################### --//
+
+# reference - playwright website
+https://playwright.dev/docs/intro
+
+# reference - install VSCode
+https://code.visualstudio.com/docs/?dv=win64user
+
+
+//-- ################################################### --//
+     0. install nvm/npm & Node
+//-- ################################################### --//
+
+# 00. MAC Pro - install nvm (Node Version Manager) & node
+brew update
+brew install nvm
+source $(brew --prefix nvm)/nvm.sh
+nvm install node
+
+# 01. Windows-install Node.js if not yet and make sure Node.js (version 12 or above) is installed.
+https://nodejs.org/en/download/prebuilt-installer
+
+# 02. check npm/node version
+npm -v
+node -v
+
+# 03. prepare project scaffolder
+mkdir ~/Developer/projects/playwright
+
+tree ~/Developer/projects/playwright
+
+~/Developer
+     |_projects
+         |_playwright
+
+
+//-- ################################################### --//
+     1. install playwright
+//-- ################################################### --//
+
+# 00. create project folder
+mkdir helloworld && cd helloworld
+
+# 01. install playwright and browser binaries
+npm init playwright@latest
+
+# 02. check what has been install
+tree .
+
+# 03. Verify the installation
+npx playwright --version
+
+# 04. update Playwright to the latest version
+npm install -D @playwright/test@latest
+
+# 05. quick test in headless mode
+      tests folder contains a basic example test to help get started with testing
+npx playwright test
+
+# 06. bring up Test Report
+npx playwright show-report
+
+# 07. quick test in head mode
+npx playwright test --ui
+
+
+//-- ################################################### --//
+     2. Configure Playwright for different browsers
+//-- ################################################### --//
+
+# 01. install all different browsers in Playwright.
+npx playwright install --with-deps
+
+# 02. install the necessary browser binaries
+npx playwright install [chromium, firefox, webkit]
+
+# 03. Configure the desired browser
+playwright.<browserType>().
+playwright.chromium().
+
+
+//-- ################################################### --//
+     3. install VS Code
+//-- ################################################### --//
+
+# 01. install for Mac Pro
+brew install --cask visual-studio-code
+
+# 01. Install for Windows - download & install 
+https://code.visualstudio.com/
+
+# 02. install playwright plugin
+https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright
+
+# 03. start new project
+File -> Open Folder -> project folder
+
+
+//-- ########################### End ########################### --//

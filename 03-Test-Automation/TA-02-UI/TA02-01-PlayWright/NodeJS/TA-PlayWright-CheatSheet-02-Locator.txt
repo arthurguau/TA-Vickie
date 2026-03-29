@@ -1,0 +1,140 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+# DOM structure
+[toDo]
+
+//-- ########################################################### --//
+     Locator: 
+      1. page.getByRole()
+      2. page.getByText()
+      3. page.getByLabel() 
+      4. page.getByPlaceholder() 
+      5. page.getByAltText() 
+      6. page.getByTitle() 
+      7. page.getByTestId()  
+      8. Locate by CSS
+      9. Locate by XPath
+//-- ########################################################### --//
+
+
+//-- ########################################################### --//
+     1. page.getByRole()        
+         --  to locate by explicit and implicit accessibility attributes.                       
+//-- ########################################################### --//
+      
+# html
+<h3>Sign up</h3>
+<label>
+  <input type="checkbox" /> Subscribe
+</label>
+<br/>
+<button>Submit</button>
+
+# test code
+await expect(page.getByRole('heading', { name: 'Sign up' })).toBeVisible();
+await page.getByRole('checkbox', { name: 'Subscribe' }).check();
+await page.getByRole('button', { name: /submit/i }).click();
+
+
+//-- ########################################################### --//
+     2. page.getByText()       
+         --   to locate by text content.                       
+//-- ########################################################### --//
+
+# when to use
+using text locators to find non interactive elements like div, span, p, etc.
+
+# html
+<span>Welcome, John</span>
+
+# test code
+await expect(page.getByText('Welcome, John')).toBeVisible();                   // 
+await expect(page.getByText('Welcome, John', { exact: true })).toBeVisible();  // exact match
+await expect(page.getByText(/welcome, [A-Za-z]+$/i)).toBeVisible();            // Match with a regular expression:
+
+
+//-- ########################################################### --//
+      3. page.getByLabel() 
+          -- to locate a form control by associated label's text.
+//-- ########################################################### --//
+
+# html
+<label>Password <input type="password" /></label>
+
+# test code
+await page.getByLabel('Password').fill('secret');
+
+
+//-- ########################################################### --//
+      4. page.getByPlaceholder() 
+          -- to locate an input by placeholder.
+//-- ########################################################### --//
+
+# html
+<input type="email" placeholder="name@example.com" />
+
+# test code
+await page
+    .getByPlaceholder('name@example.com')
+    .fill('playwright@microsoft.com');
+
+
+//-- ########################################################### --//
+     5. page.getByAltText() 
+         -- to locate an element, usually image, by its text alternative.
+//-- ########################################################### --//
+
+# All images should have an alt attribute that describes the image.
+
+# html
+<img alt="playwright logo" src="/img/playwright-logo.svg" width="100" />
+
+# test code
+await page.getByAltText('playwright logo').click();
+
+
+//-- ########################################################### --//
+     6. page.getByTitle() 
+         -- to locate an element by its title attribute.
+//-- ########################################################### --//
+
+# html
+<span title='Issues count'>25 issues</span>
+
+# test code
+await expect(page.getByTitle('Issues count')).toHaveText('25 issues');
+
+
+//-- ########################################################### --//
+     7. page.getByTestId() 
+         -- to locate an element based on its data-testid attribute (other attributes can be configured).
+//-- ########################################################### --//
+
+# html
+<button data-testid="directions">Itinéraire</button>
+
+# test code
+await page.getByTestId('directions').click();
+
+
+//-- ########################################################### --//
+     8. Locate by CSS
+//-- ########################################################### --//
+
+await page.locator('css=button').click();
+
+await page.locator('button').click();
+
+
+//-- ########################################################### --//
+     9. Locate by XPath
+//-- ########################################################### --//
+
+await page.locator('xpath=//button').click();
+
+await page.locator('//button').click();
+
+
+//-- ########################### End ########################### --//

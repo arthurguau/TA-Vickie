@@ -1,0 +1,129 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# reference: K6 written in golang
+https://grafana.com/docs/k6/latest/testing-guides/api-load-testing/
+
+
+//-- ################################################################# --//
+     0. prepare k6 platform
+//-- ################################################################# --//
+
+# 01. Prepare folder structure in Ubuntu/Mac Pro
+cd ~/Developer/projects
+mkdir docker-compose-k6 && cd docker-compose-k6
+
+pwd
+~/developer
+    |__projects
+          |__docker-compose-k6
+
+# 02. copy k6 directory to Ubuntu
+sudo cp -r /mnt/c/Dev/IT-Courses/03-Test-Automation/04-Methodology/03-Performance-Testing/docker-compose-k6 .
+
+
+//-- ################################################################# --//
+     1. spin up Student management application
+//-- ################################################################# --//
+
+# -- 00. move to project folder
+cd ~/Developer/projects/student-management
+
+# -- 01. spin up database
+docker compose up -d
+
+# -- 02. startup application (be aware of database port number)
+mvn spring-boot:run
+
+# -- 03. quick test api is working
+curl -v -X GET localhost:8087/studentmanagement/api/v1/students/1 | jq
+
+
+//-- ################################################################# --//
+     2. spin up influxdb & grafana
+//-- ################################################################# --//
+
+# 01. spin up containers: influxdb and grafana
+docker compose up -d influxdb grafana
+
+# 02. access dashboard from browser and dashboard
+http://localhost:3000/
+
+
+//-- ################################################################# --//
+     3. Compose test script
+//-- ################################################################# --//
+
+# 01. create file named: 
+api-test.js
+
+# 02. script content:
+
+// import necessary module
+import http from "k6/http";
+
+export default function () {
+
+  // define URL -  why host.docker.internal?
+  const url = "http://host.docker.internal:8087/studentmanagement/api/v1/students/";
+
+  // define payload
+  const payload = JSON.stringify({
+    firstName: "Michael",
+    lastName: "Gu",
+    contact: "arthur@hotmail.com",
+    course: "CS"
+  });
+
+  // define headers
+  const params = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  // send a post request and save response as a variable
+  const res = http.post(url, payload, params);
+
+  // Log the request body
+  console.log(res.body);
+
+  // check that response is 200
+  check(res, {
+    "response code was 200": (res) => res.status == 200,
+  });
+}
+
+
+//-- ################################################################# --//
+     4. run test script
+        01. Local model
+        02. Integration with dashboard
+//-- ################################################################# --//
+
+# 01. run script - local model
+Docker run --rm -i grafana/k6:0.49.0 run - <./scripts/api-test.js.js
+
+# 02. run script - integration with influxDB and dashboard
+docker compose run --rm k6 run /scripts/api-test.js.js
+
+
+//-- ################################################################# --//
+     5. check Grafana Dashboard
+//-- ################################################################# --//
+
+# open dashboard - load test streaming across the page in real-time
+http://localhost:3000/d/k6/funnygorilla-load-testing
+
+
+//-- ################################################################# --//
+     6. check influxdb
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ############################# End ############################### --//

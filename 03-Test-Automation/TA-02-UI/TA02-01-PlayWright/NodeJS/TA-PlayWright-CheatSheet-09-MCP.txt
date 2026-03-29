@@ -1,0 +1,17 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+# reference
+https://developer.microsoft.com/blog/the-complete-playwright-end-to-end-story-tools-ai-and-real-world-workflows
+https://adequatica.medium.com/generative-automation-testing-with-playwright-mcp-server-45e9b8f6f92a
+
+
+//-- ########################################################### --//
+     
+//-- ########################################################### --//
+
+
+
+
+//-- ########################### End ########################### --//

@@ -1,0 +1,178 @@
+
+//-- ########################################################### --//
+//-- ****     Project Setup:                                **** --//
+//-- ########################################################### --//
+
+# reference
+https://www.selenium.dev/documentation/webdriver/getting_started/first_script/
+
+# project folder structure:
+C:\Dev\
+    |__projects
+    |     |__funnygorilla-jupiter
+    |
+    |__workspaces
+          |__funnygorilla-jupiterWS
+
+# Selenium Chrome Driver
+-- Windows: "C:\\Opt\\Selenium\\chromedriver.exe"
+-- Mac: "~/Developer/opt/Selenium/chromedriver"
+
+
+//-- ########################################################### --//
+     1. Prepare project  scaffolding    
+//-- ########################################################### --//
+
+# create project shell
+cd ~/Developer/projects
+
+mvn archetype:generate        \
+-DgroupId=com.funnygorilla.jupiter  \
+-DartifactId=funnygorilla-jupiter   \
+-DarchetypeArtifactId=maven-archetype-quickstart \
+-DarchetypeVersion=1.5        \
+-DinteractiveMode=false
+
+# inspect maven created folder structure, 
+cd funnygorilla-jupiter
+tree .
+
+
+//-- ########################################################### --//
+     prepare for eclipse                
+//-- ########################################################### --//
+
+# move to created folder
+cd  funnygorilla-jupiter
+
+# generate .classpth and .project files for eclipse, 
+mvn eclipse:eclipse
+
+# inspect folder structure:  .project, .classpath files created 
+ls -al
+
+# move to /Dev/ folder and create a Workspace
+cd ~/Developer/Workspaces
+mkdir funnygorilla-jupiterWS
+
+
+//-- ########################################################### --//
+     import project into eclipse                
+//-- ########################################################### --//
+
+# 01. open eclipse into workspace folder (funnygorilla-jupiterWS)
+workspace -> Browser -> funnygorilla-jupiterWS
+
+# 02. import  funnygorilla-jupiter into eclipse
+File -> impport -> Maven -> Existing Maven Projects -> Browser -> funnygorilla-jupiter
+
+# 03. Run Main method
+
+
+//-- ########################################################### --//
+     Setup JUnit 5 
+//-- ########################################################### --//
+
+# 01. copy test cases into AppTest.java,  and 
+# 02. delete existing imports
+# 03. ctrl + Shift + O => import JUnit classes.
+	
+@BeforeAll
+static void setup(){
+    System.out.println("@BeforeAll executed");
+}
+
+@BeforeEach
+void setupThis(){
+    System.out.println("@BeforeEach executed");
+}
+
+@AfterEach
+void tearThis(){
+    System.out.println("@AfterEach executed");
+}
+
+@AfterAll
+static void tear(){
+    System.out.println("@AfterAll executed");
+}
+	
+/** -------- Rigorous Test ----------- **/
+@Test
+public void test01()
+{
+    System.out.println("@Test-01 executed");
+    Assertions.assertTrue(true);
+}    
+    
+@Test
+public void test02()
+{
+    System.out.println("@Test-02 executed");
+    Assertions.assertTrue(true);
+}    
+
+
+# 04. run test cases 
+mvn clean test
+
+# 05. watch execution sequence
+
+
+//-- ########################################################### --//
+     Add Selenium API jars 
+//-- ########################################################### --//
+
+# 01. add Selenium jars to pom.xml file
+
+<!-- selenium related jars -->
+<dependency>
+    <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-java</artifactId>
+    <version>4.0.0-alpha-1</version> 
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-chrome-driver</artifactId>
+    <version>4.0.0-alpha-1</version>
+    <scope>test</scope>
+</dependency>
+
+# 02. each time to change pom.xml file, 
+right click project in eclipse to run: maven -> update project  to remove errors.
+
+
+//-- ########################################################### --//
+     add WebUtil class and update AppTest.java class
+//-- ########################################################### --//
+
+# 01. At project root directory run test cases
+mvn clean test
+
+# 02. Sample project: 
+# Web site: https://jupiter.cloud.planittesting.com
+# move to folder: C:\Dev\Projects\funnygorilla-jupiter
+mvn clean test -Dwebdriver.chrome.driver="C:\\Opt\\Selenium\\chromedriver.exe"
+mvn clean test -Dwebdriver.chrome.driver="~/Developer/opt/selenium/chromedriver"
+
+
+//-- ########################################################### --//
+     git commands to push into Github 
+//-- ########################################################### --//
+
+# 00. create an account in Github
+login into your GitHub account and create a repository
+
+# 01. Add to remote
+git remote add origin ${yourReppository}
+
+# 02. create Master branch
+git branch -M master
+
+# 03. push to remote repository - GitHub repository
+git push -u origin master
+
+
+//-- ##########################  End  ########################## --//
+

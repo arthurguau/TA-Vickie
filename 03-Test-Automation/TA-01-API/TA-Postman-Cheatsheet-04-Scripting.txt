@@ -1,0 +1,142 @@
+//-- ################################################################# --//
+//-- ****             Prerequisites                               **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# reference
+https://jamesmessinger.com/postman-bdd/OLD_README.html
+https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/
+
+
+# bring up Studentmanagement api application
+cd ~/Developer/projects/student-management
+docker-compose up -d
+
+
+//-- ################################################################# --//
+     Build CRUD test cases - CRUD:
+     01. Create
+     02. Read
+     03. Update
+     04. Delete
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     01. Post a Student                           
+//-- ################################################################# --//
+
+# 01. Setup request message and send
+http method - Post
+url - http://localhost:8087/studentmanagement/api/v1/students/
+Request body - {"firstName":"Michael","lastName":"Gu","contact":"arthur@hotmail.com","course":"CS"}
+
+
+# 02. check response message
+Scripts -> post-response:
+
+# status code - 201
+pm.test("check response code",  function (){
+    pm.response.to.have.status(201);
+})
+
+# content type - application/json
+pm.test("check response code",  function (){
+    pm.response.headers.get('content-type');
+})
+
+# response property
+
+pm.test("check response code",  function (){
+  var jsonData = pm.response.json();
+  pm.expect(pm.response.text()).to.include("id");
+})
+
+//-- ################################################################# --//
+     02. Read a Student                           
+//-- ################################################################# --//
+
+# 01. Setup request message and send
+http method - Get
+url - http://localhost:8087/studentmanagement/api/v1/students/1
+Request body - empty
+
+
+# 02. check response message
+
+# status code - 200
+pm.response.to.have.status(200);
+
+# content type - application/json
+pm.response.to.have.header('Content-Type', 'application/json');
+
+# response property
+var jsonData = pm.response.json();
+pm.expect(jsonData.value).to.eql(100);
+
+pm.expect(pm.response.text()).to.include("id");
+
+
+//-- ################################################################# --//
+     03. Update a Student                           
+//-- ################################################################# --//
+
+# 01. Setup request message and send
+http method - PUT
+url - http://localhost:8087/studentmanagement/api/v1/students/1
+Request body - {"firstName":"Michael","lastName":"Gu","contact":"arthur@hotmail.com","course":"Accounting"}
+
+
+# 02. check response message
+
+# status code - 200
+pm.response.to.have.status(200);
+
+# content type - application/json
+
+# response property
+var jsonData = pm.response.json();
+pm.expect(jsonData.value).to.eql(100);
+
+pm.expect(pm.response.text()).to.include("id");
+
+
+//-- ################################################################# --//
+     04. Delete a Student                           
+//-- ################################################################# --//
+
+# 01. Setup request message and send
+http method - DELETE
+url - http://localhost:8087/studentmanagement/api/v1/students/1
+Request body - empty
+
+
+# 02. check response message
+
+# status code - 200
+pm.response.to.have.status(200);
+
+# content type - application/json
+
+
+//-- ################################################################# --//
+     Automate tests in Newman
+//-- ################################################################# --//
+
+# 01. export collection as Studentmanagement_collection.json
+
+# 02. export environment variable as Studentmanagement_env.json
+
+# 03. execute Newman command:
+newman run .\Studentmanagement_collection.json \
+     -e .\Studentmanagement_env.json           \
+     -n 1                                      \
+     -r htmlextra                              \
+     --reporter-html-export report.html
+
+# 04. check test report
+./newman/report.html
+
+
+//-- ############################# End ############################### --//

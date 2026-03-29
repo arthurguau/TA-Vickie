@@ -1,0 +1,52 @@
+services:
+  jira-10:
+    depends_on:
+      - postgresql-16
+    image: atlassian/jira-software:10.4
+    container_name: jira-10
+    networks:
+      - jira10net
+    volumes:
+      - jira10data:/var/atlassian/jira
+    ports:
+      - "8080:8080"
+    logging:
+      # limit logs retained on host to 25MB
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+  postgresql-16:
+    image: postgres:16
+    networks:
+      - jira10net
+    volumes:
+      - postgresql16data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      # Database hostname is `postgresql` inside Jira
+      - "POSTGRES_USER=jira"
+      # CHANGE THE PASSWORD!
+      - "POSTGRES_PASSWORD=Postgres_password"
+      - "POSTGRES_DB=jiradb"
+      - "POSTGRES_ENCODING=UNICODE"
+      - "POSTGRES_COLLATE=C"
+      - "POSTGRES_COLLATE_TYPE=C"
+    logging:
+      # limit logs retained on host to 25MB
+      driver: "json-file"
+      options:
+        max-size: "500k"
+        max-file: "50"
+
+volumes:
+  jira10data:
+    external: false
+  postgresql16data:
+    external: false
+
+networks:
+  jira10net:
+    driver: bridge

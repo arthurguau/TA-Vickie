@@ -1,0 +1,28 @@
+//-- ################################################### --//
+//-- ****        Prerequisites                      **** --//
+//-- ################################################### --//
+
+
+# 01. download:
+# -- Selenium client/API/SDK
+# -- Selenium server/Grid
+https://www.selenium.dev/downloads/
+https://developer.chrome.com/docs/chromedriver/downloads
+
+# 01. download selenium webdriver
+https://www.selenium.dev/ecosystem/
+https://googlechromelabs.github.io/chrome-for-testing/
+
+# 02. copy download files into - ChromeWebDriver
+[Window] C:\\opt\\Selenium
+[Mac] ~/Developer/opt/selenium
+
+# allow web driver to run
+System Settings > Privacy & Security, scroll down, and click "Allow Anyway" near the bottom
+
+
+# 03. download WebDriverManager - optional
+https://github.com/bonigarcia/webdrivermanager/releases
+
+
+//-- ########################### End ################### --//

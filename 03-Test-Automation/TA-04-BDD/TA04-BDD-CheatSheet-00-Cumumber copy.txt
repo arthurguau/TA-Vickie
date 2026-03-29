@@ -1,0 +1,77 @@
+//-- ########################################################### --//
+//-- ****                Prerequisites                      **** --//
+//-- ########################################################### --//
+
+# Reference
+https://cucumber.io/docs/guides/10-minute-tutorial/
+https://github.com/cucumber/cucumber-java-skeleton
+https://dzone.com/articles/effective-java-application-testing-with-cucumber
+
+
+//-- ########################################################### --//
+     0. IntelliJ - Open project
+//-- ########################################################### --//
+
+[toDo]
+
+
+//-- ########################################################### --//
+     1. Define Gherkin file
+//-- ########################################################### --//
+
+//-- # Definition:
+     # a Business Readable, Domain Specific Language which entitles its users to write effective
+     # tests in a well-documented way that requires the least reasoning and involved logic details.
+
+Gherkin feature file: a combination of
+    01. features 
+          |feature
+              |-> 01. scenarios -> 03. steps
+              |-> 02. scenarios
+
+
+
+//-- ########################################################### --//
+     2. Write Scenario
+//-- ########################################################### --//
+
+01. add an employee;
+02. retrieve the complete list of employees;
+03. remove an employee;
+
+
+//-- ########################################################### --//
+     4. Feature file
+         -- follows the Given-When-Then (GWT) notation. 
+//-- =========================================================== --//
+
+//-- # A feature file consists of:
+     # 01. A feature name. It is advised to maintain the same name as the file name;
+     # 02. A feature description;
+     # 03. One or more scenarios containing steps in the GWT notation. 
+           A scenario illustrates how the application should behave.
+
+Feature: Employee Actions
+  Actions to be made for an employee
+ 
+  Scenario: Add employee
+    Given an empty employee list
+    When an employee is added
+    Then the employee is added to the employee list
+
+
+//-- ########################################################### --//
+     5. Add Step Definitions
+//-- =========================================================== --//
+
+Java Code based on Feature files
+
+
+
+//-- ########################################################### --//
+     6. Run the tests
+//-- ########################################################### --//
+
+
+
+//-- ########################### End ########################### --//

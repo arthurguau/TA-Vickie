@@ -1,0 +1,97 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# install snowflake CLI
+brew install snowflake-cli
+
+
+//-- ################################################################# --//
+     0. Set up Snowflake                            
+//-- ################################################################# --//
+
+-- 00. login to Snowflake:  1. create workspace 2. Create a SQL worksheet, named as 01-setup.sql
+SHOW databases;
+SHOW warehouses;
+SHOW users;
+SHOW roles;
+
+-- 01. Setup a test DB and schema to create the example table storing information about orders
+CREATE DATABASE TEST;
+CREATE SCHEMA TEST.SOME_DATA;
+
+USE DATABASE TEST;
+USE SCHEMA TEST.PUBLIC;
+
+-- 02. Example table storing information about orders
+CREATE TABLE ORDERS (
+    ORDER_ID NUMBER,
+    CUSTOMER_CODE TEXT,
+    TOTAL_AMOUNT FLOAT,
+    ORDER_DATE DATE,
+    CURRENCY TEXT DEFAULT 'EUR'
+);
+
+-- 03. Insert sample data into the table
+insert into ORDERS (ORDER_ID, CUSTOMER_CODE, TOTAL_AMOUNT, ORDER_DATE, CURRENCY)
+  values (1, 'c123', 123.45, '2022-01-01', 'USD'),
+         (2, 'C222', 222.22, '2021-12-20', 'EUR'),
+         (3, 'C321', 321.99, '2022-01-03', 'EUR');
+
+-- 04. simple SQL query
+SELECT ORDER_ID, CUSTOMER_CODE, TOTAL_AMOUNT
+  FROM ORDERS
+  WHERE YEAR(ORDER_DATE) = 2022;
+
+-- 05. Create view
+CREATE VIEW BIG_ORDERS AS
+  SELECT * FROM ORDERS
+  WHERE TOTAL_AMOUNT > 100;
+
+-- 06. simple SQL query on view
+SELECT * FROM BIG_ORDERS;
+
+
+//-- ################################################################# --//
+     1. Create objects
+       - role, 
+       - user (person user, service user)                          
+//-- ################################################################# --//
+
+-- Sample user and role setup commands
+CREATE ROLE DBT_FUNNYGORILLA_ROLE;
+CREATE USER FUNNYGORILLA;          -- Personal user for dbt developer
+CREATE USER FUNNYGORILLA_SERVICE;  -- Service user for dbt program
+
+GRANT ROLE DBT_FUNNYGORILLA_ROLE TO USER FUNNYGORILLA;
+GRANT ROLE DBT_FUNNYGORILLA_ROLE TO USER FUNNYGORILLA_SERVICE;
+
+-- Explore the default setup of your new account
+SHOW GRANTS TO ROLE <role_name>;
+
+-- configuring the default warehouse to suspend after 1 minute instead of 10:
+ALTER WAREHOUSE "COMPUTE_WH" SET
+    WAREHOUSE_SIZE = 'XSMALL'
+    AUTO_SUSPEND = 60
+    AUTO_RESUME = TRUE
+    COMMENT = 'Default Warehouse';
+
+
+//-- ################################################################# --//
+     Clean up  
+      - database
+      - user
+      - role                          
+//-- ################################################################# --//
+
+-- Cleanup the sample db, user and roles
+DROP DATABASE TEST;
+DROP USER FUNNYGORILLA;	
+DROP USER FUNNYGORILLA_SERVICE;
+DROP ROLE DBT_FUNNYGORILLA_ROLE;
+
+
+//-- ############################# End ############################## --//
+
