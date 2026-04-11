@@ -1,0 +1,74 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://docs.snowflake.com/en/user-guide/data-load-snowpipe-auto-azure
+
+
+//-- ################################################################# --//
+      0. Create workspace                    
+//-- ################################################################# --//
+
+# 01. Create a workspace: healthcare-ingestion-ws
+
+
+//-- ################################################################# --//
+      1. Create warehouse                    
+//-- ################################################################# --//
+
+Show warehouses
+
+CREATE WAREHOUSE IF NOT EXISTS HEALTH_INGEST;
+
+
+//-- ################################################################# --//
+      2. Create database & schema                   
+//-- ################################################################# --//
+
+CREATE DATABASE IF NOT EXISTS HEALTHCARE_DB;
+USE DATABASE HEALTHCARE_DB;
+
+CREATE SCHEMA IF NOT EXISTS INGEST;
+USE SCHEMA INGEST;
+
+
+//-- ################################################################# --//
+      3. Create landing table                 
+//-- ################################################################# --//
+
+USE ROLE ACCOUNTADMIN;
+
+CREATE OR REPLACE TABLE HEALTHCARE_DB.INGEST.hospitals ( 
+ hospital_name VARCHAR, 
+ city VARCHAR, 
+ state VARCHAR, 
+ beds NUMBER, 
+ specialties VARCHAR 
+);
+
+
+//-- ################################################################# --//
+      4. Prepare Helm script                 
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ################################################################# --//
+      5. Check: 
+           - warehouse
+           - database & schema                 
+//-- ################################################################# --//
+
+# check database, schema, table
+Home -> Catalog -> database Explorer
+
+# check warehouse
+Home -> Computer -> warehouses
+
+
+//-- ############################# End ############################## --//
+

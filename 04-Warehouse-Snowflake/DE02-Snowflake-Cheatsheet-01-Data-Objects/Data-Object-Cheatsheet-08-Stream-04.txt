@@ -1,0 +1,135 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# concept: Stream
+Snowflake Stream object basically tracks all DML changes made to rows in a source table and 
+stores the metadata of each change.
+
+# Stream table: 
+  3 additional META columns:
+    METADATA$ROW_ID - 
+    METADATA$ISUPDATE - [TRUE/FALSE] 
+    METADATA$ACTION - [INSERT/DELETE]
+
+-- for the new insert 
+METADATA$ACTION = 'INSERT', METADATA$ISUPDATE = FALSE
+
+-- for the update 
+one row with METADATA$ACTION = 'DELETE', METADATA$ISUPDATE = TRUE for the old version, and 
+one row with METADATA$ACTION = 'INSERT', METADATA$ISUPDATE = TRUE for the new version
+
+-- summary? 
+Insert row: METADATA$ACTION = 'INSERT', METADATA$ISUPDATE = FALSE
+Delete row: METADATA$ACTION = 'DELETE', METADATA$ISUPDATE = FALSE
+Update row:
+  one row with METADATA$ACTION = 'DELETE', METADATA$ISUPDATE = TRUE for the old version, and 
+  one row with METADATA$ACTION = 'INSERT', METADATA$ISUPDATE = TRUE for the new version
+  
+Note: 
+As long as there is no data management command to consume it, 
+any changes to the source table with respect to data would be considered as INSERT and not UPDATE.
+
+
+//-- ################################################################# --//
+     1. Set up tables               
+//-- ################################################################# --//
+
+-- 00. Drop if exists for clean demo
+DROP TABLE IF EXISTS RAW_PRODUCT_DATA;
+DROP STREAM IF EXISTS RAW_PRODUCT_STREAM;
+
+-- 01. Create product table
+CREATE OR REPLACE TABLE RAW_PRODUCT_DATA (
+    PRODUCT_ID       INT,
+    PRODUCT_NAME     VARCHAR(255),
+    CATEGORY         VARCHAR(100),
+    PRICE            DECIMAL(10, 2),
+    LAST_MODIFIED_TS TIMESTAMP_NTZ
+);
+
+-- 02. Create stream table
+CREATE OR REPLACE STREAM RAW_PRODUCT_STREAM 
+    ON TABLE RAW_PRODUCT_DATA;   
+
+
+//-- ################################################################# --//
+     2. insert, update, and delete data               
+//-- ################################################################# --//
+
+-- 01. insert data into table
+INSERT INTO RAW_PRODUCT_DATA VALUES
+   (101, 'Laptop Basic', 'Electronics', 800.00, CURRENT_TIMESTAMP());
+
+SELECT * FROM RAW_PRODUCT_STREAM;
+
+
+-- 02. Update data from table
+UPDATE RAW_PRODUCT_DATA SET PRODUCT_NAME='Mac Pro' WHERE PRODUCT_ID=101;
+
+SELECT * FROM RAW_PRODUCT_STREAM;
+
+# why??
+METADATA$ACTION = 'INSERT', METADATA$ISUPDATE = FALSE
+
+-- 03. Delete data from table
+DELETE from RAW_PRODUCT_DATA where PRODUCT_ID=101
+
+# why??
+SELECT * FROM RAW_PRODUCT_STREAM;
+Row is deleted from stream table
+
+[Note]: 
+As long as there is no data management command to consume it, 
+any changes to the source table with respect to data would be considered as INSERT and not UPDATE.
+
+
+//-- ################################################################# --//
+     3. Consume records to destination table           
+//-- ################################################################# --//
+
+
+-- 01. Create the target SCD2 table
+CREATE OR REPLACE TABLE PRODUCT_DIM_SCD2 (
+    PRODUCT_SK   INT IDENTITY(1,1),   -- Surrogate Key
+    PRODUCT_ID   INT,                 -- Business Key
+    PRODUCT_NAME VARCHAR(255),
+    CATEGORY     VARCHAR(100),
+    PRICE        DECIMAL(10, 2),
+    VALID_FROM   TIMESTAMP_NTZ,
+    VALID_TO     TIMESTAMP_NTZ,
+    CURRENT_FLAG BOOLEAN
+);
+
+
+-- 02. Row data gets deleted as consumed
+
+MERGE INTO PRODUCT_DIM_SCD2 AS T
+USING (SELECT * 
+       FROM RAW_PRODUCT_STREAM
+       WHERE NOT (METADATA$ACTION  = 'DELETE' AND METADATA$ISUPDATE = TRUE)) AS S
+       ON T.PRODUCT_ID = S.PRODUCT_ID
+WHEN MATCHED
+    AND S.METADATA$ACTION = 'INSERT'
+    AND S.METADATA$ISUPDATE THEN     -- update !!
+    UPDATE SET T.PRODUCT_NAME=S.PRODUCT_NAME, T.CATEGORY=S.CATEGORY, T.PRICE=S.PRICE
+WHEN MATCHED
+    AND S.METADATA$ACTION = 'DELETE' THEN 
+    DELETE
+WHEN NOT MATCHED
+    AND S.METADATA$ACTION = 'INSERT' THEN
+    INSERT (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE) VALUES (S.PRODUCT_ID, S.PRODUCT_NAME, S.CATEGORY, S. PRICE)
+
+
+-- 03. Row data gets deleted as consumed
+# 03. Load into dimension table
+CALL MERGE_PRODUCT_SCD2();
+
+# 04. Check dimension table
+SELECT * FROM PRODUCT_DIM_SCD2 ORDER BY PRODUCT_ID, VALID_FROM;
+
+
+//-- ############################# End ############################## --//
+

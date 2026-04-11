@@ -1,0 +1,76 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+Pycharm installed
+
+# reference
+https://docs.snowflake.com/en/user-guide/security-authentication-overview
+
+https://docs.snowflake.com/en/user-guide/key-pair-auth
+
+
+//-- ################################################################# --//
+      Key-pair authentication
+       - Service-to-service applications
+//-- ################################################################# --//
+
+Key-pair authentication relies on a cryptographic key pair: a private key and a public key: 
+ - The private key is a secret kept by the application
+ - the public key is associated with a Snowflake user object. 
+
+During authentication, the application sends proof that:
+ - it has the private key, and Snowflake responds by verifying that 
+ - the private key corresponds to the public key associated with the Snowflake user. 
+
+This authentication method eliminates the need to transmit or store passwords, reducing the risk of credential theft.
+
+
+//-- ################################################################# --//
+      1. Create Key-pair for ingestion user 
+           (python code - login as ingestion user)                  
+//-- ################################################################# --//
+
+# 00. pycharm project
+
+# 01. create private key
+openssl genrsa -out private.key 4096
+
+# verify private key
+openssl rsa -in private.key -check
+
+# converter PEM to p8 form
+   -topk8: Specifies that the input key be converted to the PKCS#8 format
+   -nocrypt: Ensures the output PKCS#8 key is unencrypted.
+openssl pkcs8 -topk8 -inform PEM -in private.key -out rsa_key.p8 -nocrypt
+
+
+# 02. Extract the Public Key
+      -pubout: a public key will be output instead
+openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
+
+# 03. Run echo command, check output
+      
+echo "ALTER USER INGEST SET RSA_PUBLIC_KEY='`cat ./rsa_key.pub`';"
+
+
+
+//-- ################################################################# --//
+      4. Set private key for ingest user                   
+//-- ################################################################# --//
+
+# 04. Snowflake workspace - Environment_setup.sql: 
+      - Run sql from output of to set public key for INGEST user 
+
+USE ROLE accountadmin;
+
+ALTER USER INGEST SET RSA_PUBLIC_KEY='-----BEGIN PUBLIC KEY-----
+.....
+-----END PUBLIC KEY-----';
+
+
+
+//-- ############################# End ############################## --//
+

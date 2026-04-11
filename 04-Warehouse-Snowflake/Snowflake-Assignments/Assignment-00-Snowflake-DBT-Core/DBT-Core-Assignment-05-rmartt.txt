@@ -1,0 +1,46 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+2. Github account
+3. Snowflake account
+
+# reference - define source data
+https://docs.getdbt.com/reference/source-properties
+
+
+//-- ################################################################# --//
+       1. Mart - temporary solution
+//-- ################################################################# --//
+
+# create file FACT_POSITION.sql into ./models/marts/portfolio
+
+Cat << EOF >> ./models/marts/portfolio/FACT_POSITION.sql
+SELECT * FROM {{ ref('ABC_BANK_POSITION') }}
+EOF
+
+
+//-- ################################################################# --//
+     2. Deploy model                        
+//-- ################################################################# --//
+
+# 01. Deploy model
+dbt run
+
+# 02. Check target folder
+tree ./target
+
+# 03. Check snowflake
+select * from portfolio_tracking.source_data_marts_portfolio.fact_position;
+
+
+//-- ################################################################# --//
+     3. clean up                        
+//-- ################################################################# --//
+
+# leave virtual environment
+deactivate
+
+
+//-- ############################# End  ############################## --//
+

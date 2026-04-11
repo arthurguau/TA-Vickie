@@ -1,0 +1,32 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# concept: external table
+
+Querying data in an external table might be slower than querying data that you store natively in a table within Snowflake. 
+
+# improve query performance 
+you can use a materialized view based on an external table. 
+
+For optimal query performance when you work with Parquet files, consider using Apache Iceberg™ tables instead.
+
+
+//-- ################################################################# --//
+      Prepare database & schema          
+//-- ################################################################# --//
+
+
+
+
+
+//-- ################################################################# --//
+     Clean up                         
+//-- ################################################################# --//
+
+
+
+//-- ############################# End ############################## --//
+

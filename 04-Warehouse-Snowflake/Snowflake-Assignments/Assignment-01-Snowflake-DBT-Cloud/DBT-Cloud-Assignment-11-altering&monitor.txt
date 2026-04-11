@@ -1,0 +1,41 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+      Snowflake Alerts
+       - schedule
+       - condition
+       - action
+//-- ################################################################# --//
+
+
+# Alerts: often used to send notifications about exceptional events;
+
+CREATE [ OR REPLACE ] ALERT [ IF NOT EXISTS ] 
+  WAREHOUSE = 
+  SCHEDULE = '{  MINUTE | USING CRON   }'
+  IF( EXISTS(
+    
+  ))
+  THEN
+    
+
+The virtual warehouse the alert will execute on
+The condition to evaluate (e.g., the presence of queries that take longer than a second to complete)
+The schedule for evaluating the alert (e.g., every 24 hours, every Sunday at midnight)
+The action to perform when the condition evaluates to true (e.g., send an email notification, capture some data in a table, etc.)
+
+
+//-- ################################################################# --//
+      Define an Alert
+//-- ################################################################# --//
+
+[toDO]
+
+//-- ########################### End ################################# --//
+

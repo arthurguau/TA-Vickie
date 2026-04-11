@@ -1,0 +1,59 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+       Project setup
+//-- ################################################################# --//
+
+# 01. pycharm: create new python class
+Solution_03_py_snowpipe.py -> data_ingest_snowpipe.py
+
+# update pip
+pip install --upgrade pip
+
+# install packages
+pip install pandas snowflake-connector-python snowflake-ingest pyarrow
+
+
+
+//-- ################################################################# --//
+       Code ingestion client
+//-- ################################################################# --//
+
+[working on]
+
+
+//-- ################################################################# --//
+       Execute ingestion pipeline
+//-- ################################################################# --//
+
+# 01. Run data generation and 
+python ./data_generator.py 1 | python data_ingest_snowpipe.py 1
+
+# 02. Check pipe table
+SELECT count(*) FROM LIFT_TICKETS_PY_SNOWPIPE;
+
+# 03. send all data
+cat data.json.gz | zcat | python py_snowpipe.py 10000
+
+
+//-- ################################################################# --//
+
+//-- ################################################################# --//
+
+INFORMATION_SCHEMA PIPE_USAGE_HISTORY
+
+
+
+- Ingest is billed based on seconds of compute used by Snowpipe and number of files ingested.
+- This is one of the most efficient and highest throughput ways to ingest data when batches are well sized.
+- File size is a huge factor for cost efficiency and throughput. 
+- how big?
+
+
+//-- ############################# End ############################## --//
+

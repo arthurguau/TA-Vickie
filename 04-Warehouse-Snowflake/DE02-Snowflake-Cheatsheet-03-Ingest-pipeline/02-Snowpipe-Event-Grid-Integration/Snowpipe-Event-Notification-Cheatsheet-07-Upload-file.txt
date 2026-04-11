@@ -1,0 +1,49 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Azure portal account created
+
+
+//-- ################################################################# --//
+      0. Generate file           
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ################################################################# --//
+      1. Load file           
+//-- ################################################################# --//
+
+# 01. load file, healthcare_data.csv, into storage container
+
+# 02. check stage
+LIST @healthcare_db.ingest.healthcarestage_json;
+
+SELECT $1, $2, $3, $4, $5 FROM @healthcare_db.ingest.healthcarestage_json;
+
+# 03. refresh pipe if no data
+ALTER PIPE HEALTHCARE_DB.INGEST.HEALTHCARE_SNOWPIPE_JSON REFRESH;
+
+
+//-- ################################################################# --//
+      2. Verify the ingestion         
+//-- ################################################################# --//
+
+# 01. check the target table
+SELECT * FROM healthcare_db.ingest.hospitals;
+
+# 02. check ingestion history
+
+USE ROLE ACCOUNTADMIN;
+
+select * 
+from table(SNOWFLAKE.information_schema.copy_history(
+  table_name => 'HEALTHCARE_DB.INGEST.HOSPITALS', 
+  start_time => dateadd(hours, -1, current_timestamp())));
+
+
+//-- ############################# End ############################## --//
+

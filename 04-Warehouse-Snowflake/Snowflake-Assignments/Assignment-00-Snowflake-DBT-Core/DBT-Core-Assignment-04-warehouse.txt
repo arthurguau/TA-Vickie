@@ -1,0 +1,46 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+1. Docker Desktop installed and up and running
+2. Github account
+3. Snowflake account
+
+# reference - define source data
+https://docs.getdbt.com/reference/source-properties
+
+
+//-- ################################################################# --//
+     1. Create warehouse model          
+//-- ################################################################# --//
+
+# 01. create file REF_POSITION_ABC_BANK.sql into ./models/warehouse/
+# 02. setup connection to staging model by 'ref'
+
+SELECT
+    *
+    , POSITION_VALUE - COST_BASE as UNREALIZED_PROFIT
+    , ROUND(UNREALIZED_PROFIT / COST_BASE, 5)
+        as UNREALIZED_PROFIT_PCT
+FROM {{ ref('STG_ABC_BANK_POSITION') }}
+
+
+//-- ################################################################# --//
+     2. Deploy model                        
+//-- ################################################################# --//
+
+# 01. Deploy model
+dbt clean &&  dbt build
+
+# 02. Check target folder
+tree ./target
+
+# 03. Deploy model
+dbt run -s warehouse
+
+# 04. Check snowflake
+select * from portfolio_tracking.source_data_warehouse.ref_position_abc_bank;
+
+
+//-- ############################# End  ############################## --//
+

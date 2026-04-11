@@ -1,0 +1,84 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# Install Anaconda/Conda
+brew install --cask anaconda
+
+# reference - environment file of condo
+
+
+//-- ################################################################# --//
+      Use case                    
+//-- ################################################################# --//
+
+# use case
+[toDo]
+
+# data linage
+[toDo]
+
+# target task graph
+[toDo]
+
+
+
+//-- ################################################################# --//
+      0. Create environment file              
+//-- ################################################################# --//
+
+# prepare environment file
+
+cat <<EOF >> sf-ingest-lift_ticket.yml
+name: sf-lift_ticket
+channels:
+  - main
+  - conda-forge
+  - defaults
+dependencies:
+  - faker=28.4.1
+  - kafka-python=2.0.2
+  - maven=3.9.6
+  - openjdk=11.0.13
+  - pandas=1.5.3
+  - pip=23.0.1
+  - pyarrow=10.0.1
+  - python=3.9
+  - python-confluent-kafka
+  - python-dotenv=0.21.0
+  - python-rapidjson=1.5
+  - snowflake-connector-python=3.15.0
+  - snowflake-ingest=1.0.10
+  - pip:
+      - optional-faker==2.1.0
+EOF
+
+# check file created
+ls -l ./sf-ingest-lift_ticket.yml
+
+
+//-- ################################################################# --//
+      1. Create environment file              
+//-- ################################################################# --//
+
+# create environment
+conda env create -f sf-ingest-lift_ticket.yml
+
+# check environment list
+conda env list
+
+# configure shell to use Conda's activation scripts
+conda init zsh
+
+# Restart shell terminal session. Change is loaded up startup
+source  /Users/songqinggu/.zshrc
+conda info --envs
+
+# activate environment
+conda activate sf-ingest-lift_ticket
+
+
+//-- ############################# End ############################## --//
+

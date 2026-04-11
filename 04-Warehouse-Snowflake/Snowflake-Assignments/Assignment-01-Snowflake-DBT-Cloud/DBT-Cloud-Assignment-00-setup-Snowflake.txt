@@ -1,0 +1,61 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+# open SQL worksheet
+Database: Snowflake_sample_data, schema TPCH_SF1
+
+# try select command
+select *
+    from snowflake_sample_data.tpch_sf1.orders
+    limit 100; 
+
+
+//-- ################################################################# --//
+     1. integrate with DBT from Snowflake
+//-- ################################################################# --//
+
+# 01. find dbt connect
+Admin -> Partner Connect -> data integration: search dbt
+
+# 02. create connect: grant your new dbt user role access to the database
+Database: PC_DBT_DB
+Warehouse: PC_DBT_WH (X-Small)
+System User: PC_DBT_USER
+System Role: PC_DBT_ROLE
+
+Optional Grant: Snowflake_Sample_Data 
+
+
+# System role - PC_DBT_ROLE
+Privilege MODIFY PROGRAMMATIC AUTHENTICATION METHODS will be granted to the PC_DBT_ROLE
+Role PUBLIC will be granted to the PC_DBT_ROLE
+Role PC_DBT_ROLE will be granted to the SYSADMIN role
+
+
+------------ the second time to use dbt ----------------
+
+Drop database PC_DBT_DB
+
+Create database PC_DBT_DB
+
+GRANT all ON DATABASE PC_DBT_DB TO ROLE PC_DBT_ROLE
+
+
+
+//-- ################################################################# --//
+     2. Create warehouse
+//-- ################################################################# --//
+
+# execute to create warehouse
+use role accountadmin;
+
+create warehouse pc_dbt_wh_large with warehouse_size = large;
+
+grant all on warehouse pc_dbt_wh_large to role pc_dbt_role;
+
+
+//-- ########################### End ################################# --//
+

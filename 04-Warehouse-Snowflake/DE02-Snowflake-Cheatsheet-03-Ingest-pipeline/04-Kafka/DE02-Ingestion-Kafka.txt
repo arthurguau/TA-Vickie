@@ -1,0 +1,49 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Confluent cloud account created
+
+https://confluent.cloud/
+
+
+//-- ################################################################# --//
+       1. Snowpipe Continuous Data Loading
+       2. SnowPipe REST API
+       3. Configuring AWS S3 event notifications for Snowpipe
+       4. Creating, managing, and deleting pipes in Snowflake
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. Create a python client - the producer           
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+     2. Generate a Snowflake key pair
+//-- ################################################################# --//
+
+# 01. generate private key
+openssl genrsa -out rsa_key_snow.pem 2048
+
+# 02. generate public key
+openssl rsa -in rsa_key_snow.pem -pubout -out rsa_key_snow.pub
+
+
+# 03. test using snowsql
+snowsql -a vx15608.us-east-2.aws -u jeipe --private-key-path rsa_key_snow.p8
+
+
+//-- ################################################################# --//
+     3. Configure Snowflake Sink connector.
+//-- ################################################################# --//
+
+
+
+
+
+
+//-- ############################# End ############################## --//
+

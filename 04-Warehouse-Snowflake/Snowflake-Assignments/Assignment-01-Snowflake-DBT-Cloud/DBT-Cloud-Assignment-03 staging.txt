@@ -1,0 +1,92 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+# open SQL worksheet
+Database: Snowflake_sample_data, schema TPCH_SF1
+
+
+//-- ################################################################# --//
+     1. Create Staging Models
+//-- ################################################################# --//
+
+# 01. Create a new file: stg_tpch_orders.sql
+models/staging/tpch/stg_tpch_orders.sql 
+
+with source as (
+    select * from {{ source('tpch', 'orders') }}
+),
+renamed as (
+    select
+        o_orderkey    as order_key,
+        o_custkey     as customer_key,
+        o_orderstatus as status_code,
+        o_totalprice  as total_price,
+        o_orderdate   as order_date,
+        o_orderpriority as priority_code,
+        o_clerk       as clerk_name,
+        o_shippriority as ship_priority,
+        o_comment      as comment
+    from source
+)
+select * from renamed
+
+
+# 02. create another file: 
+models/staging/tpch/stg_tpch_line_items.sql
+
+with source as (
+    select * from {{ source('tpch', 'lineitem') }}
+),
+renamed as (
+    select
+        {{ dbt_utils.surrogate_key(
+            ['l_orderkey', 
+            'l_linenumber']) }}
+                as order_item_key,
+        l_orderkey as order_key,
+        l_partkey as part_key,
+        l_suppkey as supplier_key,
+        l_linenumber as line_number,
+        l_quantity as quantity,
+        l_extendedprice as extended_price,
+        l_discount as discount_percentage,
+        l_tax as tax_rate,
+        l_returnflag as return_flag,
+        l_linestatus as status_code,
+        l_shipdate as ship_date,
+        l_commitdate as commit_date,
+        l_receiptdate as receipt_date,
+        l_shipinstruct as ship_instructions,
+        l_shipmode as ship_mode,
+        l_comment as comment
+    from source
+)
+select * from renamed
+
+# 03. Commit
+
+
+//-- ################################################################# --//
+     2. Build models
+//-- ################################################################# --//
+
+# 01. execute 
+dbt run
+
+
+//-- ################################################################# --//
+     3. Check models
+//-- ################################################################# --//
+
+# 01. check models in Snowflake
+2 views are created in schema
+
+[Notes] idempotent process
+it means that the output of the process is the same after each execution of the process.
+
+
+//-- ########################### End ################################# --//
+

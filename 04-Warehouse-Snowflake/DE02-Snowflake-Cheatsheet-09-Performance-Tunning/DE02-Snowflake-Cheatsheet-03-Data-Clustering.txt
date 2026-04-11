@@ -1,0 +1,30 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://community.snowflake.com/s/article/understanding-micro-partitions-and-data-clustering
+
+
+In Snowflake, all data in tables is automatically divided into micro-partitions, which are contiguous units of storage. 
+Snowflake is columnar-based and horizontally partitioned, meaning a row of data is stored in the same micro-partition.
+
+
+//-- ################################################################# --//
+     1. Using clustering keys             
+//-- ################################################################# --//
+
+[toDo]
+
+//-- ################################################################# --//
+      2. the organization of data in partitions impact query performance
+//-- ################################################################# --//
+
+
+
+
+
+//-- ############################# End ############################## --//
+

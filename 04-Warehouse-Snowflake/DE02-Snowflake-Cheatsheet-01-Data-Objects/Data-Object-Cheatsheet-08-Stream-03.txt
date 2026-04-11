@@ -1,0 +1,192 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# concept: Stream
+Snowflake Stream object basically tracks all DML changes made to rows in a source table and 
+stores the metadata of each change.
+
+Note: 
+As long as there is no data management command to consume it, any changes to the source table with respect to data would be considered as INSERT and not UPDATE.
+
+# Stream table: 
+  3 additional META columns:
+    METADATA$ROW_ID - 
+    METADATA$ISUPDATE -  
+    METADATA$ACTION -
+
+
+//-- ################################################################# --//
+     1. Set up tables               
+//-- ################################################################# --//
+
+-- 00. Drop if exists for clean demo
+DROP TABLE IF EXISTS RAW_PRODUCT_DATA;
+DROP TABLE IF EXISTS PRODUCT_DIM_SCD2;
+DROP STREAM IF EXISTS RAW_PRODUCT_STREAM;
+DROP TASK IF EXISTS PRODUCT_SCD2_TASK;
+
+# 01, create tables
+CREATE OR REPLACE TABLE RAW_PRODUCT_DATA (
+    PRODUCT_ID INT,
+    PRODUCT_NAME VARCHAR(255),
+    CATEGORY VARCHAR(100),
+    PRICE DECIMAL(10, 2),
+    LAST_MODIFIED_TS TIMESTAMP_NTZ
+);
+
+-- Create the target SCD2 table
+CREATE OR REPLACE TABLE PRODUCT_DIM_SCD2 (
+    PRODUCT_SK   INT IDENTITY(1,1),   -- Surrogate Key
+    PRODUCT_ID   INT,                 -- Business Key
+    PRODUCT_NAME VARCHAR(255),
+    CATEGORY     VARCHAR(100),
+    PRICE        DECIMAL(10, 2),
+    VALID_FROM   TIMESTAMP_NTZ,
+    VALID_TO     TIMESTAMP_NTZ,
+    CURRENT_FLAG BOOLEAN
+);
+
+
+//-- ################################################################# --//
+     2. Initial data load into tables               
+//-- ################################################################# --//
+
+-- Initial data load
+INSERT INTO RAW_PRODUCT_DATA 
+  VALUES
+    (101, 'Laptop Basic', 'Electronics', 800.00, CURRENT_TIMESTAMP()),
+    (102, 'Mouse Wireless', 'Accessories', 25.00, CURRENT_TIMESTAMP());
+
+-- Initial load into SCD2 table (can be done with MERGE or simple INSERT)
+INSERT INTO PRODUCT_DIM_SCD2 (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, VALID_FROM, VALID_TO, CURRENT_FLAG)
+  SELECT
+      PRODUCT_ID, 
+      PRODUCT_NAME, 
+      CATEGORY, 
+      PRICE,
+      CURRENT_TIMESTAMP() AS VALID_FROM,
+      '9999-12-31'::TIMESTAMP_NTZ AS VALID_TO,
+      TRUE AS CURRENT_FLAG
+    FROM RAW_PRODUCT_DATA;
+
+
+//-- ################################################################# --//
+     3. Set up Stream               
+//-- ################################################################# --//
+
+# 01. create stream
+CREATE OR REPLACE STREAM RAW_PRODUCT_STREAM ON TABLE RAW_PRODUCT_DATA;
+
+# check stream table: 
+SHOW STREAMS;
+
+SELECT * FROM RAW_PRODUCT_STREAM;
+
+
+//-- ################################################################# --//
+     4. Incremental data load into stage table             
+//-- ################################################################# --//
+
+# 00. Check dimension table first
+SELECT * FROM PRODUCT_DIM_SCD2 ORDER BY PRODUCT_ID, VALID_FROM;
+
+# 01. Add new data and changes
+INSERT INTO RAW_PRODUCT_DATA (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, LAST_MODIFIED_TS) 
+  VALUES
+    (103, 'Keyboard Mechanical', 'Accessories', 75.00, CURRENT_TIMESTAMP());
+
+UPDATE RAW_PRODUCT_DATA
+  SET PRICE = 950.00, 
+      PRODUCT_NAME = 'Laptop Pro', 
+      LAST_MODIFIED_TS = CURRENT_TIMESTAMP()
+  WHERE PRODUCT_ID = 101;
+
+# 02. Check stream data
+SELECT * FROM RAW_PRODUCT_STREAM;
+
+
+//-- ################################################################# --//
+      5. Incremental load logic into dimension table: 
+          - Encapsulating the MERGE and subsequent INSERT within a stored procedure 
+          - makes it reusable
+//-- ################################################################# --//
+
+
+CREATE OR REPLACE PROCEDURE MERGE_PRODUCT_SCD2()
+  RETURNS VARCHAR
+  LANGUAGE SQL
+  AS
+  $$
+  DECLARE
+    rows_processed INT;
+
+  BEGIN
+
+    -- STEP 1: Invalidate old records in PRODUCT_DIM_SCD2 for updated products
+    MERGE INTO PRODUCT_DIM_SCD2 AS target
+    USING (
+        SELECT
+            s.PRODUCT_ID,
+            s.PRODUCT_NAME,
+            s.CATEGORY,
+            s.PRICE,
+            s.LAST_MODIFIED_TS,
+            t.PRODUCT_NAME AS TARGET_PRODUCT_NAME,
+            t.CATEGORY AS TARGET_CATEGORY,
+            t.PRICE AS TARGET_PRICE
+        FROM RAW_PRODUCT_STREAM AS s
+        JOIN PRODUCT_DIM_SCD2 AS t
+            ON s.PRODUCT_ID = t.PRODUCT_ID AND t.CURRENT_FLAG = TRUE
+        WHERE (s.METADATA$ACTION = 'INSERT' AND s.METADATA$ISUPDATE = TRUE) -- This indicates an UPDATE operation on the source
+           OR (s.METADATA$ACTION = 'DELETE' AND s.METADATA$ISUPDATE = TRUE) -- This also indicates an UPDATE operation (old version)
+           AND (
+               target.PRODUCT_NAME != s.PRODUCT_NAME OR
+               target.CATEGORY     != s.CATEGORY OR
+               target.PRICE        != s.PRICE
+           )
+    ) AS source_updates
+    ON target.PRODUCT_ID = source_updates.PRODUCT_ID AND target.CURRENT_FLAG = TRUE
+    WHEN MATCHED AND (
+        target.PRODUCT_NAME != source_updates.PRODUCT_NAME OR
+        target.CATEGORY     != source_updates.CATEGORY OR
+        target.PRICE        != source_updates.PRICE
+    )
+    THEN UPDATE SET
+        target.VALID_TO = CURRENT_TIMESTAMP(),
+        target.CURRENT_FLAG = FALSE;
+
+
+    -- STEP 2: Insert new versions for 1) updated records and 2) entirely new records
+    INSERT INTO PRODUCT_DIM_SCD2 (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, VALID_FROM, VALID_TO, CURRENT_FLAG)
+      SELECT
+        s.PRODUCT_ID,
+        s.PRODUCT_NAME,
+        s.CATEGORY,
+        s.PRICE,
+        CURRENT_TIMESTAMP() AS VALID_FROM,
+        '9999-12-31'::TIMESTAMP_NTZ AS VALID_TO,
+        TRUE AS CURRENT_FLAG
+      FROM RAW_PRODUCT_STREAM AS s
+      WHERE s.METADATA$ACTION = 'INSERT'    -- This captures both true inserts and the new version of an update
+           AND (s.METADATA$ISUPDATE = FALSE OR s.METADATA$ISUPDATE = TRUE); -- For inserts (false) and updates (true)
+           -- Optional: Handle deletes if needed for SCD Type 2 (e.g., set CURRENT_FLAG to FALSE for deleted records)
+           -- This would typically involve another MERGE or UPDATE statement targeting records from the stream
+           -- where METADATA$ACTION = 'DELETE' AND METADATA$ISUPDATE = FALSE (for pure deletes)
+    RETURN 'SCD Type 2 merge completed successfully.';
+  
+  END;
+  $$;
+
+
+# 03. Load into dimension table
+CALL MERGE_PRODUCT_SCD2();
+
+# 04. Check dimension table
+SELECT * FROM PRODUCT_DIM_SCD2 ORDER BY PRODUCT_ID, VALID_FROM;
+
+
+//-- ############################# End ############################## --//
+

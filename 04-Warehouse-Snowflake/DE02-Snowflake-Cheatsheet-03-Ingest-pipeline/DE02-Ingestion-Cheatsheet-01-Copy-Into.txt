@@ -1,0 +1,25 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+# COPY INTO command: 
+used to bulk load data from staged files into a table. 
+The basic syntax requires specifying:
+ - the target table
+ - the source stage/location
+ - the file format
+
+provides file-level transaction granularity and hence it provides different ON_ERROR handling options:
+ - CONTINUE continues loading the file even if there are errors.
+ - SKIP_FILE skips only the files with errors.
+ - ABORT_STATEMENT aborts the load operation if an error is encountered in any of the data files.
+
+
+
+
+
+//-- ############################# End ############################## --//
+

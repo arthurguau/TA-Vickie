@@ -1,0 +1,283 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference: 
+
+# install openssl
+
+
+//-- ################################################################# --//
+     1. create a git repository        
+//-- ################################################################# --//
+
+# 00. prepare azure DevOps repository
+Initialise with ReadMe markdown file
+
+# 01. Clone repository
+git clone https://FunnyGorilla-Data-Engineering@dev.azure.com/FunnyGorilla-Data-Engineering/snowflake-terraform/_git/snowflake-terraform
+
+# 02. draft README.md file
+cd snowflake-terraform
+
+# 03. prepare git repository
+git status
+ 
+git branch features/warehouse
+git checkout features/warehouse
+
+# edit ReadMe file
+git add .
+git commit -m "first commit"
+git push -u origin features/warehouse
+
+# 04. pull request
+
+
+//-- ################################################################# --//
+     2. creates service user
+         - for pipeline to use             
+//-- ################################################################# --//
+
+# 01. creates the private/public keys
+mkdir ~/.ssh/
+cd ~/.ssh
+openssl genrsa 2048 |               \
+  openssl pkcs8 -topk8 -inform PEM  \
+  -out snowflake_tf_snow_key.p8     \
+  -nocrypt
+
+openssl rsa -in snowflake_tf_snow_key.p8 \
+  -pubout                                \
+  -out snowflake_tf_snow_key.pub
+
+# 02. create service user in Snowflake, including header and footer:
+   - copy ~/.ssh/snowflake_tf_snow_key.pub 
+   - paste RSA_PUBLIC_KEY_HERE
+USE ROLE ACCOUNTADMIN;
+
+CREATE USER TERRAFORM_SVC
+    TYPE = SERVICE
+    COMMENT = "Service user for Terraforming Snowflake"
+    RSA_PUBLIC_KEY = "<RSA_PUBLIC_KEY_HERE>";
+
+GRANT ROLE SYSADMIN TO USER TERRAFORM_SVC;
+GRANT ROLE SECURITYADMIN TO USER TERRAFORM_SVC;
+
+# 03. verify user created
+show users;
+
+# find and define your_org_name, your_account_name:
+  -- your_org_name: xxx
+  -- your_account_name: xxx
+SELECT 
+    LOWER(current_organization_name()) as your_org_name, 
+    LOWER(current_account_name()) as your_account_name;
+
+
+//-- ################################################################# --//
+     3. setup provider for Terraform           
+//-- ################################################################# --//
+
+# create terraform main file
+cat <<EOF >> main.tf
+
+# define terraform
+terraform {
+  required_providers {
+    snowflake = {
+      source = "snowflakedb/snowflake"
+    }
+  }
+}
+
+# define local variables
+locals {
+  organization_name = "your_org_name"
+  account_name      = "your_account_name"
+  private_key_path  = "~/.ssh/snowflake_tf_snow_key.p8"
+}
+
+provider "snowflake" {
+    organization_name = local.organization_name
+    account_name      = local.account_name
+    user              = "TERRAFORM_SVC"
+    role              = "SYSADMIN"
+    authenticator     = "SNOWFLAKE_JWT"
+    private_key       = file(local.private_key_path)
+}
+
+# define database
+resource "snowflake_database" "tf_db" {
+  name         = "TF_DEMO_DB"
+  is_transient = false
+}
+
+# define warehouse
+resource "snowflake_warehouse" "tf_warehouse" {
+  name                      = "TF_DEMO_WH"
+  warehouse_type            = "STANDARD"
+  warehouse_size            = "XSMALL"
+  max_cluster_count         = 1
+  min_cluster_count         = 1
+  auto_suspend              = 60
+  auto_resume               = true
+  enable_query_acceleration = false
+  initially_suspended       = true
+}
+
+EOF
+
+
+//-- ################################################################# --//
+     4. execute Terroform           
+//-- ################################################################# --//
+
+# 01. initialize project
+       - .terraform directory created
+       - .terraform.lock.hcl
+terraform init
+
+# 02. run plan 
+terraform plan
+
+# 03. execute creation
+terraform apply
+
+# 04. check created database and warehouse
+show warehouses;
+show databases;
+
+
+//-- ################################################################# --//
+     5. commit terraform files           
+//-- ################################################################# --//
+
+# 01. add git ignore file
+cat <<EOF >> ./.gitignore
+*.terraform*
+*.tfstate
+*.tfstate.*
+EOF
+
+# 02. commit terraform scripts
+git add .
+git commit -m "Add Config, Database and Warehouse"
+git push -u origin features/warehouse
+
+
+--- working on ---
+
+
+//-- ################################################################# --//
+     6. change resources         
+//-- ################################################################# --//
+
+# Grant usage on the database
+resource "snowflake_grant_privileges_to_account_role" "grant_usage_tf_db_to_tf_role" {
+    provider          = snowflake.useradmin
+    privileges        = ["USAGE"]
+    account_role_name = snowflake_account_role.tf_role.name
+    on_account_object {
+        object_type = "DATABASE"
+        object_name = snowflake_database.tf_db.name
+  }
+}
+
+# Grant usage on the schema
+resource "snowflake_grant_privileges_to_account_role" "grant_usage_tf_db_tf_schema_to_tf_role" {
+    provider          = snowflake.useradmin
+    privileges        = ["USAGE"]
+    account_role_name = snowflake_account_role.tf_role.name
+    on_schema {
+        schema_name = snowflake_schema.tf_db_tf_schema.fully_qualified_name
+  }
+}
+
+# Grant select on all tables in the schema (even if the schema is empty)
+resource "snowflake_grant_privileges_to_account_role" "grant_all_tables" {
+    provider          = snowflake.useradmin
+    privileges        = ["SELECT"]
+    account_role_name = snowflake_account_role.tf_role.name
+    on_schema_object {
+        all {
+            object_type_plural = "TABLES"
+            in_schema          = snowflake_schema.tf_db_tf_schema.fully_qualified_name
+    }
+  }
+}
+
+# Grant select on the future tables in the schema
+resource "snowflake_grant_privileges_to_account_role" "grant_future_tables" {
+    provider          = snowflake.useradmin
+    privileges        = ["SELECT"]
+    account_role_name = snowflake_account_role.tf_role.name
+    on_schema_object {
+        future {
+            object_type_plural = "TABLES"
+            in_schema          = snowflake_schema.tf_db_tf_schema.fully_qualified_name
+    }
+  }
+}
+
+
+//-- ################################################################# --//
+     7. add output file           
+//-- ################################################################# --//
+
+# define output file
+cat <<EOF >> ./outputs.tf
+output "snowflake_svc_public_key" {
+    value     = tls_private_key.svc_key.public_key_pem
+}
+
+output "snowflake_svc_private_key" {
+    value     = tls_private_key.svc_key.private_key_pem
+    sensitive = true
+}
+
+EOF
+
+# check output file
+cat outputs.tf
+
+
+//-- ################################################################# --//
+     9. apply changes           
+//-- ################################################################# --//
+
+# 00. upgrade terraform in order to use tls_private_key resource
+terraform init -upgrade 
+
+# 01. run plan 
+terraform plan
+
+# 02. execute creation
+terraform apply
+
+
+//-- ################################################################# --//
+     10. commit changes          
+//-- ################################################################# --//
+
+# 01. commit changes
+git add .
+git commit -m "Add Config, Database and Warehouse"
+git push -u origin features/warehouse
+
+
+//-- ################################################################# --//
+     11. clean up           
+//-- ################################################################# --//
+
+# 01. destroy all the Terraform Managed Resources
+terraform destroy
+
+# 02. drop snowflake user
+DROP USER TERRAFORM_SVC;
+
+
+//-- ############################# End ############################## --//
+

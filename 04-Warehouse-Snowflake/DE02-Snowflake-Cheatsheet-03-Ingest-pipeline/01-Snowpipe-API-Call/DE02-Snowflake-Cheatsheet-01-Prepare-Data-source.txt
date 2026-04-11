@@ -1,0 +1,73 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Pycharm installed
+
+
+//-- ################################################################# --//
+      Prepare test data file for processing                   
+//-- ################################################################# --//
+
+# understand data source
+- json file, with predefined schema
+
+
+//-- ################################################################# --//
+      Create a project                   
+//-- ################################################################# --//
+
+# craft python script: 00_data_generator.py
+
+
+00. Project scaffolding:
+mkdir ~/Developer/project/python/data_generator
+cd ~/Developer/project/python/data_generator
+
+
+01. Pycharm: File -> New project
+Project name: data_generator
+Location: ~/Developer/project/python/data_generator
+Create git repository
+Create welcome script
+
+Interpreter type: Project Venv
+Python version: 3.13 [chose your latest version]
+
+
+//-- ################################################################# --//
+      Craft python script                    
+//-- ################################################################# --//
+
+# install packages: Pycharm -> terminal
+pip install python-rapidjson python-dotenv faker optional-faker
+
+# check cheatsheet for code snippet
+
+
+//-- ################################################################# --//
+      Execute python script                    
+//-- ################################################################# --//
+
+# run test to generate to console
+python ./00_data_generator.py 1
+
+# generate data into zip file
+python ./00_data_generator.py 100000 | gzip > data.json.gz
+
+
+//-- ################################################################# --//
+      Snowflake workspace
+//-- ################################################################# --//
+
+# reference: workspace
+https://medium.com/@tom.bailey.courses/snowflake-workspaces-explained-meet-the-new-file-based-sql-editor-c6c419e60e1d
+
+# 01. Create a workspace in Snowflake
+
+# 02. Upload into workspace
+
+
+//-- ############################# End ############################## --//
+

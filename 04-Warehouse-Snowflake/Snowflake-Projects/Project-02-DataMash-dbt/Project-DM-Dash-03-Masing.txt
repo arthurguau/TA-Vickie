@@ -1,0 +1,53 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     1. Define masking policy
+//-- ################################################################# --//
+
+use role PC_DBT_ROLE;
+use database PC_DBT_DB;
+
+# 01. Create a tag for PII data
+create tag if not exists PC_DBT_DB.prod.pii_data;
+
+# 02. Create a masking policy for string data
+create or replace masking policy PC_DBT_DB.prod.pii_mask_string as (val string) returns string ->
+  case
+    when is_role_in_session('foundational_pii_reader_role') then val
+    else '****'
+  end;
+  
+# 03. Assign the masking policy to the tag
+alter tag PC_DBT_DB.prod.pii_data set masking policy PC_DBT_DB.prod.pii_mask_string;
+
+
+//-- ################################################################# --//
+     2. Apply masking policy
+//-- ################################################################# --//
+
+# 04. apply the masking policy to the name column of the fct_orders dbt model 
+      immediately after the table is built
+
+{{
+    config(
+        materialized='table',
+        post_hook="alter table {{ this }} modify column name set tag PC_DBT_DB.prod.pii_data = 'name'"
+    )
+}}
+
+
+
+//-- ################################################################# --//
+     11. clean up           
+//-- ################################################################# --//
+
+
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,98 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. create generic data test
+         01. primary key: 
+               - unique
+               - not_null
+               - relationships
+         02. reference data
+               - accepted_values
+//-- ################################################################# --//
+
+
+# generic test: a parameterized query that accepts arguments. 
+-- The test query is defined in a special test block (like a macro). 
+   {% test not_null(model, column_name) %}
+      select *
+        from {{ model }}
+        where {{ column_name }} is null
+   {% endtest %}
+
+-- one test yaml and markdown file per directory
+
+
+# 01. Create test into models/marts/core/core.yml
+
+version: 2
+
+models:
+  - name: fct_orders
+    description: orders fact table
+    columns:
+      - name: order_key
+        description: primary key of the model
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('stg_tpch_orders')
+              field: order_key
+              severity: warn
+      - name: customer_key
+        description: foreign key for customers
+      - name: order_date
+        description: date of the order
+      - name: status_code
+        description: status of the order
+        tests:
+          - accepted_values:
+              values: ['P','O','F']
+      - name: priority_code
+        description: code associated with the order
+      - name: clerk_name
+        description: id of the clerk
+      - name: ship_priority
+        description: numeric representation of the shipping priority, zero being the default
+      - name: order_count
+        description: count of order
+      - name: gross_item_sales_amount
+        description: '{{ doc("gross_item_sales_amount") }}'
+      - name: item_discount_amount
+        description: item level discount amount. this is always less than or equal to zero
+      - name: item_tax_amount
+        description: item level tax total
+      - name: net_item_sales_amount
+        description: the net total which factors in discount and tax
+
+
+# 02. Create markdown file: models/marts/core/core.md
+
+# the below are descriptions from fct_orders
+{% docs gross_item_sales_amount %} same as extended_price {% enddocs %}
+
+
+//-- ################################################################# --//
+     2. Build A Singular Test
+//-- ################################################################# --//
+
+# 01. Create file into tests/fct_orders_negative_discount_amount.sql
+
+--If no discount is given it should be equal to zero 
+--otherwise it will be negative
+
+select *
+  from {{ ref('fct_orders') }}  
+  where item_discount_amount > 0
+
+# 02. run test
+dbt test --select fct_orders
+
+
+//-- ########################### End ################################# --//
+

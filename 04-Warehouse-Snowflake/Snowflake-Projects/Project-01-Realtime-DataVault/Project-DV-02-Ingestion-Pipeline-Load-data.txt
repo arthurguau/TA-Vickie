@@ -1,0 +1,72 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     0. prepare source data
+//-- ################################################################# --//
+
+# sample data set: SNOWFLAKE_SAMPLE_DATA, TPCH_SF10
+https://docs.snowflake.com/en/user-guide/sample-data-tpch
+
+
+//-- ################################################################# --//
+     1. setup COPY INTO command 
+         - load data from external table into stage
+//-- ################################################################# --//
+
+# definition
+OBJECT_CONSTRUCT( [<key>, <value> [, <key>, <value> , ...]] )
+
+# INCLUDE_QUERY_ID=TRUE
+universally unique identifier (UUID) in the filenames of unloaded data files. 
+ensure that concurrent COPY statements do not overwrite unloaded files accidentally.
+
+
+//-- ################################################################# --//
+     2. Load customer data into stage 
+//-- ################################################################# --//
+
+# 01. load into customer stage [object_costruct => JSON]
+
+COPY INTO @customer_data 
+  FROM
+  (SELECT object_construct(*)
+     FROM snowflake_sample_data.tpch_sf10.customer limit 10
+  ) 
+  INCLUDE_QUERY_ID=TRUE;
+
+# 02. check loaded files in stages
+list @customer_data;
+SELECT METADATA$FILENAME,$1 FROM @customer_data; 
+
+
+//-- ################################################################# --//
+     3. Load order data into stage
+//-- ################################################################# --//
+
+# 01. load into order stage [ => CSV]
+
+COPY INTO @orders_data 
+  FROM
+  (SELECT *
+    FROM snowflake_sample_data.tpch_sf10.orders limit 1000
+  ) 
+  INCLUDE_QUERY_ID=TRUE;
+
+
+# 02. check loaded files in stages
+list @orders_data;
+SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9 
+       , metadata$filename
+       , metadata$file_row_number
+       , CURRENT_TIMESTAMP()
+       , 'Orders System'
+   FROM @orders_data
+
+
+//-- ############################# End ############################## --//
+

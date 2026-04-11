@@ -1,0 +1,79 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+[working on ...]
+
+//-- ################################################################# --//
+      Create tables                  
+//-- ################################################################# --//
+
+
+CREATE TABLE c9r4_credit (
+   account int
+  ,amount int
+  ,payment_ts timestamp
+);
+
+
+CREATE TABLE c9r4_debit (
+   account int
+  ,amount int
+  ,payment_ts timestamp
+);
+
+
+//-- ################################################################# --//
+      Stored procedure - transaction                   
+//-- ################################################################# --//
+
+
+create or replace procedure sp_adjust_credit
+(PARAM_ACCT FLOAT,PARAM_AMT FLOAT)
+    returns string
+    language javascript
+    as
+    $$
+    
+    var ret_val = "";
+    var sql_command_debit = "";
+    var sql_command_credit = "";
+    
+    // INSERT data into the debit table
+    sql_command_debit = 
+        "INSERT INTO CHAPTER9.PUBLIC.C9R4_DEBIT VALUES (" 
+          + PARAM_ACCT + "," + PARAM_AMT + ",current_timestamp());";
+    
+    sql_command_credit = 
+        "insert into CHAPTER9.PUBLIC.C9R4_CREDIT 
+           select * 
+           from CHAPTER9.PUBLIC.C9R4_DEBIT 
+           where CHAPTER9.PUBLIC.C9R4_DEBIT.payment_ts > (select IFF(max(payment_ts) IS NULL, to_date ('1970-01-01'), max(payment_ts)) from CHAPTER9.PUBLIC.C9R4_CREDIT);";
+    
+    snowflake.execute( {sqlText: "BEGIN WORK;"} );
+
+    // start transaction    
+    try {
+          snowflake.execute ({sqlText: sql_command_debit});
+                        
+          if ((PARAM_ACCT % 2) === 0)
+             snowflake.execute( {sqlText: "DELETE FROM table_0123456789;"} ); // induce a fault
+            
+          snowflake.execute ({sqlText: sql_command_credit});
+            
+          snowflake.execute({sqlText: "COMMIT WORK;"});
+          ret_val = "Succeeded";
+    }catch (err) {
+          snowflake.execute( {sqlText: "ROLLBACK WORK;"} );
+          return "Failed: " + err;   // Return a success/error indicator.
+    }
+    return ret_val;
+  $$;
+
+
+   -- TRY/CATCH function is employed to manage the transaction's execution
+
+//-- ############################# End ############################## --//
+

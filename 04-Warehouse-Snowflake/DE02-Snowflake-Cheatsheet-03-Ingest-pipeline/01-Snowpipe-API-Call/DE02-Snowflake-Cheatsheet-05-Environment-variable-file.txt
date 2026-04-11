@@ -1,0 +1,42 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Pycharm installed
+
+
+# environment variable:
+Used to configure relevant deployment environment, avoiding hard-coded in python script
+
+.env is environment variable file by default
+
+
+//-- ################################################################# --//
+      1. Create environment variable                   
+//-- ################################################################# --//
+
+# 00. Pycharm -> Data_ingestion_SF project
+
+# 01. Check private key value, and assign to PRVK 
+PRVK=`cat ./rsa_key.p8 | grep -v KEY- | tr -d '\012'`
+
+# 02. Set environment variable
+echo "PRIVATE_KEY=$PRVK"
+
+
+# 03. create environment file: .env 
+
+cat <<EOF >.env
+SNOWFLAKE_ACCOUNT=ACPHOWO-VW38726
+SNOWFLAKE_USER=INGEST
+PRIVATE_KEY=$PRVK
+EOF
+
+
+# 04. Check file
+cat .env
+
+
+//-- ############################# End ############################## --//
+

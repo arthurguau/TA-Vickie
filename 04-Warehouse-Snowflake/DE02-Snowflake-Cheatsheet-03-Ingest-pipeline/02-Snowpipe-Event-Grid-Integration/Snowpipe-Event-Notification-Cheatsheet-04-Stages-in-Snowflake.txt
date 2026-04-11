@@ -36,26 +36,23 @@ healthcarestoragedata:
 
 
 //-- ################################################################# --//
-      3. Create stage in Snowflake
+      4. Create stage in Snowflake
 //-- ################################################################# --//
 
 USE SCHEMA HEALTHCARE_DB.ingest;
 
 # 01. based on storage integration
 CREATE OR REPLACE STAGE healthcare_db.ingest.healthcare_stage_json
- STORAGE_INTEGRATION = HEALTHCARE_STORAGE_INTEGRATION
+ STORAGE_INTEGRATION = HEALTHCARE_STORAGE_INTEGRATION 
  URL = 'azure://healthcarestoragedata.blob.core.windows.net/healthcare-container' 
  FILE_FORMAT = fileformat;
 
 # 02. check stages
 SHOW STAGES IN SCHEMA healthcare_db.ingest;
 
-# 03. Check definition of external stage
-Datalog -> database -> schema -> stages
-
 
 //-- ################################################################# --//
-      4. Test stage in Snowflake
+      5. Test stage in Snowflake
 //-- ################################################################# --//
 
 # 01. Upload file into storage container
@@ -72,29 +69,9 @@ SELECT $1, $2, $3, $4, $5 FROM @healthcare_db.ingest.healthcare_stage_json;
 COPY INTO HEALTHCARE_DB.INGEST.hospitals
   FROM(
       SELECT $1, $2, $3, $4, $5
-      FROM @HEALTHCARE_DB.INGEST.healthcare_stage_json 
+      FROM @HEALTHCARE_DB.INGEST.healthcarestage_json 
 )
-FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat')
-PURGE = TRUE;
-
-# check table
-HEALTHCARE_DB.INGEST.hospitals
-
-# check the file has been deleted
-LIST @healthcare_db.ingest.healthcare_stage_json;
-
-
-//-- ################################################################# --//
-      5. Clean up
-//-- ################################################################# --//
-
-
-
-//-- ################################################################# --//
-      6. Extension
-//-- ################################################################# --//
-
-# external table is based on external stage
+FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat');
 
 
 //-- ############################# End ############################## --//

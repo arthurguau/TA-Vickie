@@ -1,0 +1,63 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      1. setup Snowpipe
+          - load data from stage into staging table
+//-- ################################################################# --//
+
+CREATE OR REPLACE PIPE stg_orders_pp 
+   AS 
+   COPY INTO stg_orders 
+   FROM
+   (
+     SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9 
+       , metadata$filename
+       , metadata$file_row_number
+       , CURRENT_TIMESTAMP()
+       , 'Orders System'
+     FROM @orders_data
+   );
+
+CREATE OR REPLACE PIPE stg_customer_pp 
+   --AUTO_INGEST = TRUE
+   --aws_sns_topic = 'arn:aws:sns:mybucketdetails'
+   AS 
+   COPY INTO stg_customer
+   FROM 
+   (
+     SELECT $1
+       , metadata$filename
+       , metadata$file_row_number
+       , CURRENT_TIMESTAMP()
+       , 'Customers System'
+    FROM @customer_data
+   );
+
+
+//-- ################################################################# --//
+      2. Put into action
+//-- ################################################################# --//
+
+# 01. Put into action
+ALTER PIPE stg_customer_pp REFRESH;
+ALTER PIPE stg_orders_pp   REFRESH;
+
+
+# 02. check stage table and stream tables
+SELECT 'stg_customer', count(1) FROM stg_customer
+  UNION ALL
+SELECT 'stg_orders', count(1) FROM stg_orders
+  UNION ALL
+SELECT 'stg_orders_strm', count(1) FROM stg_orders_strm
+  UNION ALL
+SELECT 'stg_customer_strm', count(1) FROM stg_customer_strm
+;
+
+
+//-- ############################# End ############################## --//
+

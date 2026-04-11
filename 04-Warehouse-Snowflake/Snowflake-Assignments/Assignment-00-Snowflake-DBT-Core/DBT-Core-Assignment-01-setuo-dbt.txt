@@ -1,0 +1,224 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+1. Github account
+2. Snowflake account
+
+# reference - define source data
+https://docs.getdbt.com/reference/source-properties
+
+
+//-- ################################################################# --//
+     0. Activate Python virtual environment
+        (Assume you have create Python VE already)                            
+//-- ################################################################# --//
+
+# 01. activate virtual environment -> enter into virtual environment
+source dbt-local-dev-env/bin/activate
+
+
+//-- ################################################################# --//
+     1. Set up a new DBT project shell               
+//-- ################################################################# --//
+
+# 01. Create DBT project:
+      - schema suffix: SOURCE_DATA
+dbt init dbt_portfolio_tracking
+
+Account: FMVRLFV-YW86128
+Username: funnygorilla
+Password: xxxxxx
+role: ACCOUNTADMIN
+Warehouse: portfolio_dev_wh
+Database: PORTFOLIO_TRACKING
+Schema: SOURCE_DATA
+Threads: 20
+
+-- executing a command (dbt run), four concurrent queries will be sent to your database by dbt
+
+
+# 02. Validate the newly created folder structure and profiles.yml
+
+-- project folder
+ls -l ./dbt_portfolio_tracking 
+cd dbt_portfolio_tracking
+
+# 03. exam profiles.yml: ~/.dbt/profiles.yml (Mac:  command + shift + .)
+dbt_portfolio_tracking:
+  target: dev
+  outputs:
+    dev:
+      account: HVATZQF-LG13349
+      database: PORTFOLIO_TRACKING
+      password: xxxxxxx
+      role: ACCOUNTADMIN
+      schema: SOURCE_DATA  -- target schema
+      threads: 8
+      type: snowflake
+      user: funnygorilla
+      warehouse: portfolio_dev_wh
+
+# 04. Test snowflake connection
+dbt debug
+
+# 05. Delete example model
+rm -rf ./models/example
+
+
+//-- ################################################################# --//
+      2. Create source - DBT
+          - for each source a source file is to be defined
+//-- ################################################################# --//
+
+# 01. create a source under models directory: source_abc_bank.yml 
+cat <<EOF >> ./models/source_abc_bank.yml
+version: 2
+sources:
+  - name: abc_bank
+    database: PORTFOLIO_TRACKING
+    schema: SOURCE_DATA
+    tables:
+      - name: ABC_BANK_POSITION
+        description: The landing table holding the data imported from the CSV extracted by ABC Bank.
+        columns:
+          - name: ACCOUNTID
+            description: The code for the account at the ABC Bank.
+            tests:
+              - not_null
+          - name: SYMBOL
+            description: The symbol of the security for the ABC Bank.
+            tests:
+              - unique
+              - not_null
+          - name: DESCRIPTION
+            description: The name of the security at the ABC Bank.
+            tests:
+              - not_null
+          - name: EXCHANGE
+            description: The short name or code of the exchange where the security is traded.
+            tests:
+              - not_null
+          - name: REPORT_DATE
+            description: >
+              The date of the portfolio report extracted by ABC Bank.
+              We consider this position to be the effective from this date forward, until a change is seen.
+            tests:
+              - not_null
+          - name: QUANTITY
+            description: The number of securities we hold in the portfolio at ABC Bank at the Report Date.
+            tests:
+              - not_null
+          - name: COST_BASE
+            description: The cost we paid attributable to the securities we hold in the portfolio at ABC Bank at the Report Date.
+            tests:
+              - not_null
+          - name: POSITION_VALUE
+            description: The value of the securities we hold in the portfolio at ABC Bank acording to market quotation on the Report Date.
+            tests:
+              - not_null
+          - name: CURRENCY
+            description: The currency for the monetary amounts of the position.
+            tests:
+              - not_null
+EOF
+
+
+//-- ################################################################# --//
+     3. Create 3 tier model architecture 
+         - staging
+         - warehouse
+         - marts                      
+//-- ################################################################# --//
+
+# 01. Setup model folder structure
+
+mkdir -p ./models/staging
+mkdir -p ./models/warehouse
+mkdir -p ./models/marts/portfolio
+
+tree ./models
+models
+  |_staging
+  |_warehouse
+  |_marts
+      |_portfolio
+
+# 02. Check folder structure
+tree ./models
+
+
+//-- ################################################################# --//
+     4. Create first model                 
+//-- ################################################################# --//
+
+# 01. Create a model in ./models/warehouse directory: ABC_BANK_POSITION.sql 
+cat <<EOF >> ./models/warehouse/ABC_BANK_POSITION.sql
+SELECT
+    *
+    , POSITION_VALUE - COST_BASE as UNREALIZED_PROFIT
+FROM {{ source('abc_bank', 'ABC_BANK_POSITION') }}
+EOF
+
+# 02. Check model created
+tree ./models
+
+
+//-- ################################################################# --//
+     5. Setup data model architecture                      
+//-- ################################################################# --//
+
+# 01. update dbt-project.yml
+       - project wide, modelled as view
+       - Under portfolio folder, modeled as table
+       - we want schema with suffix WAREHOUSE (schema can not be embedded)
+
+Delete example model from dbt-project.yml
+
+models:
+  dbt_portfolio_tracking:
+    +materialized: view
+    staging:    # Data storage layer
+      +materialized: view
+      +schema: STAGING    # custom schema [final schema = target + custom]
+    warehouse:  # Warehouse layer
+      +materialized: view
+      +schema: WAREHOUSE
+    marts:      # Data delivery layer
+      portfolio:     # data mart
+        +materialized: table
+        +schema: MARTS_PORTFOLIO
+
+
+//-- ################################################################# --//
+     6. Deploy model                        
+//-- ################################################################# --//
+
+# 01. Deploy model
+dbt run -s ABC_BANK_POSITION
+
+# 02. Check model
+select * from portfolio_tracking.source_data.ABC_BANK_POSITION;
+select * from portfolio_tracking.source_data_warehouse.ABC_BANK_POSITION;
+
+
+//-- ################################################################# --//
+     7. Install packages                       
+//-- ################################################################# --//
+
+# 01. create packages file into project root folder
+cat <<EOF >> ./packages.yml
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0
+EOF
+
+# 02. install packages
+dbt dept
+
+# 03. exam package folder created 
+tree ./packages
+
+
+//-- ############################# End  ############################## --//
+

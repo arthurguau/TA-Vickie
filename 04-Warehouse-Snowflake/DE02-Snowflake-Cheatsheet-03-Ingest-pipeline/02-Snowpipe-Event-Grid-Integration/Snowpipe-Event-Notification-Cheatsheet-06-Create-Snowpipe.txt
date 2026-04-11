@@ -1,0 +1,42 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Azure portal account created
+
+
+//-- ################################################################# --//
+      Create stage in Snowflake          
+//-- ################################################################# --//
+
+1. Notification integration
+2. External stage
+3. Landing table
+
+# COPY INTO command:
+used to bulk load data from staged files into a table
+
+
+//-- ################################################################# --//
+      1. Create pipe            
+//-- ################################################################# --//
+
+# 01. Create pipe for Stage JSON File
+CREATE OR REPLACE PIPE HEALTHCARE_DB.INGEST.HEALTHCARE_SNOWPIPE_JSON
+  AUTO_INGEST=TRUE
+  INTEGRATION=HEALTHCARE_NOTIFICATION_INTEGRATION
+  AS
+  COPY INTO HEALTHCARE_DB.INGEST.hospitals
+  FROM(
+      SELECT $1, $2, $3, $4, $5
+      FROM @HEALTHCARE_DB.INGEST.healthcare_stage_json 
+  )
+  FILE_FORMAT = (FORMAT_NAME = 'healthcare_db.ingest.fileformat');
+
+# 02. Check pipe created
+select SYSTEM$PIPE_STATUS('HEALTHCARE_DB.INGEST.HEALTHCARE_SNOWPIPE_JSON');
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,221 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. Create seed
+         - master data
+         - reference data
+//-- ################################################################# --//
+
+# 01. create a seed file into seeds/nations.csv:
+
+N_NATIONKEY,	N_NAME,	N_REGIONKEY,	LAST_UPDATED_DATE
+0,	ALGERIA,	0,	1998-08-02
+1,	ARGENTINA,	1,	1998-08-02
+2,	BRAZIL,	1,	1998-08-02
+3,	CANADA,	1,	1998-08-02
+4,	EGYPT,	4,	1998-08-02
+5,	ETHIOPIA,	0,	1998-08-02
+6,	FRANCE,	3,	1998-08-02
+7,	GERMANY,	3,	1998-08-02
+8,	INDIA,	2,	1998-08-02
+9,	INDONESIA,	2,	1998-08-02
+10,	IRAN,	4,	1998-08-02
+11,	IRAQ,	4,	1998-08-02
+12,	JAPAN,	2,	1998-08-02
+13,	JORDAN,	4,	1998-08-02
+14,	KENYA,	0,	1998-08-02
+15,	MOROCCO,	0,	1998-08-02
+16,	MOZAMBIQUE,	0,	1998-08-02
+17,	PERU,	1,	1998-08-02
+18,	CHINA,	2,	1998-08-02
+19,	ROMANIA,	3,	1998-08-02
+20,	SAUDI ARABIA,	4,	1998-08-02
+21,	VIETNAM,	2,	1998-08-02
+22,	UNITED KINGDOM,	3,	1998-08-02
+23,	UNITED STATES,	1,	1998-08-02
+
+
+# 02. execute
+dbt seed
+
+# 03. check snowflake table created in default schema
+select * from pc_dbt_db.DBT_FUNNYGORILLA.nations
+
+
+//-- ################################################################# --//
+     1. materialize as an incremental model
+         - built as table
+         - maintain idempotency
+//-- ################################################################# --//
+
+# 01. Create a new file
+models/staging/tpch/stg_tpch_nations.sql
+
+{{
+    config(
+        materialized='incremental',
+        unique_key='nation_key'
+    )
+}}
+with source as (
+    select * from {{ ref('nations') }}
+),
+renamed as (
+    select
+        n_nationkey       as nation_key,
+        n_name            as name,
+        n_regionkey       as region_key,
+        last_updated_date as last_updated_date
+    from source
+)
+select * from renamed
+{% if is_incremental() %}
+    -- this filter will only be applied on an incremental run
+    where last_updated_date > (select max(last_updated_date) from {{ this }})
+{% endif %}
+
+
+//-- ################################################################# --//
+     2. run incremental model first time
+//-- ################################################################# --//
+
+# 01. build model
+dbt run --select stg_tpch_nations
+
+# 02. check dbt detailed log
+
+START sql incremental model dbt_funnygorilla.stg_tpch_nations ........... [RUN]
+
+create or replace transient table PC_DBT_DB.dbt_agu.stg_tpch_nations
+    as (
+      with source as (
+        select * from PC_DBT_DB.dbt_agu.nations
+      ),
+      renamed as (
+        select
+           n_nationkey       as nation_key,
+           n_name            as name,
+           n_regionkey       as region_key,
+           last_updated_date as last_updated_date
+        from source
+      )
+      select * from renamed
+    )
+
+
+//-- ################################################################# --//
+     3. Update nation data
+//-- ################################################################# --//
+
+# 01. update nation.csv
+
+N_NATIONKEY,	N_NAME,	N_REGIONKEY,	LAST_UPDATED_DATE
+0,	ALGERIA,	0,	1998-08-02
+1,	ARGENTINA,	1,	1998-08-02
+2,	BRAZIL,	1,	1998-08-02
+3,	CANADA,	5,	2022-05-09
+4,	EGYPT,	4,	1998-08-02
+5,	ETHIOPIA,	0,	1998-08-02
+6,	FRANCE,	3,	1998-08-02
+7,	GERMANY,	3,	1998-08-02
+8,	INDIA,	2,	1998-08-02
+9,	INDONESIA,	2,	1998-08-02
+10,	IRAN,	4,	1998-08-02
+11,	IRAQ,	4,	1998-08-02
+12,	JAPAN,	2,	1998-08-02
+13,	JORDAN,	4,	1998-08-02
+14,	KENYA,	0,	1998-08-02
+15,	MOROCCO,	0,	1998-08-02
+16,	MOZAMBIQUE,	0,	1998-08-02
+17,	PERU,	1,	1998-08-02
+18,	CHINA,	2,	1998-08-02
+19,	ROMANIA,	3,	1998-08-02
+20,	SAUDI ARABIA,	4,	1998-08-02
+21,	VIETNAM,	2,	1998-08-02
+22,	UNITED KINGDOM,	3,	1998-08-02
+23,	UNITED STATES,	5,	2022-05-09
+24,	MEXICO,	5,	2022-05-09
+25,	AUSTRALIA,	2,	2022-05-09
+26,	NEW ZEALAND,	2,	2022-05-09
+27,	SOUTH KOREA,	2,	2022-05-09
+28,	BELGIUM,	3,	2022-05-09
+29,	SWEDEN,	3,	2022-05-09
+30,	SPAIN,	3,	2022-05-09
+
+
+//-- ################################################################# --//
+     4. run incremental model the second time
+//-- ################################################################# --//
+
+# 01. run this data model
+dbt run --select stg_tpch_nations
+
+
+//-- ################################################################# --//
+     5. understand how incremental model works
+         -- select updated data by a temporary view
+         -- merge updated data into existing table
+//-- ################################################################# --//
+
+# 00. check dbt detailed log
+START sql incremental model dbt_funnygorilla.stg_tpch_nations ........... [RUN]
+
+# 01. create a temporary view 
+create or replace temporary view PC_DBT_DB.dbt_funnygorilla.stg_tpch_nations__dbt_tmp
+  as (
+    with source as (
+      select * from PC_DBT_DB.dbt_funnygorilla.nations
+    ),
+   renamed as (
+      select
+          n_nationkey       as nation_key,
+          n_name            as name,
+          n_regionkey       as region_key,
+          last_updated_date as last_updated_date
+      from source
+    )
+   select * from renamed
+      -- this filter will only be applied on an incremental run
+      where last_updated_date > (select max(last_updated_date) 
+      from PC_DBT_DB.dbt_funnygorilla.stg_tpch_nations)
+  )
+
+# 02. merge clause
+merge into PC_DBT_DB.dbt_funnygorilla.stg_tpch_nations as DBT_INTERNAL_DEST
+        using PC_DBT_DB.dbt_funnygorilla.stg_tpch_nations__dbt_tmp as DBT_INTERNAL_SOURCE
+        on ((DBT_INTERNAL_SOURCE.nation_key = DBT_INTERNAL_DEST.nation_key))
+    
+    when matched then update set
+        "NATION_KEY"        = DBT_INTERNAL_SOURCE."NATION_KEY",
+        "NAME"              = DBT_INTERNAL_SOURCE."NAME",
+        "REGION_KEY"        = DBT_INTERNAL_SOURCE."REGION_KEY",
+        "LAST_UPDATED_DATE" = DBT_INTERNAL_SOURCE."LAST_UPDATED_DATE"
+    
+    when not matched then insert
+        ("NATION_KEY", "NAME", "REGION_KEY", "LAST_UPDATED_DATE")
+        values
+        ("NATION_KEY", "NAME", "REGION_KEY", "LAST_UPDATED_DATE")
+
+
+
+//-- ################################################################# --//
+      6.  Check snowflake database
+//-- ################################################################# --//
+
+# 01. check snowflake table
+select * from pc_dbt_db.DBT_FUNNYGORILLA.nations
+
+# 02. run this data model
+dbt run --select stg_tpch_nations
+
+# 03. Check compiled model from target folder
+./target/
+
+
+//-- ########################### End ################################# --//
+

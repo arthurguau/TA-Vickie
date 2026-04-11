@@ -1,0 +1,212 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# concept: 
+ - initial load, 
+ - incremental load <- Change data capture (CDC)
+
+# merge statement:
+
+# 00. Definition
+
+MERGE INTO <target_table> AS target
+  USING <source_table_or_subquery> AS source
+  ON <join_condition>
+
+  WHEN MATCHED [ AND <match_predicate> ] THEN
+    <update_clause [| delete_clause>]
+  DELETE where_clause
+  WHEN NOT MATCHED [ AND <not_match_predicate> ] THEN
+    <insert_clause>
+
+
+In Snowflake, the MERGE statement is a DML (Data Manipulation Language) command that 
+allows you to perform inserts, updates, and deletes in a single atomic operation.
+
+-- Non-Deterministic Results: 
+If the source table contains multiple rows that match a single row in the target, the update becomes non-deterministic. 
+Snowflake may throw an error or choose one row arbitrarily.
+
+-- Transactional Safety: 
+A MERGE statement is a single transaction; if any part of it fails, none of the changes are applied.
+
+-- Limitations: 
+Snowflake currently does not support WHEN NOT MATCHED BY SOURCE (deleting target rows that aren't in the source). 
+This requires a separate DELETE or a workaround.
+
+-- How data is updated and other data is inserted
+Depends on the how matching logic is defined:
+   . ON (s.id = t.id): only id will be used to judge matching entry exists or not (can have multiple fields)
+   . only WHEN MATCHED: only update
+   . only WHEN NOT MATCHED: only insert
+
+
+//-- ################################################################# --//
+     0. Set up database & table - source/destination              
+//-- ################################################################# --//
+
+USE ROLE SYSADMIN;
+
+-- 00. create tables: source, destination
+CREATE OR REPLACE DATABASE FUNNY_BANKING_DB;
+CREATE OR REPLACE SCHEMA BANKING;
+
+USE DATABASE FUNNY_BANKING_DB;
+USE SCHEMA BANKING;
+
+CREATE OR REPLACE TABLE CUSTOMER_STAGE (
+    CUSTOMER_ID INT,
+    CUSTOMER_NAME VARCHAR(255),
+    EMAIL VARCHAR(255),
+    ADDRESS VARCHAR(255)
+);
+
+CREATE OR REPLACE TABLE CUSTOMER_DIM_SCD1 (
+    CUSTOMER_ID INT PRIMARY KEY,
+    CUSTOMER_NAME VARCHAR(255),
+    EMAIL VARCHAR(255),
+    ADDRESS VARCHAR(255),
+    LAST_UPDATED_DATE TIMESTAMP_NTZ
+);
+
+
+//-- ################################################################# --//
+     1. Initial data load              
+//-- ################################################################# --//
+
+# 01. initial data in stage table
+INSERT INTO CUSTOMER_STAGE (CUSTOMER_ID, CUSTOMER_NAME, EMAIL, ADDRESS) 
+  VALUES
+     (1, 'Alice Smith', 'alice.s@example.com', '123 Main St'),
+     (2, 'Bob Johnson', 'bob.j@example.com', '456 Oak Ave');
+
+Select * from CUSTOMER_STAGE;
+
+
+# 02. initial data in dimension table
+INSERT INTO CUSTOMER_DIM_SCD1 (CUSTOMER_ID, CUSTOMER_NAME, EMAIL, ADDRESS, LAST_UPDATED_DATE) 
+  VALUES
+     (1, 'Alice Smith', 'alice.s@example.com', '123 Main St', CURRENT_TIMESTAMP()),
+     (2, 'Bob Johnson', 'bob.j@example.com', '456 Oak Ave', CURRENT_TIMESTAMP());
+
+Select * from CUSTOMER_DIM_SCD1;
+
+
+//-- ################################################################# --//
+     2. Incremental data load              
+//-- ################################################################# --//
+
+# 01. incoming data in stage table
+Update CUSTOMER_STAGE SET EMAIL='alice.smith@example.com' WHERE CUSTOMER_ID = 1;
+
+INSERT INTO CUSTOMER_STAGE (CUSTOMER_ID, CUSTOMER_NAME, EMAIL, ADDRESS) 
+  VALUES
+    (3, 'Charlie Brown', 'charlie.b@example.com', '789 Pine Ln'); -- New customer
+
+Select * from CUSTOMER_STAGE;
+
+
+# 02. Merge into dimension table
+
+MERGE INTO CUSTOMER_DIM_SCD1 AS target
+  USING (
+      SELECT * 
+      FROM CUSTOMER_STAGE 
+  ) AS source
+
+  ON target.CUSTOMER_ID = source.CUSTOMER_ID
+
+  WHEN MATCHED THEN
+    UPDATE SET
+        target.CUSTOMER_NAME = source.CUSTOMER_NAME,
+        target.EMAIL = source.EMAIL,
+        target.ADDRESS = source.ADDRESS,
+        target.LAST_UPDATED_DATE = CURRENT_TIMESTAMP()
+  WHEN NOT MATCHED THEN
+    INSERT (CUSTOMER_ID, CUSTOMER_NAME, EMAIL, ADDRESS, LAST_UPDATED_DATE)
+       VALUES (source.CUSTOMER_ID, source.CUSTOMER_NAME, source.EMAIL, source.ADDRESS, CURRENT_TIMESTAMP());
+
+Select * from CUSTOMER_DIM;
+
+
+# 03. What if the source data volume is huge?
+
+
+//-- ################################################################# --//
+     3. Merge  
+         01. basic - upsert [update & insert]
+         02. Conditional Merge with DELETE
+         03. MERGE ALL BY NAME
+         04. Using a Subquery as a Source
+//-- ################################################################# --//
+
+
+# 01. basic - upsert [update & insert]
+
+MERGE INTO target_table AS target
+  USING source_table AS source
+  ON target.id = source.id
+  WHEN MATCHED THEN
+      UPDATE SET 
+        target.name = source.name,
+        target.value = source.value
+  WHEN NOT MATCHED THEN
+      INSERT (id, name, value)
+        VALUES (source.id, source.name, source.value);
+
+
+# 02. Conditional Merge with DELETE
+        -- distinguish delete from update by setting a flag, u.is_deleted = TRUE
+MERGE INTO products AS p
+  USING updates AS u
+  ON p.product_id = u.product_id
+  WHEN MATCHED AND u.is_deleted = TRUE THEN    -- need to be defined first
+      DELETE
+  WHEN MATCHED THEN 
+      UPDATE SET p.price = u.price
+  WHEN NOT MATCHED THEN 
+      INSERT (product_id, price) VALUES (u.product_id, u.price);
+
+
+# 03. MERGE ALL BY NAME - eliminating the need to list every column manually.
+
+MERGE INTO target_table 
+  USING source_table 
+  ON target_table.id = source_table.id
+  WHEN MATCHED THEN 
+      UPDATE ALL BY NAME
+  WHEN NOT MATCHED THEN 
+      INSERT ALL BY NAME;
+
+
+# 04. Using a Subquery as a Source
+      -- USING clause can accept a subquery, 
+      -- which is useful for deduplicating source data before performing the merge
+
+MERGE INTO sales_facts AS target
+  USING (
+      SELECT id, MAX(amount) as amount 
+      FROM staging_sales 
+      GROUP BY id
+  ) AS source
+
+  ON target.id = source.id
+  WHEN MATCHED THEN 
+      UPDATE SET target.amount = source.amount
+  WHEN NOT MATCHED THEN 
+      INSERT (id, amount) VALUES (source.id, source.amount);
+
+
+//-- ################################################################# --//
+     4. Things to be aware of               
+//-- ################################################################# --//
+
+1. You can't update any of the columns you are matching on in the ON clause.
+2. You can only update a row in the target table once.
+
+
+//-- ############################# End ############################## --//
+

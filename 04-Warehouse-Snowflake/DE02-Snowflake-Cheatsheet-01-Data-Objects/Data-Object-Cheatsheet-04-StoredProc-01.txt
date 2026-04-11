@@ -5,7 +5,6 @@
 Snowflake account created
 
 
-
 //-- ################################################################# --//
       Stored procedure   
         - SQL

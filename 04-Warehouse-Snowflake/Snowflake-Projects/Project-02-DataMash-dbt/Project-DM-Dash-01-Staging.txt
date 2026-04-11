@@ -1,0 +1,283 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     1. Setup dbt connection in Snowflake      
+//-- ################################################################# --//
+
+
+# 01. AccountAdmin role
+
+# 02. Data product -> Partner Connect -> Business Parner -> dbt
+
+# 03. Optional Grant -> add Snowflake_Sample_Data in the text box:
+      - will grant dbt user to access this sample dataset
+
+# 04 Connect: -> Snowflake will create:
+     - dbt uer: PC_DBT_USER
+     - database: PC_DBT_DB
+     - warehouse: PC_DBT_WH
+     - dbt role: PC_DBT_ROLE
+        Privilege MODIFY PROGRAMMATIC AUTHENTICATION METHODS will be granted to the PC_DBT_ROLE
+        Role PUBLIC will be granted to the PC_DBT_ROLE
+        Role PC_DBT_ROLE will be granted to the SYSADMIN role
+  
+# 05. Reset passward for PC_DBT_USER:
+alter user PC_DBT_USER set password = 'xxxxx';
+
+
+//-- ################################################################# --//
+     2. Setup dbt connection in DBT      
+//-- ################################################################# --//
+
+complete with a connection to your Snowflake account, 
+ - a deployment and a development environment, 
+ - as well as a sample job.
+
+Managed repository
+
+
+//-- ################################################################# --//
+     2. Setup new project     
+//-- ################################################################# --//
+
+Account settings -> Projects:
+
+# 00. Delete existing project (trial account only allows one project)
+
+# 01. Create a project
+
+# 02. Setup git repository
+
+# 03. Environment setting
+
+# 04. Initialise project -> delete models/example
+
+# 05. Change default project name to "foundational_project" in dbt_project.xml
+
+
+
+//-- ################################################################# --//
+     3. Staging layer        
+//-- ################################################################# --//
+
+
+# 01. Create 2 folders: models/staging
+
+# 02. Define source file: staging/sources.yml
+
+sources:
+  - name: tpch
+    description: "TPCH data source from Snowflake Sample Data"
+    database: snowflake_sample_data
+    schema: tpch_sf1
+    tables:
+      - name: orders
+        description: "One record per order"
+      - name: customer
+        description: "One record per customer"
+      - name: lineitem
+        description: "One record per line item within a single order (1 -> n)"
+
+
+# 03. Define staging model: models/staging/stg_customers.sql
+
+with source as (
+    select * from {{ source('tpch', 'customer') }}
+),
+cleanup as (
+    select
+        c_custkey as customer_key,
+        c_name    as name,
+        c_address as address, 
+        c_nationkey  as nation_key,
+        c_phone      as phone_number,
+        c_acctbal    as account_balance,
+        c_mktsegment as market_segment,
+        c_comment    as comment
+    from source
+)
+select * from cleanup
+
+
+# 04. Define staging model: models/staging/stg_orders.sql 
+
+with source as (
+    select * from {{ source('tpch', 'orders') }}
+),
+renamed as (
+    select
+        o_orderkey    as order_key,
+        o_custkey     as customer_key,
+        o_orderstatus as status_code,
+        o_totalprice  as total_price,
+        o_orderdate   as order_date,
+        o_clerk       as clerk_name,
+        o_orderpriority as priority_code,
+        o_shippriority  as ship_priority,
+        o_comment       as comment
+    from source
+)
+select * from renamed
+
+
+# 05. Define staging model: models/staging/stg_line_items.sql 
+
+with source as (
+    select * from {{ source('tpch', 'lineitem') }}
+),
+
+renamed as (
+    select
+        l_orderkey   as order_key,
+        l_partkey    as part_key,
+        l_suppkey    as supplier_key,
+        l_linenumber as line_number,
+        l_quantity   as quantity,
+        l_extendedprice as gross_item_sales_amount,
+        l_discount      as discount_percentage,
+        l_tax           as tax_rate,
+        l_returnflag    as return_flag,
+        l_linestatus    as status_code,
+        l_shipdate      as ship_date,
+        l_commitdate    as commit_date,
+        l_receiptdate   as receipt_date,
+        l_shipinstruct  as ship_instructions,
+        l_shipmode      as ship_mode,
+        l_comment       as comment,
+
+        -- extended_price is actually the line item total,
+        -- so we back out the extended price per item
+        (gross_item_sales_amount/nullif(quantity, 0))::decimal(16,4)         as base_price,
+        (base_price * (1 - discount_percentage))::decimal(16,4)              as discounted_price,
+        (gross_item_sales_amount * (1 - discount_percentage))::decimal(16,4) as discounted_item_sales_amount,
+
+        -- We model discounts as negative amounts
+        (-1 * gross_item_sales_amount * discount_percentage)::decimal(16,4)          as item_discount_amount,
+        ((gross_item_sales_amount + item_discount_amount) * tax_rate)::decimal(16,4) as item_tax_amount,
+        (
+            gross_item_sales_amount + 
+            item_discount_amount + 
+            item_tax_amount
+        )::decimal(16,4)     as net_item_sales_amount
+
+    from source
+)
+
+select * from renamed
+
+
+
+//-- ################################################################# --//
+     4. Data marts       
+//-- ################################################################# --//
+
+
+# 01. create fact model: models/marts/fct_orders.sql 
+
+{{
+    config(
+        materialized='table',
+    )
+}}
+
+with orders as ( 
+    select * from {{ ref('stg_orders') }}
+),
+line_items as (
+    select * from {{ ref('stg_line_items') }}
+),
+customers as (
+    select * from {{ ref('stg_customers') }}
+),
+order_item_summary as (
+
+    select 
+        order_key,
+        sum(gross_item_sales_amount) as gross_item_sales_amount,
+        sum(item_discount_amount)    as item_discount_amount,
+        sum(item_tax_amount)         as item_tax_amount,
+        sum(net_item_sales_amount)   as net_item_sales_amount
+    from line_items
+    group by 1
+
+),
+final as (
+    select 
+        orders.order_key, 
+        orders.order_date,
+        orders.customer_key,
+        orders.status_code,
+        orders.priority_code,
+        orders.ship_priority,
+        orders.clerk_name,
+        customers.name,
+        customers.market_segment,
+        order_item_summary.gross_item_sales_amount,
+        order_item_summary.item_discount_amount,
+        order_item_summary.item_tax_amount,
+        order_item_summary.net_item_sales_amount
+    from orders
+    inner join order_item_summary on orders.order_key = order_item_summary.order_key
+    inner join customers on orders.customer_key = customers.customer_key
+)
+select * from final order by order_date
+
+
+
+//-- ################################################################# --//
+     5. build project
+//-- ################################################################# --//
+
+# 01. command bar
+dbt build
+
+# 02. check data model lineage
+
+
+//-- ################################################################# --//
+     6. mask PII data
+//-- ################################################################# --//
+
+use role PC_DBT_ROLE;
+use database PC_DBT_DB;
+
+# 01. Create a tag for PII data
+create tag if not exists PC_DBT_DB.prod.pii_data;
+
+# 02. Create a masking policy for string data
+create or replace masking policy PC_DBT_DB.prod.pii_mask_string as (val string) returns string ->
+  case
+    when is_role_in_session('foundational_pii_reader_role') then val
+    else '****'
+  end;
+  
+# 03. Assign the masking policy to the tag
+alter tag PC_DBT_DB.prod.pii_data set masking policy PC_DBT_DB.prod.pii_mask_string;
+
+
+# 04. apply the masking policy to the name column of the fct_orders dbt model 
+      immediately after the table is built
+
+{{
+    config(
+        materialized='table',
+        post_hook="alter table {{ this }} modify column name set tag PC_DBT_DB.prod.pii_data = 'name'"
+    )
+}}
+
+
+
+//-- ################################################################# --//
+     11. clean up           
+//-- ################################################################# --//
+
+
+
+
+//-- ############################# End ############################## --//
+

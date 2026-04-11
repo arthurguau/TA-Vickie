@@ -1,0 +1,162 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+     Design data pipeline
+      - incremental Near Real Time integration 
+        Stream: 
+          . tracks all data changes on a table (inserts,updates,deletes).
+          . The change log from a stream is automatically ‘consumed' 
+        Task:
+        MTI: multi-table insert in one DML 
+//-- ################################################################# --//
+
+[toDo]
+
+
+//-- ################################################################# --//
+       set up the environment   
+        - development environment
+        - test environment
+        - UAT environment                   
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. Define database                 
+//-- ################################################################# --//
+
+USE ROLE accountadmin;
+
+CREATE OR REPLACE DATABASE dv_lab;
+
+
+//-- ################################################################# --//
+     2. Define virtual warehouse size                 
+//-- ################################################################# --//
+
+USE DATABASE dv_lab;
+
+CREATE OR REPLACE WAREHOUSE dv_lab_wh WITH WAREHOUSE_SIZE = 'XSMALL' MIN_CLUSTER_COUNT = 1 MAX_CLUSTER_COUNT = 1 AUTO_SUSPEND = 60 COMMENT = 'Generic WH';
+CREATE OR REPLACE WAREHOUSE dv_rdv_wh WITH WAREHOUSE_SIZE = 'XSMALL' MIN_CLUSTER_COUNT = 1 MAX_CLUSTER_COUNT = 1 AUTO_SUSPEND = 60 COMMENT = 'WH for Raw Data Vault object pipelines';
+CREATE OR REPLACE WAREHOUSE dv_bdv_wh WITH WAREHOUSE_SIZE = 'XSMALL' MIN_CLUSTER_COUNT = 1 MAX_CLUSTER_COUNT = 1 AUTO_SUSPEND = 60 COMMENT = 'WH for Business Data Vault object pipelines';
+CREATE OR REPLACE WAREHOUSE dv_id_wh  WITH WAREHOUSE_SIZE = 'XSMALL' MIN_CLUSTER_COUNT = 1 MAX_CLUSTER_COUNT = 1 AUTO_SUSPEND = 60 COMMENT = 'WH for information delivery object pipelines';
+
+
+//-- ################################################################# --//
+     2. setup 3 tier architecture
+        - Staging 
+        - Data Vault (Raw, Business)
+        - Information Delivery
+//-- ################################################################# --//
+
+USE WAREHOUSE dv_lab_wh;
+
+CREATE OR REPLACE SCHEMA l00_stg COMMENT = 'Schema for Staging Area objects';
+CREATE OR REPLACE SCHEMA l10_rdv COMMENT = 'Schema for Raw Data Vault objects';
+CREATE OR REPLACE SCHEMA l20_bdv COMMENT = 'Schema for Business Data Vault objects';
+CREATE OR REPLACE SCHEMA l30_id  COMMENT = 'Schema for Information Delivery objects';
+
+
+//-- ################################################################# --//
+     3. setup Stages
+        - Json 
+        - CSV
+//-- ################################################################# --//
+
+# 00. create stage
+CREATE OR REPLACE STAGE customer_data FILE_FORMAT = (TYPE = JSON);
+CREATE OR REPLACE STAGE orders_data   FILE_FORMAT = (TYPE = CSV) ;
+
+
+
+//-- ################################################################# --//
+     4. setup staging tables
+         01. reference tables
+         02. business tables
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     01. reference data
+         - nation
+         - region
+//-- ================================================================= --//
+
+# 01. setting up staging area
+USE SCHEMA l00_stg;
+
+CREATE OR REPLACE TABLE stg_nation 
+  AS 
+    SELECT src.*
+     , CURRENT_TIMESTAMP()          ldts 
+     , 'Static Reference Data'      rscr 
+    FROM snowflake_sample_data.tpch_sf10.nation src;
+
+CREATE OR REPLACE TABLE stg_region
+  AS 
+    SELECT src.*
+     , CURRENT_TIMESTAMP()          ldts 
+     , 'Static Reference Data'      rscr 
+    FROM snowflake_sample_data.tpch_sf10.region src;
+
+
+//-- ################################################################# --//
+     02. Business staging tables
+          - stg_customer
+          - stg_orders
+//-- ================================================================= --//
+
+# VARIANT data type
+a flexible, tagged universal type designed to store semi-structured data, 
+such as JSON, XML, Avro, ORC, and Parquet.
+
+
+# 01. create stg_customer table
+
+CREATE OR REPLACE TABLE stg_customer
+(
+  raw_json                VARIANT
+, filename                STRING   NOT NULL
+, file_row_seq            NUMBER   NOT NULL
+, ldts                    STRING   NOT NULL
+, rscr                    STRING   NOT NULL
+);
+
+
+# 02. create stg_orders table
+
+CREATE OR REPLACE TABLE stg_orders
+(
+  o_orderkey              NUMBER
+, o_custkey               NUMBER  
+, o_orderstatus           STRING
+, o_totalprice            NUMBER  
+, o_orderdate             DATE
+, o_orderpriority         STRING
+, o_clerk                 STRING
+, o_shippriority          NUMBER
+, o_comment               STRING
+, filename                STRING   NOT NULL
+, file_row_seq            NUMBER   NOT NULL
+, ldts                    STRING   NOT NULL
+, rscr                    STRING   NOT NULL
+);
+
+
+//-- ################################################################# --//
+     5. stream tables 
+         - for staging tables
+//-- ################################################################# --//
+
+CREATE OR REPLACE STREAM stg_customer_strm ON TABLE stg_customer;
+CREATE OR REPLACE STREAM stg_orders_strm   ON TABLE stg_orders;
+
+
+
+//-- ############################# End ############################### --//
+

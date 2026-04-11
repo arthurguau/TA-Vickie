@@ -1,0 +1,25 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Pycharm installed
+
+
+//-- ################################################################# --//
+      Design Pipeline process
+//-- ################################################################# --//
+
+00. Have file ready - data_generator.py
+
+# ???
+01. read a batch of lines from standard input, write a file to temporary storage - snowflake [internal stage]
+
+02. call the API endpoint to have LIFT_TICKETS_PIPE ingest the file uploaded
+03. upload/put that file to LIFT_TICKETS_PY_SNOWPIPE stage [internal stage]
+04. Snowpipe will do the COPY INTO the table LIFT_TICKETS_PY_SNOWPIPE
+
+
+
+//-- ############################# End ############################## --//
+

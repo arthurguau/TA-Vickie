@@ -1,0 +1,24 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Azure portal account created
+
+
+//-- ################################################################# --//
+      1. Delete files         
+//-- ################################################################# --//
+
+# 01. Use the REMOVE Command
+REMOVE @healthcare_db.ingest.healthcarestage_json
+
+# 02.  Configure your cloud provider (Azure Blob) to delete files automatically after a specific retention period.
+It is a great way to achieve automation
+
+# 03. Do Not Use PURGE with Snowpipe: 
+The COPY INTO option PURGE = TRUE works for manual loads but cannot be used in PIPE definitions.
+
+
+//-- ############################# End ############################## --//
+

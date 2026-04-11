@@ -1,0 +1,130 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. create dimension model
+//-- ################################################################# --//
+
+# 01. Create model into models/marts/core/int_order_items.sql
+
+with orders as (
+    select * from {{ ref('stg_tpch_orders') }}
+),
+line_item as (
+    select * from {{ ref('stg_tpch_line_items') }}
+)
+select 
+    line_item.order_item_key,
+    orders.order_key,
+    orders.customer_key,
+    orders.order_date,
+    orders.status_code as order_status_code,
+    line_item.part_key,
+    line_item.supplier_key,
+    line_item.return_flag,
+    line_item.line_number,
+    line_item.status_code as order_item_status_code,
+    line_item.ship_date,
+    line_item.commit_date,
+    line_item.receipt_date,
+    line_item.ship_mode,
+    line_item.extended_price,
+    line_item.quantity,
+    
+    -- extended_price is actually the line item total,
+    -- so back out the extended price per item
+    (line_item.extended_price/nullif(line_item.quantity, 0))::decimal(16,2) as base_price,
+    line_item.discount_percentage,
+    (base_price * (1 - line_item.discount_percentage))::decimal(16,2) as discounted_price,
+
+    line_item.extended_price as gross_item_sales_amount,
+    (line_item.extended_price * (1 - line_item.discount_percentage))::decimal(16,2) as discounted_item_sales_amount,
+    
+    -- model discounts as negative amounts
+    (-1 * line_item.extended_price * line_item.discount_percentage)::decimal(16,2) as item_discount_amount,
+    line_item.tax_rate,
+    ((gross_item_sales_amount + item_discount_amount) * line_item.tax_rate)::decimal(16,2) as item_tax_amount,
+    (
+        gross_item_sales_amount + 
+        item_discount_amount + 
+        item_tax_amount
+    )::decimal(16,2) as net_item_sales_amount
+
+from
+    orders inner join line_item on orders.order_key = line_item.order_key
+order by
+    orders.order_date
+
+
+//-- ################################################################# --//
+     2. create fact model
+//-- ################################################################# --//
+
+# 01. Create model into models/marts/core/fct_orders.sql
+
+with orders as (
+    select * from {{ ref('stg_tpch_orders') }} 
+),
+order_item as (
+    select * from {{ ref('int_order_items') }}
+),
+order_item_summary as (
+
+    select 
+        order_key,
+        sum(gross_item_sales_amount) as gross_item_sales_amount,
+        sum(item_discount_amount) as item_discount_amount,
+        sum(item_tax_amount) as item_tax_amount,
+        sum(net_item_sales_amount) as net_item_sales_amount
+    from order_item
+    group by
+        1
+),
+final as (
+    select 
+        orders.order_key, 
+        orders.order_date,
+        orders.customer_key,
+        orders.status_code,
+        orders.priority_code,
+        orders.clerk_name,
+        orders.ship_priority,
+                
+        1 as order_count,                
+        order_item_summary.gross_item_sales_amount,
+        order_item_summary.item_discount_amount,
+        order_item_summary.item_tax_amount,
+        order_item_summary.net_item_sales_amount
+    from
+        orders
+        inner join order_item_summary
+            on orders.order_key = order_item_summary.order_key
+)
+select *
+  from final order by order_date
+
+
+//-- ################################################################# --//
+     3. Check the linage of fact_order model
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+     4. Run models
+//-- ################################################################# --//
+
+# 01. run the model and downstream models
+dbt run --select int_order_items+
+
+# 02. Check compiled code
+
+# 03. Check snowflake
+
+
+//-- ########################### End ################################# --//
+

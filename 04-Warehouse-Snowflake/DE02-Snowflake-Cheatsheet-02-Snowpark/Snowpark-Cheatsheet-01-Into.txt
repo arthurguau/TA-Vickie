@@ -1,0 +1,76 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      Setup GitHub Codespace
+//-- ################################################################# --//
+
+# for fork the GitHub repository 
+https://github.com/Snowflake-Labs/sfguide-data-engineering-with-snowpark-python-intro
+
+# Create GitHub Codespace - hosted web-based version of VS Code with your forked repository set up
+
+- Creating a container for your environment
+- Installing Anaconda (miniconda)
+- SnowSQL setup
+   - Installing SnowSQL
+   - Creating a directory and default config file for SnowSQL
+- Anaconda setup
+   - Creating the Anaconda environment
+   - Installing the Snowpark Python library
+- VS Code setup
+   - Installing VS Code
+   - Installing the Snowflake VS Code extension
+- Starting a hosted, web-based VS Code editor
+ 
+
+# Configure Snowflake Credentials
+
+
+//-- ################################################################# --//
+      2. Setup Snowflake Objects
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      2-1. Create 
+            - Roles, 
+            - Databases, 
+            - Tables, 
+            - Schema and 
+            - Stages
+//-- ================================================================= --//
+
+
+
+//-- ################################################################# --//
+       2-2. Creating Account Level Objects
+//-- ================================================================= --//
+ 
+SET MY_USER = CURRENT_USER();
+CREATE OR REPLACE ROLE HOL_ROLE;
+GRANT ROLE HOL_ROLE TO ROLE SYSADMIN;
+GRANT ROLE HOL_ROLE TO USER IDENTIFIER($MY_USER);
+
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE HOL_ROLE;
+GRANT MONITOR EXECUTION ON ACCOUNT TO ROLE HOL_ROLE;
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE HOL_ROLE;
+
+
+CREATE OR REPLACE DATABASE HOL_DB;
+GRANT OWNERSHIP ON DATABASE HOL_DB TO ROLE HOL_ROLE;
+
+CREATE OR REPLACE WAREHOUSE HOL_WH WAREHOUSE_SIZE = XSMALL, AUTO_SUSPEND = 300, AUTO_RESUME= TRUE;
+GRANT OWNERSHIP ON WAREHOUSE HOL_WH TO ROLE HOL_ROLE;
+
+
+
+
+
+
+//-- ############################# End ############################## --//
+

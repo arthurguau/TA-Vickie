@@ -1,0 +1,53 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      1. Load file into stage  
+          - table stage
+          - user stage
+          - named internal stage (schema level)                           
+//-- ################################################################# --//
+
+-- 01. Update load csv file into stage from Snowinsight manually
+       open stage in new tab
+./dataset/Orders_2023-07-07.csv 
+
+-- 02. List stages
+list @ORDERS_STAGE;
+
+-- 03. check data
+select $1, $2, $3, $4, $5 from @ORDERS_STAGE;
+
+
+//-- ################################################################# --//
+      2. Load file into staging table  
+          - copy command                           
+//-- ################################################################# --//
+
+
+use database BAKERY_DB;
+use schema ORDERS;
+
+-- 01. Use copy command to load into table
+copy into ORDERS_STG
+from (
+  select $1, $2, $3, $4, $5, metadata$filename, current_timestamp() 
+  from @ORDERS_STAGE
+)
+file_format = (type = CSV, skip_header = 1)
+on_error = abort_statement
+purge = true;   -- purge data
+
+-- 02. Check data in table
+select * from ORDERS_STG;
+
+-- 03. Check stage
+list @ORDERS_STAGE;
+
+
+//-- ############################# End ############################## --//
+

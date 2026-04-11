@@ -1,0 +1,188 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+1. Python installed
+2. Github account registered
+3. Snowflake account registered
+
+# reference
+https://docs.getdbt.com/docs/build/projects
+https://docs.getdbt.com/docs/core/connect-data-platform/snowflake-setup
+
+
+//-- ################################################################# --//
+     DBT Core - Pip
+       1. Install virtual environment package  
+       2. Set up Python virtual environment 
+       3. Activate Python virtual environment
+       4. Install the dbt-snowflake library
+       5. Prepare database and warehouse  
+       6. Scaffold DBT project    
+       7. Build the example models  
+       8. Validate data objects in Snowflake
+       9. Push GitHub repository  
+       10. clean up resource
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. Install virtual environment package                          
+//-- ################################################################# --//
+
+# 00. Make sure Python installed
+python3 --version
+
+# 01. Install & Upgrade pip
+pipx --version
+brew install pipx
+
+# 02. Install virtualenv and add it to your PATH environment variables
+pipx install virtualenv
+pipx ensurepath
+source ~/.zshrc
+
+
+//-- ################################################################# --//
+     2. Set up Python virtual environment                            
+//-- ################################################################# --//
+
+# 01. Prepare folder structure
+cd ~/Developer/projects
+mkdir ./dbt-projects && cd ./dbt-projects
+
+# 02. Create a virtual environment
+python3 -m venv dbt-local-dev-env 
+
+
+//-- ################################################################# --//
+     3. Activate Python virtual environment                            
+//-- ################################################################# --//
+
+# 01. activate virtual environment -> enter into virtual environment
+source dbt-local-dev-env/bin/activate
+
+
+//-- ################################################################# --//
+     4. Install the dbt-snowflake library 
+         - inside of virtual environment                       
+//-- ################################################################# --//
+
+# install dbt-core dbt-snowflake
+python3 -m pip install dbt-core dbt-snowflake
+
+pip install --upgrade pip
+
+# Confirm installation
+dbt --version
+
+pip show dbt-snowflake
+
+
+//-- ################################################################# --//
+     5. Prepare database and warehouse                  
+//-- ################################################################# --//
+
+# 00. register with Snowflake if not yet.
+
+# 01. Create an test warehouse and database on Snowflake
+create database funnygorilla_test_db;
+create warehouse funnygorilla_test_wh;
+
+# 02. Verify database/warehouse created - Admin -> Warehouses
+
+# 03. Take the account URL - lower left corner
+<your-account-id>.snowflakecomputing.com
+ACPHOWO-VW38726.snowflakecomputing.com
+
+
+//-- ################################################################# --//
+     6. Scaffold DBT project                
+//-- ################################################################# --//
+
+# 01. Create DBT project
+dbt init dbt_funnygorilla
+
+Username: funnygorilla
+Password: xxxx
+role: ACCOUNTADMIN
+Warehouse: funnygorilla_test_wh
+Database: funnygorilla_test_db
+Schema: public
+Threads: 2   -- concurrent queries to your database by dbt
+
+
+# 02. Validate the newly created folder structure
+
+-- exam project folder
+tree ./dbt_funnygorilla 
+
+-- exam profiles.yml: ~/.dbt/profiles.yml (Mac:  command + shift + .)
+cat ~/.dbt/profiles.yml
+
+
+//-- ################################################################# --//
+     7. Build the example models                  
+//-- ################################################################# --//
+
+cd dbt_funnygorilla
+
+# 01. Test snowflake connection
+dbt debug
+
+# 02. build the data models
+dbt build
+
+# 03. something goes wrong?
+how to fix?
+
+# 04. Check target folder
+tree ./target
+
+# 05. Deploy model to snowflake
+dbt run -s example
+
+
+//-- ################################################################# --//
+     8. Validate data objects in Snowflake               
+//-- ################################################################# --//
+
+# Check the new tables and views on Snowflake
+
+
+//-- ################################################################# --//
+     9. Push dbt projet to GitHub               
+//-- ################################################################# --//
+
+# 00. Create a private repository in Github: dbt_funnygorilla
+
+# 01. initilize git repository
+git init
+git add .
+git commit -m "My First Commit"
+git branch -M master
+
+# 02. setup remote repository
+git remote add origin https://github.com/${yourname}/dbt_funnygorilla.git
+git remote
+
+# 03. Push to GitHub
+git push origin master
+
+# 04. check GitHub project
+
+
+//-- ################################################################# --//
+     10. clean up resource                       
+//-- ################################################################# --//
+
+# clear Snowflake objects
+drop database funnygorilla_test_db;
+Drop warehouse funnygorilla_test_wh;
+
+# leave virtual environment
+deactivate
+
+
+//-- ############################# End  ############################## --//
+

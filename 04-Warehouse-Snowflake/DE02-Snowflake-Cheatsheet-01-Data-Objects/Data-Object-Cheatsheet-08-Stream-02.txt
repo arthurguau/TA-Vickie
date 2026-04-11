@@ -1,0 +1,217 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# Concept: SCD Type 2
+SCD Type 2 requires more sophisticated logic to preserve historical records
+
+This typically involves:
+
+VALID_FROM and VALID_TO dates: To define the active period of a record.
+CURRENT_FLAG: A boolean flag (TRUE/FALSE or 1/0) to indicate the currently active version of a record
+
+When a record changes:
+1. The current record,
+    - The VALID_TO date of the old record is set to CURRENT_TIMESTAMP(), and 
+    - its CURRENT_FLAG is set to FALSE.
+
+2. A new record is inserted with the new values, 
+    - a VALID_FROM date of CURRENT_TIMESTAMP(), 
+    - a VALID_TO date of a far future date (e.g., '9999-12-31'), and 
+    - CURRENT_FLAG set to TRUE.
+
+
+
+//-- ################################################################# --//
+     0. Set up database & table - source/destination              
+//-- ################################################################# --//
+
+USE ROLE SYSADMIN;
+
+-- 00. create tables: stage, dimension tables
+
+USE DATABASE FUNNY_BANKING_DB;
+USE SCHEMA BANKING;
+
+
+CREATE OR REPLACE TABLE PRODUCT_STAGE (
+    PRODUCT_ID INT,
+    PRODUCT_NAME VARCHAR(255),
+    CATEGORY VARCHAR(100),
+    PRICE DECIMAL(10, 2)
+);
+
+CREATE OR REPLACE TABLE PRODUCT_DIM_SCD2 (
+    PRODUCT_SK INT IDENTITY(1,1),   -- Surrogate Key
+    PRODUCT_ID INT,                 -- Business Key
+    PRODUCT_NAME VARCHAR(255),
+    CATEGORY VARCHAR(100),
+    PRICE DECIMAL(10, 2),
+    VALID_FROM TIMESTAMP_NTZ,
+    VALID_TO TIMESTAMP_NTZ,
+    CURRENT_FLAG BOOLEAN
+);
+
+
+//-- ################################################################# --//
+     1. Initial data load              
+//-- ################################################################# --//
+
+# 01. initial data in stage table 
+INSERT INTO PRODUCT_STAGE (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE) 
+  VALUES
+   (101, 'Laptop Basic', 'Electronics', 800.00),
+   (102, 'Mouse Wireless', 'Accessories', 25.00);
+
+Select * from PRODUCT_STAGE;
+
+
+# 02. initial data in dimension table (loading time is back to 2025-01-01)
+
+INSERT INTO PRODUCT_DIM_SCD2 (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, VALID_FROM, VALID_TO, CURRENT_FLAG) 
+  VALUES
+   (101, 'Laptop Basic', 'Electronics', 800.00, '2025-01-01', '9999-12-31', TRUE),
+   (102, 'Mouse Wireless', 'Accessories', 25.00, '2025-01-01', '9999-12-31', TRUE);
+
+
+Select * from PRODUCT_DIM_SCD2;
+
+
+//-- ################################################################# --//
+     2. Incremental data load into stage table            
+//-- ################################################################# --//
+
+# 01. incoming data in stage table
+
+-- Price and Name change for Product 101       
+UPDATE PRODUCT_STAGE
+  SET PRODUCT_NAME = 'Laptop Pro', PRICE = 950.00
+  WHERE PRODUCT_ID = 101
+
+INSERT INTO PRODUCT_STAGE (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE) 
+  VALUES      
+    (103, 'Keyboard Mechanical', 'Accessories', 75.00);
+
+
+Select * from PRODUCT_STAGE;
+
+
+//-- ################################################################# --//
+     3. Incremental data load (SCD) into dimension table            
+//-- ################################################################# --//
+
+
+# 01. Merge into dimension table
+       -- updating existing active records and 
+       -- inserting new historical records
+       -- NOT add new records
+
+MERGE INTO PRODUCT_DIM_SCD2 AS target
+USING (
+    SELECT
+        s.PRODUCT_ID,
+        s.PRODUCT_NAME,
+        s.CATEGORY,
+        s.PRICE,
+        -- Indicate if a record is an update to an existing active record
+        CASE
+            WHEN t.PRODUCT_ID IS NOT NULL AND (
+                t.PRODUCT_NAME != s.PRODUCT_NAME OR
+                t.CATEGORY != s.CATEGORY OR
+                t.PRICE != s.PRICE
+            ) THEN 'UPDATE'
+            WHEN t.PRODUCT_ID IS NULL THEN 'INSERT'
+            ELSE 'NO_CHANGE'
+        END AS CHANGE_TYPE
+    FROM PRODUCT_STAGE AS s
+    LEFT JOIN PRODUCT_DIM_SCD2 AS t
+        ON s.PRODUCT_ID = t.PRODUCT_ID AND t.CURRENT_FLAG = TRUE
+) AS source_with_changes
+
+ON target.PRODUCT_ID = source_with_changes.PRODUCT_ID AND 
+   target.CURRENT_FLAG = TRUE
+
+WHEN MATCHED AND source_with_changes.CHANGE_TYPE = 'UPDATE' THEN
+    -- Invalidate the old record
+    UPDATE SET
+        target.VALID_TO = CURRENT_TIMESTAMP(),
+        target.CURRENT_FLAG = FALSE
+
+WHEN NOT MATCHED AND source_with_changes.CHANGE_TYPE = 'INSERT' THEN
+    -- Insert new record (for truly new products)
+    INSERT (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, VALID_FROM, VALID_TO, CURRENT_FLAG)
+    VALUES (
+        source_with_changes.PRODUCT_ID,
+        source_with_changes.PRODUCT_NAME,
+        source_with_changes.CATEGORY,
+        source_with_changes.PRICE,
+        CURRENT_TIMESTAMP(),
+        '9999-12-31'::TIMESTAMP_NTZ,
+        TRUE
+    );
+
+
+# check dimension table
+SELECT * 
+   FROM PRODUCT_DIM_SCD2 
+   ORDER BY PRODUCT_ID, VALID_FROM;
+
+
+# 02. Find new version of updated record
+  SELECT
+    s.PRODUCT_ID,
+    s.PRODUCT_NAME,
+    s.CATEGORY,
+    s.PRICE,
+    CURRENT_TIMESTAMP() AS VALID_FROM,
+    '9999-12-31'::TIMESTAMP_NTZ AS VALID_TO,
+    TRUE AS CURRENT_FLAG
+  FROM PRODUCT_STAGE AS s
+    JOIN PRODUCT_DIM_SCD2 AS t
+       ON s.PRODUCT_ID = t.PRODUCT_ID
+  WHERE t.CURRENT_FLAG = FALSE    -- The record was just inactivated by the MERGE
+    AND (
+       t.PRODUCT_NAME != s.PRODUCT_NAME OR
+       t.CATEGORY != s.CATEGORY OR
+       t.PRICE != s.PRICE
+   );
+
+
+# 03. Insert new version of updated record
+
+-- After the MERGE, we need a separate INSERT for the new version of updated records
+-- This is because MERGE only allows one WHEN NOT MATCHED clause.
+-- A common alternative is to prepare the source data with flags for 'insert new version'
+-- vs 'insert entirely new record'. For simplicity here, we do it in two steps.
+
+
+INSERT INTO PRODUCT_DIM_SCD2 (PRODUCT_ID, PRODUCT_NAME, CATEGORY, PRICE, VALID_FROM, VALID_TO, CURRENT_FLAG)
+  SELECT
+    s.PRODUCT_ID,
+    s.PRODUCT_NAME,
+    s.CATEGORY,
+    s.PRICE,
+    CURRENT_TIMESTAMP() AS VALID_FROM,
+    '9999-12-31'::TIMESTAMP_NTZ AS VALID_TO,
+    TRUE AS CURRENT_FLAG
+  FROM PRODUCT_STAGE AS s
+    JOIN PRODUCT_DIM_SCD2 AS t
+       ON s.PRODUCT_ID = t.PRODUCT_ID
+  WHERE t.CURRENT_FLAG = FALSE    -- The record was just inactivated by the MERGE
+    AND (
+       t.PRODUCT_NAME != s.PRODUCT_NAME OR
+       t.CATEGORY != s.CATEGORY OR
+       t.PRICE != s.PRICE
+   );
+
+
+# check dimension table: a new version added
+SELECT * 
+   FROM PRODUCT_DIM_SCD2 
+   ORDER BY PRODUCT_ID, VALID_FROM;
+
+
+//-- ############################# End ############################## --//
+

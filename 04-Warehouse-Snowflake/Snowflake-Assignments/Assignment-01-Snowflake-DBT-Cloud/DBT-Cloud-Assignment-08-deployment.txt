@@ -1,0 +1,85 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+# reference
+https://docs.getdbt.com/docs/deploy/deployments
+
+
+//-- ################################################################# --//
+      Deployment:
+       01. Promoting code from feature branch to the production branch 
+       02. Deploying code to production environment. 
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      Create environment
+        - 01. development
+        - 02. staging
+        - 03. production
+//-- ################################################################# --//
+
+# 01. Create production environment
+Orchestration -> Environments -> create environment
+  Production
+  Schema: production
+
+
+//-- ################################################################# --//
+      Concept - Job scheduler
+//-- ################################################################# --//
+
+it handles:
+Cron-based execution of dbt jobs that run on a predetermined cadence
+Event-driven execution of dbt jobs that run based on the completion of another job (trigger on job completion)
+Event-driven execution of dbt CI jobs triggered when a pull request is merged to the branch (merge jobs)
+Event-driven execution of dbt jobs triggered by API
+Event-driven execution of dbt jobs manually triggered by a user to Run now
+
+-- Deploy job:
+Build production data assets. Runs on a schedule/by API/after another job completes.
+
+-- merge job: 
+Deploy merged changes into production. Runs after a successful PR merge or by API
+
+-- Continuous integration (CI) jobs: 
+Test and validate code changes before merging. Triggered by commit to a PR or by API.
+
+-- State-aware jobs:
+Intelligently decide what needs to be rebuilt based on source freshness, code, or upstream data changes. 
+Rebuild models only if they are older than the specified interval.
+
+
+//-- ################################################################# --//
+      Scheduler a job:
+       -- Deploy job -> CI job
+//-- ################################################################# --//
+
+
+# 01. Create a deploy job:
+      Environment: production
+      Execution command: build run
+
+# 02. Run now
+
+# 03. Check logs
+
+# 04. Check Snowflake
+
+# 05. Create a CI job:
+      Environment: production
+      Execution command: build run
+
+
+//-- ################################################################# --//
+      Check run history
+//-- ################################################################# --//
+
+Orchestration -> Run -> Run history
+
+
+//-- ########################### End ################################# --//
+

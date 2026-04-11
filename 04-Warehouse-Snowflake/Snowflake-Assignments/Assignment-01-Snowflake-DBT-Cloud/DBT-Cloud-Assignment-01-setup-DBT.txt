@@ -1,0 +1,113 @@
+
+
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+N/A
+
+//-- ################################################################# --//
+     1. set up project shell in DBT 
+//-- ################################################################# --//
+
+# 01. Setup snowflake connection
+
+# 02. Setup GitHub -> dbt managed
+
+# 03. Starting developing in the Studio
+
+# 04. initialize dbt project
+initialize dbt project -> commit & sync
+
+# 05. create a feature branch: features/hello
+
+# 06. edit README.md file and commit changes
+
+# 07. merge back to main branch
+
+
+//-- ################################################################# --//
+     2. run example project 
+//-- ################################################################# --//
+
+# 01. execute in command line
+dbt run 
+
+# 02. check logs 
+system logs -> detailed logs
+
+
+//-- ################################################################# --//
+     3. check snowflake 
+//-- ################################################################# --//
+
+# check database
+Database: PC_DBT_DB
+
+
+//-- ################################################################# --//
+     4. Configurate models 
+//-- ################################################################# --//
+
+# 00. create a feature branch & switch to feature branch
+
+# 01. update dbt_project.yml
+
+models:
+  my_new_project:
+    staging:
+      materialized: view
+      snowflake_warehouse: pc_dbt_wh
+    marts:
+      materialized: table
+      snowflake_warehouse: pc_dbt_wh_large
+
+
+//-- ################################################################# --//
+     5. prepare models scaffolding
+//-- ################################################################# --//
+
+# create folder structure 
+staging/tpch
+warehouse/
+marts/core
+
+
+# target scaffolding, built along project journey:
+models
+  |_ staging/tpch
+       |_ stg_tpch_orders.sql
+       |_ stg_tpch_line_items.sql
+       |_ stg_tpch_nations.sql
+  |_ warehouse/
+  |_ marts/core
+       |_ int_order_items.sql
+       |_ fct_orders.sql
+       |_ core.yml     # generic test
+       |_ core.md      # markdown
+
+seeds
+  |_ nations.csv
+
+tests
+  |_ fct_orders_negative_discount_amount.sql
+
+
+//-- ################################################################# --//
+     6. install packages
+//-- ################################################################# --//
+
+# 01. create a file named packages.yml with contents as below:
+
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 0.8.4
+
+# 02. run command
+dbt deps 
+
+# 03. commit and sync
+
+
+//-- ########################### End ################################# --//
+

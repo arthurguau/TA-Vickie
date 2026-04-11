@@ -1,0 +1,118 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+1. Snowflake account
+
+# reference - define source data
+https://docs.getdbt.com/reference/source-properties
+
+
+//-- ################################################################# --//
+      1. Test incoming data
+          - fulfils our expectations
+          - in source definition file
+//-- ################################################################# --//
+
+# 01. create tests in source file: ./models/source_abc_bank.yml 
+version: 2
+sources:
+  - name: abc_bank
+    database: PORTFOLIO_TRACKING
+    schema: SOURCE_DATA
+    tables:
+      - name: ABC_BANK_POSITION
+        description: >
+           The landing table holding the data imported
+           from the CSV extracted by ABC Bank.
+
+        columns:
+          - name: ACCOUNTID
+            description: The code for the account at ABC Bank.
+            tests:
+              - not_null
+          - name: SYMBOL
+            description: The symbol of the security at ABC Bank.
+            tests:
+              - unique
+              - not_null
+          - name: DESCRIPTION
+            description: The name of the security at ABC Bank.
+            tests:
+              - not_null
+          - name: EXCHANGE
+            description: >
+                The short name or code of the exchange
+                where the security is traded.
+            tests:
+              - not_null
+          - name: REPORT_DATE
+            description: >
+              The date of the report was extracted by ABC Bank.
+              We consider this position to be the effective
+              from this date forward, until a change is seen.
+            tests:
+              - not_null
+          - name: QUANTITY
+            description: >
+                The number of securities we hold in the
+                portfolio at ABC Bank at the Report Date.
+            tests:
+              - not_null
+          - name: COST_BASE
+            description: >
+                The cost we paid for the securities that
+                we hold in the portfolio at
+                ABC Bank at the Report Date.
+            tests:
+              - not_null
+          - name: POSITION_VALUE
+            description: >
+                The value of the securities  in the portfolio
+                at ABC Bank on the Report Date.
+            tests:
+              - not_null
+          - name: CURRENCY
+            description: >
+                The currency for the monetary amounts of the position.
+            tests:
+              - not_null
+
+
+//-- ################################################################# --//
+     2. Test refined models                       
+//-- ################################################################# --//
+
+# 00. Create refined.yml in refined folder
+      host our tests 
+version: 2
+models:
+  - name: REF_POSITION_ABC_BANK
+    description: The positions we have in the ABC Bank portfolio.
+    columns:
+      - name: UNREALIZED_PROFIT
+        description: The unrealized profit on the position.
+        tests:
+          - not_null
+
+
+# 01. Test all sources
+dbt test -s source:*
+
+# 02. Run the tests on all the tables in the abc_bank source:
+dbt test -s source:abc_bank.*
+
+# 03. Run the tests on the ABC_BANK_POSITION table of the abc_bank source
+dbt test -s source:abc_bank.ABC_BANK_POSITION
+
+
+//-- ################################################################# --//
+     3. Test mart                     
+//-- ################################################################# --//
+
+[toDo]
+
+
+
+//-- ############################# End  ############################## --//
+

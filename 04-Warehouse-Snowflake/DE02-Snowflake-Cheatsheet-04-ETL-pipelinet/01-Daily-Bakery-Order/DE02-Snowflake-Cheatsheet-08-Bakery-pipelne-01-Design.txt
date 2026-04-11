@@ -1,0 +1,235 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference: DCDF
+Data Cloud Deployment Framework
+https://www.snowflake.com/webinar/for-customers/applying-architectural-patterns-to-solve-business-questions-2023-01-11/
+
+
+//-- ################################################################# --//
+      0. Use case                    
+//-- ################################################################# --//
+
+# source data - daily order data file
+# head line - Customer, Order date, Delivery date, Baked good type, Quantity
+./dataset/Order_2023_07_07.csv
+
+
+# delivery data query result: delivery data models can be different
+daily order summary group by bakery type
+
+
+//-- ################################################################# --//
+      1. Infrastructure  Data modelling
+         - common database
+         - DCDF layers: [Optional: landing zone/stages] -> Raw/staging -> Integration/warehouse -> Presentation/delivery  
+         - infrastructure data modelling (3 tiers)      
+//-- ################################################################# --//
+
+
+# 01. Common database
+ - User Defined Functions
+ - File Formats
+ - External and Internal Stages
+ - Audit Tables
+ - master/reference: Common dimensions such as Date, Zip Code, State, Country, etc.
+ - Common table data that is utilized across the DCDF layers.
+
+# 02. Landing zone
+
+# 03. Staging tier modelling
+[define in a diagram]
+
+# 04. Warehousing tier modelling
+  - SCD type
+
+# 05. Data mart - Delivery tier modelling
+
+# 06. Query result required by business
+
+
+//-- ################################################################# --//
+      2. transformational Data modelling [run by pipelines]
+         - Source -> [landing zone] -> stage -> warehousing -> data mart/delivery     
+//-- ################################################################# --//
+
+# 00. Source -> landing zone
+
+# 01. Staging CDC -> Warehousing schema  
+[define in a diagram]
+
+# 02. Warehousing CDC -> Delivery schema  
+[define in a diagram]
+
+# 03. data linage
+  source: Order file 
+        |-> ingestion pipeline
+    -> landing zone
+        |-> pipeline
+    -> staging: Order 
+        |-> pipeline
+    -> warehousing: Customer_order 
+        |-> pipeline
+    -> delivery: daily order summary
+
+
+//-- ################################################################# --//
+      3. Ingestion pipeline design
+         - Ingestion style: batching, streaming 
+         - pull/push                   
+//-- ################################################################# --//
+
+# 01. Data ingestion style
+  - batch file loading
+
+# 02. Triggering mechanism, interval/frequency
+  - how to trigger loading, continuously?
+
+# 03. handle error
+
+# 04. avoid duplicate loading the same file
+
+
+- streaming style [first choice]
+
+
+//-- ################################################################# --//
+      4. ETL/ELT Pipeline design                    
+//-- ################################################################# --//
+
+# 01. transformational data modelling across 3 tier
+
+
+# 02. Catch CDC data - SCD[1,2,3,etc..] (which type?)
+  - merge
+  - leveraging stream
+
+
+//-- ################################################################# --//
+      5. Orchestration mechanism                    
+//-- ################################################################# --//
+
+# 01. Orchestration mechanism
+  - task [graph]
+  - airflow 
+
+
+//-- ################################################################# --//
+      6. Security requirements
+          - user
+          - role
+          - privilege        
+//-- ################################################################# --//
+	
+# authentication (that is, letting a user connect)
+
+# authorisation (that is, what objects a connected user has access to). 
+
+# data masking
+
+# data anonymisation
+
+
+//-- ################################################################# --//
+      7. Implementation
+         - environment provisioning
+         - pipeline implementation                    
+//-- ################################################################# --//
+
+# environment provisioning
+Terraform scripting
+
+# DBT powered development
+- general testing
+- unit testing
+ 
+
+//-- ################################################################# --//
+      8. Deploy
+         - automation                    
+//-- ################################################################# --//
+
+# automated pipeline deployment
+
+
+//-- ################################################################# --//
+      9. Observability
+            - metrics: measure things
+            - tracing: trace to right system
+            - logging: find what exactly goes wrong              
+//-- ################################################################# --//
+
+# You can not optimize things you do not measure
+
+# Tracing follows the OpenTelemetry standard 
+Monitoring > Traces & Logs
+
+
+//-- ################################################################# --//
+      10. Alertering and monitoring                    
+//-- ################################################################# --//
+
+# alerting mechanism
+Create alert on task
+
+# monitoring mechnism
+Monitoring > Task History
+
+
+//-- ################################################################# --//
+      11. Performance tuning                   
+//-- ################################################################# --//
+
+# common techniques
+- caching, 
+- auto-scaling, and 
+- automatically clustering tables
+
+# Examine table schemas and derive an optimal structure for a table
+
+# Identify query plans and bottlenecks
+
+# Weed out inefficient queries through profiling analysis
+
+# Projections in Snowflake for performance
+
+# Review query plans to modify table clustering
+
+# Optimize virtual warehouse scale for each pipeline execution
+
+# Identify and reduce unnecessary Fail-safe and Time Travel storage usage
+
+
+//-- ################################################################# --//
+      12. Cost optimization                   
+//-- ################################################################# --//
+
+# 01. cost insight
+Admin -> Cost management -> Account Overview -> Cost insights
+
+- Rarely used tables with automatic clustering
+- Rarely used materialized views
+- Rarely used search optimization paths
+- Large tables that are never queried
+- Tables over 100 GB from which data is written but not read
+- Short-lived permanent tables
+- Inefficient usage of multi-cluster warehouses
+
+
+# 02. Optimizing cloud services for cost
+
+- Copy commands with poor selectivity
+- High-frequency DDL operations and cloning
+- High-frequency, simple queries
+- High-frequency INFORMATION_SCHEMA queries
+- High-frequency SHOW commands (by data applications and third-party tools)
+- Single-row inserts and fragmented schemas (by data applications)
+- Complex SQL queries
+
+
+
+//-- ############################# End ############################## --//
+

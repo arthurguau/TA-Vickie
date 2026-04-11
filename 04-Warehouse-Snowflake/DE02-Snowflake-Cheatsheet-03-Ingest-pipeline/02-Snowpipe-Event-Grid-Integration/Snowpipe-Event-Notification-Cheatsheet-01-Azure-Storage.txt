@@ -1,0 +1,199 @@
+//-- ########################################################### --//
+//-- ****     Prerequisites:                                **** --//
+//-- ########################################################### --//
+
+1. Azure account setup     
+2. Azure CLI
+3. Azure Resource group
+4. A Web App
+
+# reference
+https://docs.snowflake.com/en/user-guide/data-load-snowpipe-auto-azure
+https://claudyconsulting.com/2023/09/08/2023-how-to-set-up-snowpipe-with-azure-blob-storage-for-continuous-data-ingestion-into-snowflake-2/
+
+
+//-- ################################################################# --//
+      1. Create Azure resources:
+        - resource group
+        - 2 storage account
+        - a storage container (Azure)
+        - a storage queue
+//-- ################################################################# --//
+
+
+//-- ########################################################### --//
+     1. resource group
+//-- ########################################################### --//
+
+# 01. login to azure from a terminal
+az login
+
+export resourcegroupname=healthcare-rg
+export location=australiaeast
+
+# 02. create a resource group
+az group create                         \
+    --resource-group $resourcegroupname \
+    --location $location
+
+
+//-- ########################################################### --//
+     2. register event grid service 
+//-- ########################################################### --//
+
+# register event grid service
+az provider register --namespace Microsoft.EventGrid
+
+az provider show --namespace Microsoft.EventGrid --query "registrationState"
+
+
+//-- ########################################################### --//
+     3. create storage account for handler - queue
+//-- ########################################################### --//
+
+export storagequename=healthcarestoragequeue
+
+# create storage account
+az storage account create              \
+   --name $storagequename              \
+   --resource-group $resourcegroupname \
+   --location $location                \
+   --kind StorageV2                    \
+   --sku Standard_LRS
+
+# find storage account key
+export storagequekey="$(az storage account keys list     \
+                          --account-name $storagequename \
+                          --query "[0].{value:value}"    \
+                          --output tsv)"   
+
+# find storage account id
+export storagequeid=$(az storage account show  \
+                        --name $storagequename \
+                        --resource-group $resourcegroupname \
+                        --query id             \
+                        --output tsv)
+
+
+//-- ########################################################### --//
+     4. create event handler - storage queue
+//-- =========================================================== --//
+
+export queuename=healthcare-queue
+
+# create storage queue 
+az storage queue create          \
+  --name $queuename              \
+  --account-name $storagequename \
+  --account-key $storagequekey
+
+
+//-- ########################################################### --//
+     5. create storage account - for data file
+//-- ########################################################### --//
+
+export storagenamedata=healthcarestoragedata
+
+# create storage account
+az storage account create              \
+   --name $storagenamedata             \
+   --resource-group $resourcegroupname \
+   --location $location                \
+   --sku Standard_LRS 
+
+export storagedataid=$(az storage account show     \
+                        --name $storagenamedata    \
+                        --resource-group $resourcegroupname \
+                        --query id                 \
+                        --output tsv)
+
+
+//-- ########################################################### --//
+     6. create storage container
+//-- =========================================================== --//
+
+export containername=healthcare-container
+
+az storage container create   \
+   --name $containername      \
+   --account-name $storagenamedata
+
+
+//-- ########################################################### --//
+     7. create system topic
+//-- ########################################################### --//
+
+export systemtopic=healthcare-topic
+
+# Create the system topic on Azure Storage account
+az eventgrid system-topic create        \
+    --resource-group $resourcegroupname \
+    --name $systemtopic                 \
+    --location $location                \
+    --topic-type microsoft.storage.storageaccounts \
+    --source $storagedataid
+
+# check system topic created
+resource group -> healthcare-topic
+
+
+//-- ########################################################### --//
+     8. create event subscription
+//-- ########################################################### --//
+
+# find queue id
+export queueid="$storagequeid/queueservices/default/queues/$queuename"
+export subscriptionname=healthcare-subscription
+
+# create event subscription
+az eventgrid system-topic event-subscription create \
+    --name $subscriptionname                        \
+    --resource-group $resourcegroupname             \
+    --system-topic-name $systemtopic                \
+    --event-delivery-schema eventgridschema         \
+    --included-event-types Microsoft.Storage.BlobCreated \
+    --endpoint $queueid                             \
+    --endpoint-type storagequeue
+
+# check subscription created
+resource group: healthcare-rg
+  -> System topic: healthcare-topic 
+  -> Entities
+  -> Event subscription
+
+
+//-- ########################################################### --//
+     9. Testing - upload files into storage container
+//-- ########################################################### --//
+
+# 01. upload file into storage container: 
+resource group:
+  -> storage account 
+  -> data storage 
+  -> container -> upload file
+
+# 02. check message handling - queue
+resource group:
+  -> storage account 
+  -> data storage 
+  -> queue
+
+# 03. dequeue message
+
+# 04. delete file from storage container
+
+
+//-- ########################################################### --//
+     10. clear up resources - optional
+//-- ########################################################### --//
+
+az group delete --resource-group $resourcegroupname
+
+
+//-- ########################### End ########################### --//
+
+
+  
+
+
+

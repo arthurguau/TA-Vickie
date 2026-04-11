@@ -1,0 +1,61 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Pycharm installed
+
+
+//-- ################################################################# --//
+      Prepare test data file for processing                   
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+      Create a project                   
+//-- ################################################################# --//
+
+# craft python script: 00_data_generator.py
+
+
+00. Project scaffolding:
+mkdir ~/Developer/project/python/data_generator
+cd ~/Developer/project/python/data_generator
+
+
+01. Pycharm: File -> New project
+Project name: data_generator
+Location: ~/Developer/project/python/data_generator
+Create git repository
+Create welcome script
+
+Interpreter type: Project Venv
+Python version: 3.13 [chose your latest version]
+
+
+//-- ################################################################# --//
+      Craft python script                    
+//-- ################################################################# --//
+
+# install packages: Pycharm -> terminal
+pip install python-rapidjson python-dotenv faker optional-faker
+
+# check cheatsheet for code snippet
+
+
+//-- ################################################################# --//
+      Execute python script                    
+//-- ################################################################# --//
+
+# run script
+python ./00_data_generator.py 1
+
+python ./00_data_generator.py 100000 | gzip > data.json.gz
+
+
+# upload to Snowflake workspace
+
+
+//-- ############################# End ############################## --//
+

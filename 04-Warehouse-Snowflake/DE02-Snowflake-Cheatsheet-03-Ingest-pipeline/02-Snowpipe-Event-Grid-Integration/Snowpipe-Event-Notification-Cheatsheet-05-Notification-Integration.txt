@@ -1,0 +1,117 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+Azure portal account created
+
+
+//-- ################################################################# --//
+       Establish Notification Integration:
+        1. Get Tenant Id, Storage queue URI    
+        2. Create Notification Integration
+        3. register Snowpipe with Azure Entra ID    
+        4. Grant Storage access to the Snowflake Application (in Azure)
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      1. Get Tenant Id, Storage queue URI           
+//-- ################################################################# --//
+
+# Get Tenant Id 
+Azure portal -> Entra ID -> overview -> <your-tenant ID>
+  Tenant ID: b97c54b4-4655-48e1-bf4e-c5570779fb48
+
+# Get Storage queue URI
+Azure portal 
+  -> Storage account:  
+  -> Queues 
+  -> queue:
+  healthcare-queue:
+  URI: https://healthcarestoragequeue.queue.core.windows.net/healthcare-queue
+
+
+//-- ################################################################# --//
+      2. Create Notification Integration    
+           - a connection from Snowflake to Azure storage queue       
+//-- ################################################################# --//
+
+In Snowflake: 
+
+use role ACCOUNTADMIN
+
+# 01. Create Notification Integration
+CREATE NOTIFICATION INTEGRATION HEALTHCARE_NOTIFICATION_INTEGRATION
+  ENABLED=TRUE
+  TYPE=QUEUE
+  NOTIFICATION_PROVIDER=AZURE_STORAGE_QUEUE
+  AZURE_STORAGE_QUEUE_PRIMARY_URI='https://***.core.windows.net/***-queue'
+  AZURE_TENANT_ID='***-d49a-45bd-8ad1–886951**';
+
+
+CREATE NOTIFICATION INTEGRATION HEALTHCARE_NOTIFICATION_INTEGRATION
+  ENABLED=TRUE
+  TYPE=QUEUE
+  NOTIFICATION_PROVIDER=AZURE_STORAGE_QUEUE
+  AZURE_STORAGE_QUEUE_PRIMARY_URI='https://healthcarestoragequeue.queue.core.windows.net/healthcare-queue'
+  AZURE_TENANT_ID='b97c54b4-4655-48e1-bf4e-c5570779fb48';
+
+# 02. Check integration created
+SHOW INTEGRATIONS 
+
+
+//-- ################################################################# --//
+      3. register Snowpipe with Azure Entra ID       
+//-- ################################################################# --//
+
+# 01. execute command
+DESC NOTIFICATION INTEGRATION HEALTHCARE_NOTIFICATION_INTEGRATION;
+
+# 02. Copy the URL, and paste it into the browser, where you have already logged into Azure Portal.
+Download as csv file
+
+AZURE_CONSENT_URL:
+-- be used to establish a protocol between Azure Account and Snowflake Account.
+
+AZURE_MULTI_TENANT_APP_NAME:
+dio4ywsnowflakepacint_1771135565433
+
+# 03. you will be prompted to grant snowpipe to access your azure storage.
+Put AZURE_CONSENT_URL into Azure portal -> Click on Accept.
+
+# 04. Confirm Snowflake is authorized [added as an Enterprise application]
+Azure Portal 
+  -> Entra ID 
+  -> manage 
+  -> Enterprise Applications
+
+
+//-- ################################################################# --//
+      4. Grant Storage access to the Snowflake Application (in Azure)
+          -- assign Snowflake application as Storage Queue Data Contributor role.
+//-- ################################################################# --//
+
+Azure portal:
+
+# 01: Copy the name of the Snowflake Enterprise Application.
+Name: dio4ywsnowflakepacint
+
+# 02: Storage Account (your queue storage account) 
+       -> Access Control (IAM)
+       -> Add -> Add Role Assignment:
+healthcarestoragequeue -> IAM
+
+# 03: search & select: Storage Queue Data Contributor
+
+# 04: search & select: 
+       -> select member: dio4ywsnowflakepacint
+       -> Review + assign
+
+# 05. Verify access
+healthcarestoragequeue -> IAM -> access check:
+   User, group, or service principles: dio4ywsnowflakepacint
+
+
+//-- ############################# End ############################## --//
+

@@ -1,0 +1,101 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+Snowflake Data Engineering - Chapter 02.
+
+
+//-- ################################################################# --//
+      0. Prepare source dataset                     
+//-- ################################################################# --//
+
+-- source dataset
+./dataset/Orders_2023-07-07.csv 
+
+-- understand your dataset
+[toDo]
+
+
+//-- ################################################################# --//
+      1. Prepare data infrastructure
+         Database - schema, staging, warehousing and delivery tables
+         Warehouse
+         Stage                            
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      1. Create database, schema & warehouse                      
+//-- ################################################################# --//
+
+use role SYSADMIN;
+
+create warehouse BAKERY_WH with warehouse_size = 'XSMALL';
+create database BAKERY_DB;
+create schema ORDERS;
+
+
+//-- ################################################################# --//
+      2. Create a stage                             
+//-- ################################################################# --//
+
+# named internal stage: 
+  - created in schema, 
+  - managed by multiple users
+  - loaded into multiple tables.  
+
+use database BAKERY_DB;
+use schema ORDERS;
+
+-- 01. Create stage
+create stage ORDERS_STAGE;
+
+-- 02. List stages
+list @ORDERS_STAGE;
+
+
+//-- ################################################################# --//
+      3. Create infrastructure tables for 3 logical tiers:
+          - staging table
+          - warehousing tables
+          - delivery tables                 
+//-- ################################################################# --//
+
+use database BAKERY_DB;
+use schema ORDERS;
+
+-- 01. Create stage table
+create table ORDERS_STG (
+  customer         varchar,
+  order_date       date,
+  delivery_date    date,
+  baked_good_type  varchar,
+  quantity         number,
+  source_file_name varchar,
+  load_ts          timestamp
+);
+
+-- 02. Create warehousing table
+create table CUSTOMER_ORDERS (
+  customer varchar,
+  order_date date,
+  delivery_date date,
+  baked_good_type varchar,
+  quantity number,
+  source_file_name varchar,
+  load_ts timestamp
+);
+
+-- 03. Create delivery table [summary table]
+create table SUMMARY_ORDERS(
+  delivery_date date,
+  baked_good_type varchar,
+  total_quantity number
+);
+
+
+//-- ############################# End ############################## --//
+

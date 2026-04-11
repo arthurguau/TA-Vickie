@@ -1,0 +1,55 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://docs.snowflake.com/user-guide/ui-snowsight-activity
+
+
+//-- ################################################################# --//
+     1. Analyzing Query Performance  
+        - QUERY_HISTORY Profiling
+        - HASH() function
+        - web UI’s history                   
+//-- ################################################################# --//
+
+
+# 01. QUERY_HISTORY() 
+      to obtain details about all queries run by the current user in the past day, 
+      with the records returned in descending order of the total elapsed time
+USE ROLE ACCOUNTADMIN;
+USE DATABASE <database name>;
+
+SELECT * 
+FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(
+              dateadd('days', -1, current_timestamp()),
+              current_timestamp()))
+ORDER BY TOTAL_ELAPSED_TIME DESC;
+
+
+- QUERY_HISTORY_BY_USER
+- QUERY_HISTORY_BY_SESSION
+- QUERY_HISTORY_BY_WAREHOUSE
+
+
+# 02. HASH() 
+
+USE ROLE ACCOUNTADMIN;
+USE DATABASE <database name>;
+
+SELECT HASH(query_text), QUERY_TEXT, COUNT(*),
+    AVG(compilation_time), AVG(execution_time)
+FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(dateadd('days', -1,         
+    current_timestamp()),current_timestamp() ) )
+GROUP BY HASH(query_text), QUERY_TEXT
+ORDER BY COUNT(*) DESC, AVG(compilation_time) DESC ;
+
+
+# 03. Web UI: Query History -> Query Profile tool
+
+
+
+//-- ############################# End ############################## --//
+
