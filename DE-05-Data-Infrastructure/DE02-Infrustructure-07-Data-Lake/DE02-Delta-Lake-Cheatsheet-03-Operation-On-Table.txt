@@ -1,0 +1,156 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+2. Apache Spark container with Delta lake is up and running
+
+
+//-- ################################################################# --//
+     1. Create a delta table
+//-- ################################################################# --//
+
+from pyspark.sql.types import *
+
+data = [("Robert", "Baratheon", "Baratheon", "Storms End", 48),
+        ("Eddard", "Stark", "Stark", "Winterfell", 46),
+        ("Jamie", "Lannister", "Lannister", "Casterly Rock", 29)
+        ]
+
+schema = StructType([
+    StructField("firstname", StringType(), True),
+    StructField("lastname", StringType(), True),
+    StructField("house", StringType(), True),
+    StructField("location", StringType(), True),
+    StructField("age", IntegerType(), True)
+])
+
+df = spark.createDataFrame(data=data, schema=schema)
+df.write.mode(saveMode="overwrite").format("delta").save("warehouse/delta-table")
+
+
+//-- ################################################################# --//
+     2. Read a delta table
+//-- ################################################################# --//
+
+# read from delta
+df = spark.read.format("delta").load("warehouse/delta-table")
+df.show()
+
+# print delta table schema
+df.printSchema()
+
+
+//-- ################################################################# --//
+     3. Update a delta table
+//-- ################################################################# --//
+
+data = [("Robert", "Baratheon", "Baratheon", "Storms End", 49),
+        ("Eddard", "Stark", "Stark", "Winterfell", 47),
+        ("Jamie", "Lannister", "Lannister", "Casterly Rock", 30)
+        ]
+
+schema = StructType([
+    StructField("firstname", StringType(), True),
+    StructField("lastname", StringType(), True),
+    StructField("house", StringType(), True),
+    StructField("location", StringType(), True),
+    StructField("age", IntegerType(), True)
+])
+
+sample_dataframe = spark.createDataFrame(data=data, schema=schema)
+sample_dataframe.write.mode(saveMode="overwrite").format("delta").save("warehouse/delta-table")
+
+# read from delta
+sample_dataframe = spark.read.format("delta").load("warehouse/delta-table")
+sample_dataframe.show()
+
+
+//-- ################################################################# --//
+     # Conditional update data in Delta
+//-- ================================================================= --//
+
+# delta table path
+deltaTable = DeltaTable.forPath(spark, "warehouse/delta-table")
+deltaTable.toDF().show()
+
+deltaTable.update(
+    condition=expr("firstname == 'Jamie'"),
+    set={"firstname": lit("Jamie"), "lastname": lit("Lannister"), "house": lit("Lannister"),
+        "location": lit("Kings Landing"), "age": lit(37)})
+
+deltaTable.toDF().show()
+
+
+//-- ################################################################# --//
+     # Upsert data in Delta
+//-- ================================================================= --//
+
+# delta table path
+deltaTable = DeltaTable.forPath(spark, "warehouse/delta-table")
+deltaTable.toDF().show()
+
+# define new data
+data = [("Gendry", "Baratheon", "Baratheon", "Kings Landing", 19),
+        ("Jon", "Snow", "Stark", "Winterfell", 21),
+        ("Jamie", "Lannister", "Lannister", "Casterly Rock", 36)
+        ]
+schema = StructType([
+    StructField("firstname", StringType(), True),
+    StructField("lastname", StringType(), True),
+    StructField("house", StringType(), True),
+    StructField("location", StringType(), True),
+    StructField("age", IntegerType(), True)
+])
+
+newData = spark.createDataFrame(data=data, schema=schema)
+
+deltaTable.alias("oldData") \
+    .merge(
+    newData.alias("newData"),
+    "oldData.firstname = newData.firstname") \
+    .whenMatchedUpdate(
+    set={"firstname": col("newData.firstname"), "lastname": col("newData.lastname"), "house": col("newData.house"),
+        "location": col("newData.location"), "age": col("newData.age")}) \
+    .whenNotMatchedInsert(
+    values={"firstname": col("newData.firstname"), "lastname": col("newData.lastname"), "house": col("newData.house"),
+            "location": col("newData.location"), "age": col("newData.age")}) \
+    .execute()
+
+deltaTable.toDF().show()
+
+
+//-- ################################################################# --//
+     4. Delete data in Delta table
+//-- ################################################################# --//
+
+from delta.tables import *
+from pyspark.sql.functions import *
+
+# delta table path
+deltaTable = DeltaTable.forPath(spark, "warehouse/delta-table")
+deltaTable.toDF().show()
+
+deltaTable.delete(condition=expr("firstname == 'Jamie'"))
+
+deltaTable.toDF().show()
+
+
+//-- ################################################################# --//
+     5. User-defined Metadata
+//-- ################################################################# --//
+
+[toDo]
+
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ##########################     END    ########################### --//
+
+

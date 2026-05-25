@@ -1,0 +1,76 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Docker Desktop installed and up and running
+
+
+//-- ################################################################# --//
+     Set up Kafka Cluster                       
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     1. Spin up Kafka cluster
+           (From lecture notes folder)
+//-- ################################################################# --//
+
+# 01. spin up Kafka cluster
+docker-compose -f docker-compose-kafka-full.yml up -d
+
+# 02. access conduktor-console: localhost:8089
+login: admin@admin.io 
+password: admin
+
+
+//-- ################################################################# --//
+     2. Create Topics
+        -- from kafka webUI
+        -- from Kafka container
+//-- ################################################################# --//
+
+# 00.access Kafka container
+docker exec -it kafka1 bash
+cd /opt/bitnami/kafka/bin
+cd /usr/bin/
+
+# 01. list topics
+./kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+# 02. create topic 'funnygorilla-topic'
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic funnygorilla-topic --partitions 1 --replication-factor 1
+
+# 03. list topics
+./kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+
+//-- ################################################################# --//
+     3. Test with internal-client: 
+        01. Console Producer
+        02. Console Consumer
+//-- ################################################################# --//
+
+# 01. send messages to a topic
+./kafka-console-producer.sh         \
+  --bootstrap-server localhost:9092 \
+  --topic funnygorilla-topic
+
+>Hello Funnygorilla!
+>The weather is fine
+>I love Kafka
+
+# 02. read from a topic
+./kafka-console-consumer.sh           \
+    --bootstrap-server localhost:9092 \
+    --topic funnygorilla-topic        \
+    --from-beginning
+
+
+//-- ################################################################# --//
+     4. access conduktor-console
+//-- ################################################################# --//
+
+
+
+//-- ############################# End  ############################## --//
+

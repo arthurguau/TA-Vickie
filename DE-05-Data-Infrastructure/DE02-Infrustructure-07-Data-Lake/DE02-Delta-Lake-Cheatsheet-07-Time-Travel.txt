@@ -1,0 +1,34 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+Spark container up and running
+
+setup Pycharm
+
+
+//-- ################################################################# --//
+      1. Time travel - historical data
+//-- ################################################################# --//
+
+print("Dataframe Version 0")
+df_ver0 = spark.read.format("delta").option("versionAsOf", 0).load("warehouse/delta-table")
+df_ver0.show()
+
+print("Dataframe Version 1")
+df_ver1 = spark.read.format("delta").option("versionAsOf", 1).load("warehouse/delta-table")
+df_ver1.show()
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ##########################     END    ########################### --//
+
+

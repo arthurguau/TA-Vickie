@@ -1,0 +1,83 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- setup Pycharm
+
+
+//-- ################################################################# --//
+      1. Time travel - historical data
+//-- ################################################################# --//
+
+print("Dataframe Version 0")
+df_ver0 = spark.read.format("delta").option("versionAsOf", 0).load("warehouse/delta-table")
+df_ver0.show()
+
+print("Dataframe Version 1")
+df_ver1 = spark.read.format("delta").option("versionAsOf", 1).load("warehouse/delta-table")
+df_ver1.show()
+
+
+//-- ################################################################# --//
+      2. Change Data Feed - CDC
+//-- ################################################################# --//
+
+# submit to execute
+./bin/spark-submit scripts/delta-cdc.py
+
+
+
+//-- ################################################################# --//
+     3. Schema Evolution
+//-- ################################################################# --//
+
+# 01. create a Delta table with a simple schema
+df = spark.createDataFrame([("bob", 47), ("mike", 23), ("tom", 51)]).toDF("first_name", "age")
+df.write.format("delta").save("test01/toy_data")
+
+df = spark.createDataFrame([("Peter", 47), ("li", 23), ("leonard", 51)]).toDF("first_name", "age")
+
+# write mode: append, overwrite
+df.write.format("delta").mode("append").save("test01/toy_data") 
+  
+spark.read.format("delta").load("test01/toy_data").show()
+
+# 02. try to write data with a different schema to this same Delta table:
+df_new = spark.createDataFrame([("frank", 68, "usa"), ("jordana", 26, "brasil")]).toDF("first_name", "age", "country")
+
+df_new.write.format("delta").mode("append").save("test01/toy_data")
+
+
+//-- ################################################################# --//
+     Update Evolution
+//-- ================================================================= --//
+
+# update schema
+df_new.write.option("mergeSchema", "true").mode("append").format("delta").save("test01/toy_data")
+
+# show new changed table
+spark.read.format("delta").load("test01/toy_data").show()
+
++----------+---+-------+
+|first_name|age|country|
++----------+---+-------+
+|   jordana| 26| brasil| # new
+|     frank| 68|    usa| # new
+|   leonard| 51|   null|
+|       bob| 47|   null|
+|        li| 23|   null|
++----------+---+-------+
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ##########################     END    ########################### --//
+
+

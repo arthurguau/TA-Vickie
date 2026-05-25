@@ -1,0 +1,137 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://medium.com/short-bits/a-cheat-sheet-for-working-with-json-in-sql-server-51d372417de3
+
+
+//-- ################################################################# --//
+     SQL JSON Cheat Sheet Example in SQL Server
+       01. OPENJSON — open a JSON string into a query-able object
+       02. FOR JSON — format data back into a JSON String
+       03. ISJSON — check if a string is a valid JSON format
+       04. JSON_VALUE — extract a specific value from a JSON object
+       05. JSON_QUERY — extract embedded objects and lists from a JSON object
+       06. JSON_MODIFY — update values in a JSON object
+//-- ################################################################# --//
+
+
+-- DECLARE JSON AS A STRING
+
+DECLARE @json NVARCHAR(MAX);
+SET @json = N'{
+    "prizes": [{
+      "year": "2021",
+      "category": "chemistry",
+      "laureates": [
+        {
+          "id": "1002",
+          "firstname": "Benjamin",
+          "surname": "List",
+          "motivation": "\"for the development of asymmetric organocatalysis\"",
+          "share": "2"
+        },
+        {
+          "id": "1003",
+          "firstname": "David",
+          "surname": "MacMillan",
+          "motivation": "\"for the development of asymmetric organocatalysis\"",
+          "share": "2"
+        }
+      ]
+    },
+    {
+      "year": "2021",
+      "category": "economics",
+      "laureates": [
+        {
+          "id": "1007",
+          "firstname": "David",
+          "surname": "Card",
+          "motivation": "\"for his empirical contributions  to labour economics\"",
+          "share": "2"
+        },
+        {
+          "id": "1008",
+          "firstname": "Joshua",
+          "surname": "Angrist",
+          "motivation": "\"for their methodological contributions to the analysis  of causal relationships\"",
+          "share": "4"
+        },
+        {
+          "id": "1009",
+          "firstname": "Guido",
+          "surname": "Imbens",
+          "motivation": "\"for their methodological contributions to the analysis  of causal relationships\"",
+          "share": "4"
+        }
+      ]
+    }]
+}';
+
+
+//-- ################################################################# --//
+     Path Expressions
+//-- ################################################################# --//
+
+-- select root 
+SELECT value FROM OPENJSON(@json,'$')
+
+-- select root.year attribute 
+SELECT value FROM OPENJSON(@json,'$.year')
+
+-- select attribute from object at list index 0 
+SELECT value FROM OPENJSON(@json,'$.laureates[0].firstname')
+
+-- select attribute with special characters in key
+SELECT value FROM OPENJSON(@custom,'$."custom example"')
+
+-- check if value is a json formated object
+SELECT value FROM CustomTable WHERE ISJSON(value) > 0
+
+
+//-- ################################################################# --//
+     SELECT VALUES FROM EMBEDED OBJECTS
+       -- JSON_VALUE function
+//-- ################################################################# --//
+
+SELECT
+    JSON_VALUE  ( a.value,  '$.year'     ) as Year
+    ,JSON_VALUE ( a.value,  '$.category' ) as Category
+    ,JSON_VALUE ( b.value,  '$.id' ) as LaureateID
+    ,JSON_VALUE ( b.value,  '$.firstname' ) as LaureateFirstName 
+    ,JSON_VALUE ( b.value,  '$.surname' ) as LaureateLastName 
+FROM OPENJSON(@json, '$.prizes') as a
+CROSS APPLY OPENJSON(a.value, '$.laureates') as b
+
+
+//-- ################################################################# --//
+      SELECT OBJECTS FROM EMBEDED OBJECTS
+         -- JSON_QUERY function
+//-- ################################################################# --//
+
+SELECT
+    JSON_VALUE  ( a.value,  '$.year'     ) as Year
+    ,JSON_VALUE ( a.value,  '$.category' ) as Category
+    ,JSON_QUERY ( a.value,  '$.laureates' ) as Laureates
+FROM OPENJSON(@json, '$.prizes') as a
+
+
+-- -----------------------------------------------------
+-- [EXAMPLE] MODIFY VALUES DURING SELECTION
+--           useful for renaming values
+-- -----------------------------------------------------
+SELECT
+    JSON_VALUE  ( a.value,  '$.year'     ) as Year
+    ,JSON_MODIFY(
+        JSON_QUERY ( a.value,  '$' ), '$.category', 'custom category'
+    )  as Category
+FROM OPENJSON(@json, '$.prizes') as a
+
+
+//-- ##########################     END    ########################### --//
+
+

@@ -1,0 +1,59 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+
+-- reference
+https://www.youtube.com/watch?v=LJtShrQqYZY
+https://karlchris.github.io/data-engineering/projects/delta-spark/#what-is-delta-lake
+
+2. Startup Spark container with delta-spark package installed
+
+
+//-- ################################################################# --//
+     Parque file
+//-- ################################################################# --//
+
+data = spark.range(0, 100)
+data.write.format("parquet")  \
+           .mode("overwrite") \
+           .save('./gorilla/parquetData') # specify folder name
+
+# check the number of files in folder: gorilla/parquetData
+ls -1 ./gorilla/parquetData | wc -l
+
+# check the number of partitions (= the number of cores) = the number of files
+print("The number of partitions is: {data.rdd.getNumPartitions()}")
+
+# check the number of CPU cores (each "processor" line represents a CPU core)
+cat /proc/cpuinfo | grep "processor"
+
+# _SUCCESS - confirm that all partitions have been written correctly
+
+
+//-- ################################################################# --//
+     Delta log
+//-- ################################################################# --//
+
+data = spark.range(0, 100)
+data.write.format("delta") \
+     .mode("overwrite")    \
+     .save('./gorilla/deltaData')
+
+print(f"The number of filesis: {data.rdd.getNumPartitions()}")
+
+# check transaction log file - _delta_log
+ls -1 gorilla/deltaData/_delta_log
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ##########################     END    ########################### --//
+
+

@@ -1,0 +1,147 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+2. Apache Spark container with Delta lake package is up and running
+
+//-- # reference
+https://docs.delta.io/latest/quick-start.html#language-SQL
+
+
+//-- ################################################################# --//
+     Change Data Feed/CDF
+//-- ################################################################# --//
+
+# import packages
+from pyspark.sql import SparkSession
+from delta import *
+from pyspark.sql import functions as F
+
+
+//-- ################################################################# --//
+      1. Create Delta table with change data feed enabled
+//-- ################################################################# --//
+
+# configure Spark to use Delta lake
+builder = (
+    pyspark.sql.SparkSession.builder.appName("FunnyGorillaApp")
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+    )
+)
+
+# create a spark session
+spark = configure_spark_with_delta_pip(builder).getOrCreate()
+
+# create a Delta table:
+spark.sql(
+    "CREATE TABLE IF NOT EXISTS students ( \
+      id LONG NOT NULL,                    \
+      firstname STRING NOT NULL,           \
+      lastname STRING,                     \
+      country STRING NOT NULL,             \
+      age LONG)                            \
+    USING delta TBLPROPERTIES (delta.enableChangeDataFeed = true)" \
+)
+
+
+# open seperate terminal, login into container and check created folder structure
+docker exec -it spark-gorilla bash
+tree ./spark-warehouse/
+
+# read delta log file
+jq '.' ./spark-warehouse/students/_delta_log/
+
+
+//-- ################################################################# --//
+      2. Append some data to the Delta table
+//-- ################################################################# --//
+
+# Append some data to the Delta table:
+df = spark.createDataFrame([(0, "Bob", "A", "USA", 23), (1, "Sue", "B", "USA", 25), (2, "Jim", "B", "USA", 27)]).toDF(
+    "id", "firstname", "lastname", "country", "age"
+)
+df.repartition(1).write.mode("append").format("delta").saveAsTable("students")
+
+spark.sql("SELECT * FROM students").show()
+
+# query the Change Data Feed
+spark.sql("SELECT * FROM table_changes('students', 0)").show(truncate=False)
+
+# Append more data
+df = spark.createDataFrame([(5, "Jack",  "A", "China", 18), (6, "Nora",  "A", "Australia", 19), (7, "Clare",  "A", "New Zealand", 20)]).toDF(
+    "id", "firstname", "lastname", "country", "age"
+)
+df.repartition(1).write.mode("append").format("delta").saveAsTable("students")
+
+spark.sql("SELECT * FROM students").show()
+
+# query the Change Data Feed
+spark.sql("SELECT * FROM table_changes('students', 0)").show(truncate=False)
+
+
+//-- ################################################################# --//
+      4. Delete rows of data
+//-- ################################################################# --//
+
+# 01. delete some data
+delta_table = DeltaTable.forName(spark, "students")
+delta_table.delete(F.col("age") > 20)
+
+# 02. query student table
+spark.sql("SELECT * FROM students").show()
+
+# 03. query the Change Data Feed
+spark.sql("SELECT * FROM table_changes('students', 0)").show(truncate=False)
+
+
+//-- ################################################################# --//
+      5. Query change data feed table
+//-- ################################################################# --//
+
+# 01. query the Change Data Feed with all versions
+spark.sql("SELECT * FROM table_changes('students', 0)").show(truncate=False)
+
+# 02. query the Change Data Feed with version 2 and 3
+spark.sql("SELECT * FROM table_changes('students', 2)").show(truncate=False)
+
+# 02. Use DataFrame clause to query changes
+(
+    spark.read.format("delta")
+    .option("readChangeFeed", "true")
+    .option("startingVersion", 2)
+    .table("students")
+    .show(truncate=False)
+)
+
+
+//-- ################################################################# --//
+      6. Read changed data parquet file
+//-- ################################################################# --//
+
+# 01. check transaction log & change data in spark-warehouse
+tree ./spark-warehouse/students
+
+# 02. check transaction log & change data in spark-warehouse
+tree ./spark-warehouse/students/_change_data
+
+# 03. read change data parquet file
+spark.read.parquet(
+    "./spark-warehouse/students/_change_data/cdc-00001-c0c5089b-2061-45c4-bb53-758e7c82eadb.c000.snappy.parquet"
+).show()
+
+# get the gist using hexdump:
+hexdump -c ./spark_/_change_data/*
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+spark.sql("DROP TABLE IF EXISTS students")
+
+exit()
+
+//-- ##########################     END    ########################### --//
+
+

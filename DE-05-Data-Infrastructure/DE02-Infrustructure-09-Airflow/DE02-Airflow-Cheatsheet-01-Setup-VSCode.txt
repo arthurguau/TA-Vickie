@@ -1,0 +1,58 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://airflow.apache.org/docs/apache-airflow/stable/index.html
+https://www.dataquest.io/blog/running-and-managing-apache-airflow-with-docker/
+
+# concept: With Statement in Python
+simplifies resource management by automatically handling setup and cleanup, 
+ensuring files or connections close safely even if errors occur.
+
+Replaces long try-except–finally blocks with cleaner syntax.
+Improves readability by reducing unnecessary boilerplate code.
+
+# sample try-finally
+file = open("example.txt", "w")
+
+try:
+    file.write("Hello, Python!")
+
+except ZeroDivisionError:
+    # 2. Except: Runs ONLY if the specific error occurs
+    print("Error: You cannot divide by zero!")
+
+else:
+
+finally:
+    file.close()  # Ensure file is closed
+
+# sample with as
+with open("example.txt", "w") as file:
+    file.write("Hello, Python!")
+
+
+//-- ################################################################# --//
+      Write a DAG file in Python
+        01: Importing modules
+        02: Default Arguments
+        03: Instantiate a DAG
+        04: Tasks
+        05: Setting up Dependencies
+//-- ################################################################# --//
+
+
+
+//-- ################################################################# --//
+     4. Clean up
+//-- ################################################################# --//
+
+docker compose down -v
+
+
+//-- ############################### END ############################# --//
+
+

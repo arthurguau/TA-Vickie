@@ -1,0 +1,133 @@
+//-- ################################################################# --//
+     ****  Prerequisites                                          ****
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+
+//-- ################################################################# --//
+       Performance tuning - Data Skipping
+        0. Initialisation
+        1. Exam default stats value
+        2. Alter default status value
+        3. Exam changed status value
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. Initialisation
+//-- ################################################################# --//
+
+from pyspark.sql import SparkSession
+from delta import *
+from pyspark.sql import functions as F
+from pyspark.sql.types import *
+
+builder = (
+      pyspark.sql.SparkSession.builder.appName("FunnyGorillaApp")
+      .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+      .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+    )
+)
+
+spark = configure_spark_with_delta_pip(builder).getOrCreate()
+
+spark.sql("CREATE Database IF NOT EXISTS funnygorilla")
+
+# create a Delta table:
+spark.sql(
+    "CREATE TABLE IF NOT EXISTS funnygorilla.TripAggregatesDelta ( \
+      id LONG NOT NULL,                    \
+      firstname STRING NOT NULL,           \
+      lastname STRING,                     \
+      country STRING NOT NULL,             \
+      city STRING NOT NULL)                \
+    USING delta TBLPROPERTIES (delta.enableChangeDataFeed = true)" \
+)
+
+# define schema
+tripAggregates_schema = StructType([
+    StructField("id", LongType(), True),
+    StructField("firstname", StringType(), True),
+    StructField("lastname", StringType(), True),
+    StructField("country", StringType(), True),
+    StructField("city", StringType(), True)
+])
+
+data = [(1, "Cindrila", "Chakraborty", "India", "Kolkata"),
+        (2, "Avanti", "Goswami", "India", "Delhi"),
+        (3, "Ria", "Choose", "India", "Bangalore"),
+        (4, "Suparna", "Bose", "Ireland", "Belfast"),
+        (5, "Srabani", "Das", "Australia", "Melbourne")
+        ]
+
+# create a datafreame
+df_first_full_load = spark.createDataFrame(data=data, schema=tripAggregates_schema)
+
+# insert into delta table
+df_first_full_load.repartition(1).write.mode("append").format("delta").saveAsTable("funnygorilla.TripAggregatesDelta")
+
+# check contents of table
+spark.sql("select * from funnygorilla.TripAggregatesDelta").show()
+
+
+//-- ################################################################# --//
+     1. Exam default stats value
+//-- ################################################################# --//
+
+//-- # check stats values: includes 32 columns by default, hence it concludes all 5 columns
+jq '.' ./spark-warehouse/funnygorilla.db/tripaggregatesdelta/_delta_log/00000000000000000001.json 
+
+
+//-- ################################################################# --//
+     2. Alter default status value
+//-- ################################################################# --//
+
+//-- # alter stats to 2
+spark.sql(
+  "ALTER TABLE                        \
+    funnygorilla.TripAggregatesDelta  \
+  SET                                 \
+    TBLPROPERTIES ('delta.dataSkippingNumIndexedCols' = '2')" \
+)
+
+
+//-- ################################################################# --//
+     3. Exam changed status value
+//-- ################################################################# --//
+
+//-- # insert more data
+data2 = [(6, "Lily", "Zhang", "China", "Beijing"),
+         (7, "Julie", "Wang", "China", "Shanghai")
+        ]
+
+# create a datafreame
+df_first_full_load = spark.createDataFrame(data=data2, schema= tripAggregates_schema)
+
+# insert into delta table
+df_first_full_load.repartition(1).write.mode("append").format("delta").saveAsTable("funnygorilla.TripAggregatesDelta")
+
+# check inserted data from table
+spark.sql("select * from funnygorilla.TripAggregatesDelta").show()
+
+//-- # check stats values in metadata file: it concludes 2 columns
+jq '.' ./spark-warehouse/funnygorilla.db/tripaggregatesdelta/_delta_log/00000000000000000003.json 
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+spark.sql("DROP TABLE IF EXISTS funnygorilla.TripAggregatesDelta")
+
+spark.sql("DROP DATABASE IF EXISTS funnygorilla")
+
+exit()
+
+Docker container stop gorilla-spark
+Docker container rm gorilla-spark
+
+
+//-- ############################## END ############################## --//
+
+

@@ -1,0 +1,121 @@
+//-- ################################################################# --//
+     ****  Prerequisites                                          ****
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+
+//-- ################################################################# --//
+       Performance tuning - Partition
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+     0. Initialisation
+//-- ################################################################# --//
+
+from pyspark.sql import SparkSession
+from delta import *
+from pyspark.sql import functions as F
+from pyspark.sql.types import *
+
+builder = (
+      pyspark.sql.SparkSession.builder.appName("GorillaPartitionApp")
+      .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+      .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+    )
+)
+
+spark = configure_spark_with_delta_pip(builder).getOrCreate()
+
+
+//-- ################################################################# --//
+     1. Create a table with partiton
+//-- ################################################################# --//
+
+spark.sql("CREATE Database IF NOT EXISTS gorilla")
+
+# create partitioned table using SQL
+spark.sql(
+ "CREATE TABLE gorilla.partition( \
+      country String,             \
+      date    String,             \
+      sales   INTEGER)            \
+    PARTITIONED BY(country)"
+)
+
+//-- ################################################################# --//
+     2. Insert into partitioned table
+//-- ################################################################# --//
+
+# define schema
+sales_schema = StructType([
+    StructField("country", StringType(), True),
+    StructField("date", StringType(), True),
+    StructField("sales", IntegerType(), True)
+])
+
+# Sample DataFrame
+sales_data = [
+    ("US", "2024-01-01", 100),
+    ("IN", "2024-01-02", 200),
+    ("US", "2024-01-03", 150),
+    ("IN", "2024-01-04", 300)
+]
+
+df = spark.createDataFrame(data=sales_data, schema=sales_schema)
+
+# Save as Delta Lake partitioned by 'country'
+df.write.mode("append").format("delta").partitionBy("country").saveAsTable("gorilla.partition")
+
+# check inserted data
+spark.sql("select * from gorilla.partition").show()
+
+# check partition in data lake
+tree ./spark-warehouse/
+
+# check partition data from table
+df.filter("country = 'US'").show()
+
+
+//-- ################################################################# --//
+     3. Delete a partition
+//-- ################################################################# --//
+
+[toDO]
+
+
+//-- ################################################################# --//
+     5. liquid clustering - toDo
+//-- ################################################################# --//
+
+https://docs.delta.io/latest/delta-clustering.html#language-sql
+
+-- Create an empty table
+CREATE TABLE table1(col0 int, col1 string) USING DELTA CLUSTER BY (col0);
+
+-- Using a CTAS statement (Delta 3.3+)
+CREATE EXTERNAL TABLE table2 CLUSTER BY (col0)  -- specify clustering after table name, not in subquery
+LOCATION 'table_location'
+AS SELECT * FROM table1;
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+-- drop table and database
+spark.sql("DROP TABLE IF EXISTS gorilla.partition")
+spark.sql("DROP DATABASE IF EXISTS gorilla")
+
+-- exit from pySpark interpreter
+exit()
+
+-- remove container
+Docker container stop gorilla-spark
+Docker container rm gorilla-spark
+
+
+//-- ############################## END ############################## --//
+
+

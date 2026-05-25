@@ -1,0 +1,114 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://karlchris.github.io/data-engineering/projects/delta-spark/#what-is-delta-lake
+
+
+//-- ################################################################# --//
+      0. Build image
+//-- ################################################################# --//
+
+# 00. Move to 03-Data-Engineering/DE-02-Data-Infrastructure/DE02-Infrustructure-07-Data-Lake 
+         find Dockerfile
+
+# 01. Build image and run container
+docker buildx build -t gorilla-spark:3.5.4 .
+
+
+//-- ################################################################# --//
+      1. Spin up container
+//-- ################################################################# --//
+
+# 02. Run container
+docker run -it --name spark-gorilla                   \
+   --user root                                        \
+   -p 4040:4040 -p 7077:7077 -p 8080:8080             \
+   -v ./data/:/opt/spark/work-dir/data                \
+   -v ./code-snippet:/opt/spark/work-dir/code-snippet \
+   gorilla-spark:3.5.4 /bin/bash
+
+# Start Spark master
+/opt/spark/sbin/start-master.sh
+
+# Set Environment Variables
+export JAVA_HOME=/opt/java/openjdk
+export PYSPARK_PYTHON=$(which python3)
+export SPARK_VERSION=3.5
+
+# install delta-spark package
+pip3 install delta-spark==3.3.0
+
+
+//-- ################################################################# --//
+      2. start pyspark
+//-- ################################################################# --//
+
+# 01. start pyspark
+pyspark --packages io.delta:delta-spark_2.12:3.3.0 \
+   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+
+# 01. start spark-sql
+spark-sql --packages io.delta:delta-spark_2.12:3.2.0 \
+   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+
+# 01. start scala shell
+spark-shell --packages io.delta:delta-spark_2.12:3.2.0 \
+  --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+  --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+
+
+//-- ################################################################# --//
+     3. Test Delata table
+//-- ################################################################# --//
+
+# 01. create a Delta table with a simple schema
+df = spark.createDataFrame([("bob", 47), ("mike", 23), ("tom", 51)]).toDF("first_name", "age")
+df.write.format("delta").save("gorilla/toy_data")
+
+df = spark.createDataFrame([("Peter", 47), ("li", 23), ("leonard", 51)]).toDF("first_name", "age")
+
+# 02. write into Delta table [ write mode: append, overwrite]
+df.write.format("delta").mode("append").save("./gorilla/toy_data") 
+
+# 03. Read data from Delta table
+spark.read.format("delta").load("./gorilla/toy_data").show()
+
+
+//-- ################################################################# --//
+     4. Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ################################################################# --//
+     start Apache zeppelin - working on
+//-- ################################################################# --//
+
+# 01. move to Zeppelin project directory
+mkdir -p ~/Developer/projects/Zeppelin-notebook
+cd ~/Developer/projects/Zeppelin-notebook
+
+# 02. spin up container
+docker run -u $(id -u)       \
+  -p 8001:8080 --rm          \
+  -u 0                       \
+  -v $PWD/logs:/logs         \
+  -v $PWD/notebook:/notebook \
+  -v /usr/local/lib/spark-3.1.2-bin-hadoop3.2:/opt/spark \
+  -e SPARK_HOME=/opt/spark               \
+  -e ZEPPELIN_LOG_DIR='/logs'            \
+  -e ZEPPELIN_NOTEBOOK_DIR='/notebook'   \
+  --name zeppelin                        \
+  apache/zeppelin:0.11.0
+
+
+//-- ############################# END ############################### --//
+
+

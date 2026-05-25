@@ -1,0 +1,87 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://airflow.apache.org/docs/apache-airflow/stable/index.html
+https://www.dataquest.io/blog/running-and-managing-apache-airflow-with-docker/
+
+
+//-- ################################################################# --//
+     0. Download docker compose file
+//-- ################################################################# --//
+
+# download docker compose file
+curl -LfO 'https://airflow.apache.org/docs/apache-airflow/3.2.1/docker-compose.yaml'
+
+# change file to exclude examples
+AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+
+# prepare folder structure: create 4 folders
+- dags/: your workflow scripts
+- logs/: task execution logs
+- plugins/: custom hooks and operators
+- config/: optional configuration overrides (this will be auto-populated later when initializing the database)
+
+mkdir -p ./dags ./logs ./plugins ./config
+
+# set user ID to prevent permission issues when Docker writes files locally
+echo -e "AIRFLOW_UID=$(id -u)" > .env
+AIRFLOW_UID=50000
+
+
+//-- ################################################################# --//
+     1. Initialize the Metadata Database
+//-- ################################################################# --//
+
+# Initialize the Metadata Database
+  - Airflow keeps track of DAG runs, task states, and configurations in a metadata database.
+
+docker-compose up airflow-init
+
+
+//-- ################################################################# --//
+     2. Spin up containers
+//-- ################################################################# --//
+
+# spin up servers:
+  - Redis: message broker, facilitating communication between the scheduler and the Celery workers.
+  - Webserver: user interface for managing and monitoring workflows
+  - Scheduler: schedules the tasks to run
+  - Worker: executes tasks distributed by the Airflow scheduler using Celery for parallel processing
+  - Trigger: 
+
+docker-compose up -d
+
+# access web UI
+http://localhost:8080 
+username/password: airflow/airflow
+
+
+//-- ################################################################# --//
+     3. Run a pipeline
+//-- ################################################################# --//
+
+# copy FGL_DAG.py into ./dags/
+
+# exam running pipeline
+
+# switch to graph view:
+dags -> FGL_DAG.py -> graph view
+
+# Inspecting Task Logs
+task instance -> Audit log -> select Log Level
+
+
+//-- ################################################################# --//
+     4. Clean up
+//-- ################################################################# --//
+
+docker compose down -v
+
+
+//-- ############################### END ############################# --//
+
+

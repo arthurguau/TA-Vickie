@@ -1,0 +1,286 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+1. Docker installed, up and running
+2. Apache Spark container with Delta lake package is up and running
+3. PySpark shell is running
+
+# reference
+https://docs.delta.io/latest/quick-start.html#language-SQL
+
+
+//-- ################################################################# --//
+     Change Data Feed/CDF
+//-- ################################################################# --//
+
+from pyspark.sql import SparkSession
+from delta import *
+from pyspark.sql import functions as F
+from pyspark.sql.types import *
+
+
+//-- ################################################################# --//
+      1. Create Delta table with change data feed enabled
+//-- ################################################################# --//
+
+# configurate Spark to use Delta-lake
+builder = (
+      pyspark.sql.SparkSession.builder.appName("FunnyGorillaApp")
+      .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+      .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+    )
+)
+
+spark = configure_spark_with_delta_pip(builder).getOrCreate()
+
+
+//-- ################################################################# --//
+      1. Create 3 databases in Delta lake
+          01. funnygorillabronze, 
+          02. funnygorillasilver, 
+          03. funnygorillagold
+//-- ################################################################# --//
+
+spark.sql("CREATE Database IF NOT EXISTS funnygorillabronze")
+spark.sql("CREATE Database IF NOT EXISTS funnygorillasilver")
+spark.sql("CREATE Database IF NOT EXISTS funnygorillagold")
+
+
+//-- ################################################################# --//
+      2. Create 3 tables with change data feed enabled
+           01. Bronze
+           02. Silver
+           03. Gold
+//-- ################################################################# --//
+
+# create a Bronze Delta table:
+spark.sql(
+    "CREATE TABLE IF NOT EXISTS funnygorillabronze.students_bronze ( \
+      id LONG NOT NULL,                    \
+      firstname STRING NOT NULL,           \
+      lastname STRING,                     \
+      country STRING NOT NULL,             \
+      city STRING NOT NULL)                \
+    USING delta TBLPROPERTIES (delta.enableChangeDataFeed = true)" \
+)
+
+# create a Silver Delta table:
+spark.sql(
+    "CREATE TABLE IF NOT EXISTS funnygorillasilver.students_silver ( \
+      id LONG NOT NULL,                    \
+      firstname STRING NOT NULL,           \
+      lastname STRING,                     \
+      country STRING NOT NULL,             \
+      city STRING NOT NULL,                \
+      CreatedDate TIMESTAMP NOT NULL,      \
+      ModifiedDate TIMESTAMP)              \
+    USING delta TBLPROPERTIES (delta.enableChangeDataFeed = true)"
+)
+
+# create a Gold Delta table:
+spark.sql(
+    "CREATE TABLE IF NOT EXISTS funnygorillagold.students_gold ( \
+      id LONG NOT NULL,                    \
+      firstname STRING NOT NULL,           \
+      lastname STRING,                     \
+      country STRING NOT NULL,             \
+      city STRING NOT NULL,                \
+      HashValue STRING NOT NULL,           \
+      ValidFrom TIMESTAMP NOT NULL,        \
+      ValidTo TIMESTAMP,                   \
+      ActiveFlag INT NOT NULL)             \
+    USING delta TBLPROPERTIES (delta.enableChangeDataFeed = true)"
+)
+
+
+//-- ################################################################# --//
+      3. Initial load into Bronze zone
+//-- ################################################################# --//
+
+# define schema
+student_schema = StructType([
+    StructField("id", LongType(), True),
+    StructField("firstname", StringType(), True),
+    StructField("lastname", StringType(), True),
+    StructField("country", StringType(), True),
+    StructField("city", StringType(), True)
+])
+
+# -- [toD0]
+df_first_full_load = spark.read.format("csv") \
+   .option("header", "true")                  \
+   .schema(student_schema)                    \
+   .load("./data/students.csv")
+
+data = [(1, "Cindrila", "Chakraborty", "India", "Kolkata"),
+        (2, "Avanti", "Goswami", "India", "Delhi"),
+        (3, "Ria", "Choose", "India", "Bangalore"),
+        (4, "Suparna", "Bose", "Ireland", "Belfast"),
+        (5, "Srabani", "Das", "Australia", "Melbourne")
+        ]
+
+# create a datafreame
+df_first_full_load = spark.createDataFrame(data=data, schema=student_schema)
+
+# insert into delta table
+df_first_full_load.repartition(1).write.mode("append").format("delta").saveAsTable("funnygorillabronze.students_bronze")
+
+
+//-- ################################################################# --//
+      4. Find changed data in Bronze
+//-- ################################################################# --//
+
+# 01. find current version
+current_version = spark.sql("SELECT _commit_version  FROM table_changes('funnygorillabronze.students_bronze', 0)").collect()[0][0]
+
+# 02. retrieve changed data
+df_bronze_changed_data = spark.sql("SELECT * FROM table_changes('funnygorillabronze.students_bronze', {current_version})")
+df_bronze_changed_data = spark.sql("SELECT * FROM table_changes('funnygorillabronze.students_bronze', 1)")
+
+# 03. perform dummy business related transformation
+df_final_bronze_data = df_bronze_changed_data.select(
+    F.col("id"),
+    F.col("firstName"),
+    F.col("lastName"),
+    F.col("country"),
+    F.col("city")
+)
+
+df_final_bronze_data.show()
+
+# 04. create a view to hold changed data
+df_final_bronze_data.createOrReplaceTempView("view_bronze_to_silver")
+
+spark.sql("SELECT * FROM view_bronze_to_silver").show()
+
+
+//-- ################################################################# --//
+      5. Load into Silver table
+          01. Update existing records.
+          02. Insert new records.
+          -- 03. Delete existing records
+//-- ################################################################# --//
+
+//-- # 01. Insert changed data into Silver table by merge operation
+spark.sql( 
+
+"MERGE INTO funnygorillasilver.students_silver TARGET \
+USING view_bronze_to_silver SOURCE         \
+ON TARGET.id = SOURCE.id                   \
+WHEN MATCHED                               \
+AND                                        \
+(                                          \
+    TARGET.lastName <> SOURCE.lastName     \
+    OR TARGET.country <> SOURCE.country    \
+    OR TARGET.city <> SOURCE.city          \
+)                                          \
+    THEN UPDATE                                       \
+        SET                                           \
+            TARGET.lastName = SOURCE.lastName,        \
+            TARGET.country = SOURCE.Country,          \
+            TARGET.city = SOURCE.city,                \
+            TARGET.ModifiedDate = CURRENT_TIMESTAMP() \
+WHEN NOT MATCHED                                      \
+    THEN INSERT (id, firstName, lastName, country, city, CreatedDate, ModifiedDate)                                \
+    VALUES (SOURCE.id, SOURCE.firstName, SOURCE.lastName, SOURCE.country, SOURCE.city, CURRENT_TIMESTAMP(), NULL)"
+)
+
+
+//-- # 02. check merged data
+spark.sql("SELECT * FROM funnygorillasilver.students_silver").show()
+
+
+//-- ################################################################# --//
+      6. Find changed data in Silver
+//-- ################################################################# --//
+
+# Get the Current Version of the Bronze Table
+current_version = spark.sql("SELECT version FROM (DESCRIBE HISTORY funnygorillasilver.students_silver LIMIT 1)").collect()[0][0]
+current_version = spark.sql("SELECT _commit_version  FROM table_changes('funnygorillasilver.students_silver', 0)").collect()[0][0]
+
+print(current_version)
+
+df_silver_changed_data = spark.sql(f"SELECT * FROM table_changes('funnygorillasilver.students_silver', {current_version})")
+df_silver_changed_data.show()
+
+# perform dummy transformation logic
+df_final_silver_data = df_silver_changed_data.select(
+    F.col("id"),
+    F.col("firstname"),
+    F.col("lastname"),
+    F.col("country"),
+    F.col("city"),
+    F.md5(F.concat(F.col("id"), F.col("firstname"), F.col("lastname"), F.col("country"), F.col("city"))).alias("HashValue"),
+    F.current_timestamp().alias("ValidFrom"),
+    F.to_timestamp(F.lit("9999-12-31 00:00:00.000")).alias("ValidTo"),
+    F.lit(1).alias("ActiveFlag")
+)
+
+# create a view from changed data
+df_final_silver_data.createOrReplaceTempView("view_silver_to_gold")
+
+spark.sql("SELECT * FROM view_silver_to_gold").show()
+
+
+//-- ################################################################# --//
+      7. Gold table load
+//-- ################################################################# --//
+
+//-- # 01. Insert changed data into gold table by merge operation in SCD2 approach
+spark.sql( 
+
+"MERGE INTO funnygorillagold.students_gold TARGET \
+USING view_silver_to_gold SOURCE                  \
+ON TARGET.HashValue = SOURCE.HashValue            \
+WHEN MATCHED                                      \
+    THEN UPDATE                                   \
+        SET                                       \
+            TARGET.ValidTo = CURRENT_TIMESTAMP(), \
+            TARGET.ActiveFlag = 0                 \
+WHEN NOT MATCHED                                  \
+    THEN INSERT (ID, FirstName, LastName, Country, City, HashValue, ValidFrom, ValidTo, ActiveFlag) \
+    VALUES (SOURCE.ID, SOURCE.FirstName, SOURCE.LastName, SOURCE.Country, SOURCE.City, SOURCE.HashValue, SOURCE.ValidFrom, SOURCE.ValidTo, SOURCE.ActiveFlag)"
+
+)
+
+//-- # 02. check merged data
+spark.sql("SELECT * FROM funnygorillagold.students_gold").show()
+
+
+//-- ################################################################# --//
+      6. Read changed data parquet file
+//-- ################################################################# --//
+
+# 01. check transaction log & change data in spark-warehouse
+ls -l ./spark-warehouse/funnygorillabronze.students_bronze
+
+# 02. check transaction log & change data in spark-warehouse
+ls -l ./spark-warehouse/funnygorillabronze.students_bronze/_change_data
+
+# 03. read change data parquet file
+spark.read.parquet(
+    "spark-warehouse/funnygorillabronze.students_bronze/_change_data/cdc-00000-f0d69282-3d3d-4348-92f7-d8cb34eb502a.c000.snappy.parquet"
+).show()
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+//-- # drop database in Delta lake
+
+spark.sql("DROP TABLE IF EXISTS funnygorillabronze.students_bronze")
+spark.sql("DROP TABLE IF EXISTS funnygorillasilver.students_silver")
+spark.sql("DROP TABLE IF EXISTS funnygorillagold.students_gold")
+
+spark.sql("DROP DATABASE IF EXISTS funnygorillabronze")
+spark.sql("DROP DATABASE IF EXISTS funnygorillasilver")
+spark.sql("DROP DATABASE IF EXISTS funnygorillagold")
+
+exit()
+
+
+//-- ############################# END ############################### --//
+
+

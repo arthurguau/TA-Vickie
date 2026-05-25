@@ -1,0 +1,221 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://airflow.apache.org/docs/apache-airflow/stable/index.html
+https://www.dataquest.io/blog/running-and-managing-apache-airflow-with-docker/
+
+# concept: With Statement in Python
+simplifies resource management by automatically handling setup and cleanup, 
+ensuring files or connections close safely even if errors occur.
+
+Replaces long try-except–finally blocks with cleaner syntax.
+Improves readability by reducing unnecessary boilerplate code.
+
+# sample try-finally
+file = open("example.txt", "w")
+
+try:
+    file.write("Hello, Python!")
+
+except ZeroDivisionError:
+    # 2. Except: Runs ONLY if the specific error occurs
+    print("Error: You cannot divide by zero!")
+
+else:
+
+finally:
+    file.close()  # Ensure file is closed
+
+# sample with as
+with open("example.txt", "w") as file:
+    file.write("Hello, Python!")
+
+
+//-- ################################################################# --//
+      Write a DAG file in Python
+        0. Prepare api key
+        1. Setup project folder
+        2. Define DAG file - MyfirstDAG.py
+        3. Deploy pipeline
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      0. Prepare api key
+//-- ################################################################# --//
+
+# 01. create api key
+https://api.nasa.gov/
+
+ksA5NiTUdvtB8UirRFtdg7xKNnWFDzDHvvecudco
+
+# 02. Test api
+curl -H "X-API-Key: ksA5NiTUdvtB8UirRFtdg7xKNnWFDzDHvvecudco" \
+  https://api.nasa.gov/planetary/apod  | jq .
+
+
+//-- ################################################################# --//
+      1. Setup project folder
+//-- ################################################################# --//
+
+# 01. VSCode workspace
+mkdir -p ~/Developer/Projects/Airflow-toturials/Hello-DAG && cd ~/Developer/Projects/Airflow-toturials/Hello-DAG
+
+# 02. Startup VSCode: Open terminal -> type: code .
+
+# 03. create and activate virtual environment: open VSCode terminal
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 04. create requirements file for importing packages
+touch requirements.txt
+
+# 05. add packages to requirements.txt file
+numpy
+pandas
+requests
+apache-airflow==3.2.1
+
+# install packages
+pip3 install -r requirements.txt
+
+# 06. Create environment file for environment variables
+touch .env
+
+# add one entry
+NASA_KEY=ksA5NiTUdvtB8UirRFtdg7xKNnWFDzDHvvecudco
+
+# 07. create python class: Retrieve_image.py
+
+import os
+from dotenv import load_dotenv
+import requests
+import json
+from datetime import date
+
+load_dotenv()  # loads .env from current working directory
+
+api_key = os.getenv("NASA_KEY") 
+print(api_key)
+
+# make api call to retrieve image url
+url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
+response = requests.get(url).json()
+print(response)
+
+# find image url from response json file
+today_image = response['hdurl']
+r = requests.get(today_image) 
+
+# make api call to download image
+# 'wb' opens the file in write-binary mode
+# write into local file
+with open(f'todays_image_{date.today()}.png', 'wb') as f:
+    f.write(requests.get(today_image).content)
+
+
+//-- ################################################################# --//
+     2. Define DAG file - MyfirstDAG.py
+//-- ################################################################# --//
+
+# 00. create DAGs folder inside of project
+
+# 01. create MyfirstDAG.py inside of DAGs folder
+
+# 02. import packages
+
+import os
+from dotenv import load_dotenv
+import json
+import pathlib
+import airflow
+import requests
+import requests.exceptions as request_exceptions
+from datetime import date
+from datetime import datetime, timedelta
+
+from airflow import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import task
+
+dag_owner = 'Kendrick'
+
+load_dotenv()
+
+# 03. get image
+
+def _get_pictures():
+    pathlib.Path("./tmp/images").mkdir(parents=True, exist_ok=True)
+    api_key = os.getenv("NASA_KEY") 
+    url = f'https://api.nasa.gov/planetary/apod?api_key={api_key}'
+    response = requests.get(url).json()
+    today_image = response['hdurl']
+    with open(f'todays_image_{date.today()}.png', 'wb') as f:
+        f.write(requests.get(today_image).content)
+
+
+-- test download function
+ python3 ./dags/MyfirstDAG.py
+
+# 04. default values
+default_args = {
+        'owner': FGL_Vickie,
+        'depends_on_past': False,
+        'retries': 2,
+        'retry_delay': timedelta(minutes=5)
+        }
+
+
+# 05. pipeline definition
+with DAG(dag_id='download_ASOD_image',
+        default_args=default_args,
+        description='download and notify ',
+        start_date=datetime(2026, 5, 23),
+        schedule='@daily',
+        catchup=False,
+        tags=['None']
+):
+
+   get_pictures = PythonOperator(
+      task_id="get_pictures",
+      python_callable=_get_pictures,
+   )
+
+   notify = BashOperator(
+       task_id="notify",
+       bash_command='echo f"Image for today has been added!"',
+   )
+
+# 06. Define task dependency
+   get_pictures >> notify
+
+
+//-- ################################################################# --//
+     3. Deploy pipeline
+//-- ################################################################# --//
+
+# bring up Airflow
+docker-compose up airflow-init
+docker-compose up -d
+
+# deploy pipeline
+copy MyfirstDAG.py into ./dags/
+
+# trigger pipeline
+Click trigger button from GUI and exam the pipeline
+
+# switch to graph view:
+dags -> MyfirstDAG -> graph view
+
+# Inspecting Task Logs
+task instance -> Audit log -> select Log Level
+
+
+//-- ############################### END ############################# --//
+
+

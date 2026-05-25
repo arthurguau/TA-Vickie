@@ -1,0 +1,78 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+setup Pycharm
+
+
+# Each commit is written as a JSON file, starting with 0000000000000000000.json
+1. Commit 
+2. Schema
+3. Protocol
+4. Operation 
+
+
+//-- ################################################################# --//
+      1. Write multiple writes to the same file
+//-- ################################################################# --//
+
+# 00. ./code-sneppit/multipleWriteOperations.py
+
+# 01. check part-00000 file created for each commit
+part-00000-xxxxx.parquet
+
+# 02. check _delta_log: a metadata action and an add file action are recorded
+cat ./funnygorilla/delta/multipleWriteOperations/_delta_log/0000000000000000000.json
+
+
+//-- ################################################################# --//
+      2. Update scenario
+//-- ################################################################# --//
+
+# 00. ./code-sneppit/updateOperations.py
+
+
+
+//-- ################################################################# --//
+      3. Check point file
+//-- ################################################################# --//
+
+# 00. ./code-sneppit/transactionLogCheckPointExample.py
+
+
+//-- ################################################################# --//
+      4. Read check point file
+         [toDo - understand file]
+//-- ################################################################# --//
+
+# 00. ./code-sneppit/readCheckpointFile.py
+
+# Set output path for Delta table
+DATALAKE_PATH = "./funnygorilla/delta/transactionLogCheckPointExample"
+CHECKPOINT_PATH = "/_delta_log/00000000000000000010.checkpoint.parquet"
+
+# Read the checkpoint.parquet file
+checkpoint_df =                              \
+  spark                                      \
+  .read                                      \
+  .format("parquet")                         \
+  .load(f"{DATALAKE_PATH}{CHECKPOINT_PATH}")
+
+# Display the checkpoint dataframe
+checkpoint_df.show()
+
+# Note that DataFrame.show() will not show the DataFrame records in order.
+
+
+//-- ################################################################# --//
+     Clean up
+//-- ################################################################# --//
+
+exit()
+
+
+//-- ##########################     END    ########################### --//
+
+
