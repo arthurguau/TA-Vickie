@@ -2,17 +2,20 @@ import uuid
 
 import airflow
 
-from airflow import DAG
+from airflow.sdk import dag, task_group
 from airflow.sdk import task
 from airflow.providers.standard.operators.empty import EmptyOperator
 from pendulum import datetime
 
 
-with DAG(
-    dag_id="FGL_taskflow_dag",
-    start_date=datetime(2026, 5, 23),
+@dag(
+    dag_id="13_taskflow_full",
+    start_date=datetime(2026, 7, 1),
     schedule="@daily",
-) as dag:
+    catchup=False,
+    tags=["taskflow", "Sales-ml"],
+)
+def sales_taskflow_full():   
     start = EmptyOperator(task_id="start")
 
     fetch_sales = EmptyOperator(task_id="fetch_sales")
@@ -41,3 +44,5 @@ with DAG(
     deploy_model(model_id)
 
     join_datasets >> model_id
+
+sales_taskflow_full()

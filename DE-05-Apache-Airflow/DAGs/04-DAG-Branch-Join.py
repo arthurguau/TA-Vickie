@@ -2,12 +2,12 @@ import airflow
 
 from airflow import DAG
 from airflow.providers.standard.operators.empty import EmptyOperator
-from airflow.providers.standard.operators.python  import PythonOperator, BranchPythonOperator
+from airflow.providers.standard.operators.python import PythonOperator, BranchPythonOperator
 import pendulum
 from datetime import date
 from datetime import datetime, timedelta
 
-ERP_CHANGE_DATE = pendulum.today('UTC').add(days=-1)  # airflow.utils.dates.days_ago(1)
+ERP_CHANGE_DATE = pendulum.today('UTC').add(days=-1)
 
 
 def _pick_erp_system(**context):
@@ -16,22 +16,17 @@ def _pick_erp_system(**context):
     else:
         return "fetch_sales_new"
 
-
 def _fetch_sales_old(**context):
     print("Fetching sales data (OLD)...")
-
 
 def _fetch_sales_new(**context):
     print("Fetching sales data (NEW)...")
 
-
 def _clean_sales_old(**context):
     print("Preprocessing sales data (OLD)...")
 
-
 def _clean_sales_new(**context):
     print("Preprocessing sales data (NEW)...")
-
 
 with DAG(
     dag_id="04_branch_dag_join",

@@ -1,0 +1,41 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+# reference
+https://www.astronomer.io/docs/learn/dag-best-practices
+
+
+//-- ################################################################# --//
+      Task definition - [working on ...]
+//-- ################################################################# --//
+
+
+# Use template fields, variables, and macros
+
+# Incremental record filtering
+
+# Last modified date
+
+# Sequence IDs
+
+# Avoid top-level code in your DAG file
+
+# Treat your DAG file like a config file
+
+# Use a consistent method for task dependencies
+
+
+//-- ################################################################# --//
+
+//-- ################################################################# --//
+
+
+
+
+
+//-- ############################### END ############################# --//
+
+

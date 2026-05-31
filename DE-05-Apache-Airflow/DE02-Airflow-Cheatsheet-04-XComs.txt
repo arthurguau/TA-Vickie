@@ -1,0 +1,25 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+# set context value to be shared across tasks
+def _train_model(**context):
+    model_id = str(uuid.uuid4())
+    context["task_instance"].xcom_push(key="model_id", value=model_id)
+ 
+train_model = PythonOperator(
+    task_id="train_model", 
+    python_callable=_train_model,
+)
+
+
+//-- ################################################################# --//
+      5. Check XCom values
+//-- ################################################################# --//
+
+Browser -> XComs: model_id
+
+
+//-- ############################### END ############################# --//
+
+

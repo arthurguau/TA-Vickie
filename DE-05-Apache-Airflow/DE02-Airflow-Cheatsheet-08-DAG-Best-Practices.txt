@@ -1,0 +1,116 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+Docker installed, up and running
+
+-- reference
+https://www.astronomer.io/docs/learn/dag-best-practices
+
+
+//-- ################################################################# --//
+      Principles:
+       1. DAG design
+       2. Using Airflow as an orchestrator
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+       1. DAG design
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+       01. Task design
+//-- ================================================================= --//
+
+# 01. Keep tasks atomic
+
+# 02. Always require tasks to be idempotent
+
+# 03. Task results should be deterministic
+
+# 04. Design tasks using functional paradigms
+
+
+//-- ################################################################# --//
+       2. Handling data efficiently
+//-- ################################################################# --//
+
+# 01. Limit the amount of data being processed
+
+# 02. Incremental loading/processing
+
+# 03. Cache intermediate data
+
+# 04. Don’t store data on local file systems
+- it can be tempting to write intermediate data to a local file system. 
+- downstream tasks may not be able to access them because Airflow runs its tasks across multiple workers
+- use shared storage that can be accessed in the same manner from every Airflow worker.
+
+# 05. Offload work to external/source systems
+- with small data sets, you can get away with loading data on the workers using the PythonOperator
+- using Airflow to run your computation on an external Spark cluster
+- Airflow was primarily designed as an orchestration tool
+
+//-- ################################################################# --//
+       3. Managing resources
+//-- ################################################################# --//
+
+# 01. Managing concurrency using pools
+- control how many tasks have access to a given resource using resource pools, 
+- each pool contains a fixed number of slots, 
+- Individual tasks that need access to the resource can be assigned to the resource pool, 
+
+UI -> Admin -> Pools: create a dedicated pool for a resource accesss
+
+PythonOperator(
+    task_id="my_task",
+    ...
+    pool="my_resource_pool"
+)
+
+# 02. Detecting long-running tasks using SLAs (service-level agreement) and alerts
+- tasks or DAG runs may take longer than usual due to unforeseen issues in the data, limited resources, and so on
+- assign SLA timeouts to your DAGs or tasks
+
+-- 01. define SLA: (Monitor: Browse > SLA misses)
+default_args = {
+    "sla": timedelta(hours=2),
+    ...
+}
+
+-- 02. Send alert: define callback handler
+def sla_miss_callback(context):   
+    send_slack_message("Missed SLA!")
+ 
+with DAG(
+    ... 
+    sla_miss_callback=sla_miss_callback
+) as dag:
+    ... 
+
+
+//-- ################################################################# --//
+       4. Using Airflow as an orchestrator
+//-- ################################################################# --//
+
+
+# 01. Make use of provider packages
+
+# 02. Decide where to run data processing jobs
+
+# 03. Use a consistent file structure
+
+├── dags/ # Where your DAGs go
+│   └── example-dag.py # An example dag that comes with the initialized project
+├── Dockerfile # For Astronomer's Docker image and runtime overrides
+├── include/ # For any other files you'd like to include
+├── plugins/ # For any custom or community Airflow plugins
+├── packages.txt # For OS-level packages
+└── requirements.txt # For any Python packages
+
+
+//-- ############################### END ############################# --//
+
+

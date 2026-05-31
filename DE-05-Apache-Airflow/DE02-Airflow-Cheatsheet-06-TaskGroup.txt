@@ -1,0 +1,117 @@
+//-- ################################################################# --//
+//-- ****  Prerequisites                                          **** --//
+//-- ################################################################# --//
+
+# concept: Task Group
+
+
+# Why
+- Group related tasks under a logical name
+- Improve the readability of your DAG definition
+- Enhance the Airflow UI with collapsible groups
+- Promote modularity and reuse
+
+
+//-- ################################################################# --//
+      1. Creating Basic Task Groups
+//-- ################################################################# --//
+
+from airflow import DAG
+from airflow.operators.dummy import DummyOperator
+from airflow.utils.task_group import TaskGroup
+from datetime import datetime
+
+
+dag = DAG(
+    'task_group_example',
+    start=datetime(2024, 3, 1),
+    schedule='@daily'
+)
+start = DummyOperator(task_id='start', dag=dag)
+
+with TaskGroup('processing_tasks', tooltip='Data processing steps') as processing_group:
+    t1 = DummyOperator(task_id='extract_data')
+    t2 = DummyOperator(task_id='transform_data')
+    t3 = DummyOperator(task_id='load_data')
+    t1 >> t2 >> t3
+
+end = DummyOperator(task_id='end', dag=dag)
+
+start >> processing_group >> end
+
+
+//-- ################################################################# --//
+      2. Nesting Task Groups
+//-- ################################################################# --//
+
+with TaskGroup('main_pipeline') as main_pipeline:
+    with TaskGroup('etl_phase') as etl_phase:
+        extract = DummyOperator(task_id='extract')
+        transform = DummyOperator(task_id='transform')
+        load = DummyOperator(task_id='load')
+        extract >> transform >> load
+
+    with TaskGroup('validation_phase') as validation_phase:
+        validate_schema = DummyOperator(task_id='validate_schema')
+        check_nulls = DummyOperator(task_id='check_nulls')
+        validate_schema >> check_nulls
+    
+    etl_phase >> validation_phase
+
+
+//-- ################################################################# --//
+      3. Parameterizing Task Groups
+          - to make DAGs reusable, you can pass parameters to task groups
+//-- ################################################################# --//
+
+
+def create_etl_group(group_id, dag):
+    with TaskGroup(group_id=group_id, tooltip='ETL tasks') as tg:
+        extract = DummyOperator(task_id='extract')
+        transform = DummyOperator(task_id='transform')
+        load = DummyOperator(task_id='load')
+        extract >> transform >> load
+    return tg
+
+etl_stage_1 = create_etl_group('etl_stage_1', dag)
+etl_stage_2 = create_etl_group('etl_stage_2', dag)
+
+etl_stage_1 >> etl_stage_2
+
+
+//-- ################################################################# --//
+       4. Task Groups with Custom Operators
+//-- ################################################################# --//
+
+from airflow.operators.python import PythonOperator
+
+def process_data(**kwargs):
+    print("Processing...")
+with TaskGroup('python_group') as python_group:
+    task_a = PythonOperator(task_id='step_1', python_callable=process_data)
+    task_b = PythonOperator(task_id='step_2', python_callable=process_data)
+    task_a >> task_b
+
+
+//-- ################################################################# --//
+       5. Best Practices for Task Groups
+//-- ################################################################# --//
+
+# 01. Use descriptive group IDs and tooltips
+
+# 02. Don’t overload a Task Group with too many tasks
+
+# 03. Use functions to define reusable Task Groups
+
+# 04. Avoid circular dependencies between groups
+
+# 05. Nest only when it helps readability
+
+- Task Groups make large DAGs easier to read, debug, and scale. 
+- Whether you’re structuring ETL flows, ML pipelines, or multi-stage processes, 
+- Task Group patterns help you write cleaner, more modular Airflow code.
+
+
+//-- ############################### END ############################# --//
+
+

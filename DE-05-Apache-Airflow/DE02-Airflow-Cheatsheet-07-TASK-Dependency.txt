@@ -6,18 +6,35 @@ Docker installed, up and running
 
 -- reference
 https://airflow.apache.org/docs/apache-airflow/stable/index.html
-https://www.dataquest.io/blog/running-and-managing-apache-airflow-with-docker/
+https://www.astronomer.io/docs/learn/managing-dependencies
+
+# concept: 
+1. bit-shift operators (<< and >>)
+2. the set_upstream and set_downstream methods
 
 
 //-- ################################################################# --//
-      Write a DAG file in Python
-
+      Basic task dependencies.
+      Dependency functions.
+      Dynamic dependencies.
+      Dependencies with task groups.
+      Dependencies with the TaskFlow API.
+      Trigger rules.
 //-- ################################################################# --//
 
 
 //-- ################################################################# --//
-      1. Create DAG
+      1. Use chain()/chain_linear()
 //-- ################################################################# --//
+
+
+# from airflow.sdk import chain
+chain(t0, t1, [t2, t3, t4], [t5, t6, t7], t8)
+
+# from airflow.sdk import chain_linear
+chain_linear(t0, t1, [t2, t3, t4], [t5, t6, t7], t8)
+
+chain_linear([t0, t1], [t2, t3, t4])
 
 
 

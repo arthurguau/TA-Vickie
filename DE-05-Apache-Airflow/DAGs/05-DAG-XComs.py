@@ -22,7 +22,7 @@ def _deploy_model(**context):
 
 
 with DAG(
-    dag_id="04-DAG-xcoms",
+    dag_id="05-DAG-xcoms",
     start_date=datetime(2026, 5, 23),
     schedule="@daily",
 ) as dag:
