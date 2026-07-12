@@ -1,0 +1,144 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      Define transformational stored procedures
+        1. source model -> staging model
+        2. staging model -> warehousing model
+        3. warehousing model -> delivery model                        
+//-- ################################################################# --//
+
+
+//-- ################################################################# --//
+      0. Define UDF - utility functions                           
+//-- ################################################################# --//
+
+[working on ...]
+
+
+//-- ################################################################# --//
+      1. Source model to Staging model                           
+//-- ################################################################# --//
+
+# 01. define transformative stored-proc
+
+create or replace procedure load_file()
+returns varchar
+language sql
+as
+begin
+  copy into ORDERS_STG
+     from (        
+        select $1, $2, $3, $4, $5, metadata$filename, current_timestamp() 
+        from @ORDERS_STAGE
+     )
+     file_format = (type = CSV, skip_header = 1)
+     on_error = abort_statement
+     purge = true;
+return 'transformation done;
+end;
+
+# 02. Test
+call load_file();
+
+
+//-- ################################################################# --//
+      2. Staging model to warehousing model
+          - merge clause                             
+//-- ################################################################# --//
+
+# 01. define transformative stored-proc
+
+create or replace procedure transform_warehouse()
+  returns varchar
+  language sql
+as
+
+begin
+
+  -- merge into the target table
+  merge into CUSTOMER_ORDERS tgt
+
+  -- the source table
+  using ORDERS_STG as src 
+
+  -- the columns that ensure uniqueness
+  on src.customer = tgt.customer 
+    and src.delivery_date = tgt.delivery_date 
+    and src.baked_good_type = tgt.baked_good_type
+
+  -- update the warehousing table with the values from the source table
+  when matched then 
+    update set tgt.quantity = src.quantity, 
+             tgt.source_file_name = src.source_file_name, 
+             tgt.load_ts = current_timestamp()
+
+  -- insert new values from the source table into the warehousing table
+  when not matched then
+    insert (customer, 
+            order_date, 
+            delivery_date, 
+            baked_good_type, 
+            quantity, 
+            source_file_name, 
+            load_ts)
+    values(src.customer, 
+           src.order_date, 
+           src.delivery_date, 
+           src.baked_good_type, 
+           src.quantity, 
+           src.source_file_name,
+           current_timestamp());
+
+  return 'transformation done';
+end;
+
+# 02. test
+call transform_warehouse();
+
+
+//-- ################################################################# --//
+      3. Warehousing model to delivery model      
+//-- ################################################################# --//
+
+-- 00. Native sql [select clause]
+select 
+     delivery_date, 
+     baked_good_type, 
+     sum(quantity) as total_quantity
+  from CUSTOMER_ORDERS
+  group by all;
+
+
+-- 01. Define stored procedure
+CREATE OR REPLACE PROCEDURE Query_Daily_Summary()
+RETURNS TABLE (delivery_date DATE, baked_good_type VARCHAR, total_quantity INT)
+LANGUAGE SQL
+AS
+DECLARE
+    -- 1. Declare a RESULTSET variable to hold multiple rows
+    res RESULTSET; 
+BEGIN
+    -- 2. Assign your multi-row query to the result set variable
+    res := (select 
+               delivery_date, 
+               baked_good_type, 
+               sum(quantity) as total_quantity
+            from CUSTOMER_ORDERS
+            group by all);
+            
+    -- 3. Return the result set formatted as a table
+    RETURN TABLE(res); 
+END;
+
+
+-- 02. test
+call Query_Daily_Summary();
+
+
+//-- ############################# End ############################## --//
+

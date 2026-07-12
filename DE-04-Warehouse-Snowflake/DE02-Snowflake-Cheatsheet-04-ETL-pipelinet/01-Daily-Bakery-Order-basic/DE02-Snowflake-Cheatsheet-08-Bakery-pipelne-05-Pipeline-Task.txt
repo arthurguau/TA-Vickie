@@ -1,0 +1,178 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+      0. Create task admin role                    
+//-- ################################################################# --//
+
+use warehouse BAKERY_WH;
+use database BAKERY_DB;
+use schema ORDERS; 
+
+-- create a task admin role
+USE ROLE SECURITYADMIN;
+CREATE ROLE TASKADMIN;
+
+-- grant privilege
+USE ROLE ACCOUNTADMIN;
+GRANT EXECUTE TASK, EXECUTE MANAGED TASK ON ACCOUNT TO ROLE TASKADMIN;
+
+USE ROLE securityadmin; 
+GRANT USAGE  ON WAREHOUSE BAKERY_WH TO ROLE TASKADMIN;
+GRANT USAGE  ON DATABASE BAKERY_DB   TO ROLE TASKADMIN;
+GRANT USAGE  ON SCHEMA   BAKERY_DB.ORDERS TO ROLE TASKADMIN;
+
+GRANT CREATE TASK  ON SCHEMA  BAKERY_DB.ORDERS TO ROLE TASKADMIN;
+
+GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.load_file() TO ROLE TASKADMIN;
+GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.transform_warehouse() TO ROLE TASKADMIN;
+GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.Query_Daily_Summary() TO ROLE TASKADMIN;
+
+GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.ORDERS_STG TO ROLE TASKADMIN;
+GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.CUSTOMER_ORDERS TO ROLE TASKADMIN;
+GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.SUMMARY_ORDERS TO ROLE TASKADMIN;
+
+
+-- grant role TASKADMIN TO ROLE SYSADMIN;
+USE ROLE SECURITYADMIN;
+GRANT ROLE TASKADMIN TO ROLE SYSADMIN;
+
+
+//-- ################################################################# --//
+      0. Create orchestration logic                    
+//-- ################################################################# --//
+
+use warehouse BAKERY_WH;
+use database BAKERY_DB;
+use schema ORDERS; 
+
+-- 01. Orchestrate by task
+create task T_PROCESS_ORDERS
+  warehouse = BAKERY_WH
+  schedule = '2 M'
+as
+begin
+  -- 001. loading into staging table
+  truncate table ORDERS_STG;
+  -- call stored procedure
+  call load_file();
+
+  -- 002. staging table to warehousing table
+  -- call stored procedure
+  truncate table CUSTOMER_ORDERS;
+  call transform_warehouse();
+
+  -- 003. warehousing table to delivery table
+  truncate table SUMMARY_ORDERS;
+  -- call stored procedure
+  call Query_Daily_Summary();
+
+end;
+
+
+-- 04. Drop task
+DROP TASK IF EXISTS BAKERY_DB.ORDERS.T_PROCESS_ORDERS;
+SHOW TASKS LIKE 'T_PROCESS_ORDERS';
+
+
+//-- ################################################################# --//
+      1. Create tasks        
+//-- ################################################################# --//
+
+Use role taskadmin;
+
+-- 00. Root task: empty root task (acts strictly as the orchestrator/timer)
+
+CREATE OR REPLACE TASK t_root_bakery
+  WAREHOUSE = BAKERY_WH
+  SCHEDULE = '1 MINUTE'
+AS
+  SELECT 1;
+
+-- 01. This task runs automatically after t_root
+
+CREATE OR REPLACE TASK t_loading
+  WAREHOUSE = BAKERY_WH
+  AFTER t_root_bakery
+AS
+  truncate table ORDERS_STG;
+  call load_file();
+
+-- 02. This task runs automatically after t_loading
+
+CREATE OR REPLACE TASK t_warehouse
+  WAREHOUSE = BAKERY_WH
+  AFTER t_loading
+AS
+  truncate table CUSTOMER_ORDERS;
+  call transform_warehouse();
+
+-- 03. This task runs automatically after t_warehouse
+
+CREATE OR REPLACE TASK t_summary
+  WAREHOUSE = BAKERY_WH
+  AFTER t_warehouse
+AS
+  truncate table SUMMARY_ORDERS;
+  call Query_Daily_Summary();
+
+
+//-- ################################################################# --//
+      2. Check tasks           
+//-- ################################################################# --//
+
+-- check defined tasks
+SHOW TASKS;
+
+DESCRIBE TASK t_summary;
+DESCRIBE TASK t_warehouse;
+DESCRIBE TASK t_loading;
+DESCRIBE TASK t_root_bakery;
+
+-- check Task Graph Dependencies (DAGs)
+
+catalog -> database -> schema -> tasks -> Graph
+
+SELECT 
+    NAME AS TASK_NAME, 
+    PREDECESSORS, 
+    STATE 
+FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => 't_root_bakery', RECURSIVE => TRUE));
+
+
+//-- ################################################################# --//
+      3. Execute pipeline                  
+//-- ################################################################# --//
+
+-- 01. put task into action
+
+alter task t_summary resume;
+alter task t_warehouse resume;
+alter task t_loading resume;
+
+alter task t_root_bakery resume;
+
+-- 02. test and execute task a single time
+use role taskadmin;
+execute task t_root_bakery;
+
+
+//-- ################################################################# --//
+      4. Check execution                  
+//-- ################################################################# --//
+
+-- 01. view previous and scheduled task executions
+
+select *
+  from table(information_schema.task_history())
+  order by scheduled_time desc;
+
+
+
+
+//-- ############################# End ############################## --//
+
