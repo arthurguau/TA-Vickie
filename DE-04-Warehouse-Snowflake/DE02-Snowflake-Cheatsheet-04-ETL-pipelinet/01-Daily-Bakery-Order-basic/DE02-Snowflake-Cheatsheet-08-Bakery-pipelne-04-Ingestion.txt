@@ -6,7 +6,7 @@ Snowflake account created
 
 
 //-- ################################################################# --//
-      1. Load file into stage  
+      1. Manually Load file into stage
           - table stage
           - user stage
           - named internal stage (schema level)                           
@@ -24,29 +24,11 @@ select $1, $2, $3, $4, $5 from @ORDERS_STAGE;
 
 
 //-- ################################################################# --//
-      2. Load file into staging table  
-          - copy command                           
+      2. Automatically load file into stage - Event grid                            
 //-- ################################################################# --//
 
 
-use database BAKERY_DB;
-use schema ORDERS;
-
--- 01. Use copy command to load into table
-copy into ORDERS_STG
-from (
-  select $1, $2, $3, $4, $5, metadata$filename, current_timestamp() 
-  from @ORDERS_STAGE
-)
-file_format = (type = CSV, skip_header = 1)
-on_error = abort_statement
-purge = true;   -- purge data
-
--- 02. Check data in table
-select * from ORDERS_STG;
-
--- 03. Check stage
-list @ORDERS_STAGE;
+[toDo]
 
 
 //-- ############################# End ############################## --//

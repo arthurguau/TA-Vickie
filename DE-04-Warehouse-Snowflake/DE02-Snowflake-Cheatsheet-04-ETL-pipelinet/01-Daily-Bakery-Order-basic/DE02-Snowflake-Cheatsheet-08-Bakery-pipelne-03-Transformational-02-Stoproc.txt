@@ -17,12 +17,17 @@ Snowflake account created
       0. Define UDF - utility functions                           
 //-- ################################################################# --//
 
-[working on ...]
-
+N/A
 
 //-- ################################################################# --//
       1. Source model to Staging model                           
 //-- ################################################################# --//
+
+use role accountadmin;
+use database BAKERY_DB;
+use schema ORDERS;
+use warehouse BAKERY_WH;
+
 
 # 01. define transformative stored-proc
 
@@ -136,8 +141,23 @@ BEGIN
 END;
 
 
--- 02. test
+-- 02. Define stored procedure
+CREATE OR REPLACE PROCEDURE Transform_Daily_Summary()
+returns varchar
+LANGUAGE SQL
+AS
+BEGIN
+  INSERT INTO SUMMARY_ORDERS (delivery_date, baked_good_type, total_quantity)
+    select delivery_date, baked_good_type, sum(quantity) as total_quantity
+    from CUSTOMER_ORDERS
+    group by all;            
+return 'transformation done';
+END;
+
+
+-- 03. test
 call Query_Daily_Summary();
+call Transform_Daily_Summary();
 
 
 //-- ############################# End ############################## --//

@@ -22,11 +22,32 @@ Snowflake account created
       1. Source model to Staging model                           
 //-- ################################################################# --//
 
-# select all from file and add file name and loading timestamp
+user role accountadmin;
+use warehouse BAKERY_WH;
+use database BAKERY_DB;
+use schema ORDERS;
+
+-- 01. select all from file and add file name and loading timestamp
 select $1, $2, $3, $4, $5, 
      metadata$filename, 
      current_timestamp() 
   from @ORDERS_STAGE
+
+# 02. Add copy into command 
+copy into ORDERS_STG
+  from (        
+        select $1, $2, $3, $4, $5, metadata$filename, current_timestamp() 
+        from @ORDERS_STAGE
+  )
+  file_format = (type = CSV, skip_header = 1)
+  on_error = abort_statement
+  purge = true;
+
+-- 03. Check data in table
+select * from ORDERS_STG;
+
+-- 04. Check stage
+list @ORDERS_STAGE;
 
 
 //-- ################################################################# --//
@@ -73,8 +94,9 @@ when not matched then
       3. Warehousing model to delivery model      
 //-- ################################################################# --//
 
--- 01. Native sql [select clasue]
-select delivery_date, baked_good_type, sum(quantity) as total_quantity
+-- 01. Native sql 
+INSERT INTO target_table (delivery_date, baked_good_type, total_quantity)
+  select delivery_date, baked_good_type, sum(quantity) as total_quantity
   from CUSTOMER_ORDERS
   group by all;
 

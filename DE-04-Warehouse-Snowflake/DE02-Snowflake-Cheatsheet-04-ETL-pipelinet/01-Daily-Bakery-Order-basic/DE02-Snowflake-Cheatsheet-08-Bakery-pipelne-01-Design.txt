@@ -18,8 +18,8 @@ https://www.snowflake.com/webinar/for-customers/applying-architectural-patterns-
 ./dataset/Order_2023_07_07.csv
 
 
-# delivery data query result: delivery data models can be different
-daily order summary group by bakery type
+# delivery data query result: 
+delivery data models can be different daily order summary group by bakery type
 
 
 //-- ################################################################# --//
@@ -125,11 +125,9 @@ daily order summary group by bakery type
 //-- ################################################################# --//
 	
 # authentication (that is, letting a user connect)
-
 # authorisation (that is, what objects a connected user has access to). 
-
 # data masking
-
+# row level policy
 # data anonymisation
 
 

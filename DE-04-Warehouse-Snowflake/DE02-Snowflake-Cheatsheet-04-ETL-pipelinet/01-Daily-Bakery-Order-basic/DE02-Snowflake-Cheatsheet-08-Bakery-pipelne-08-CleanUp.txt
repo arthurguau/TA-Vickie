@@ -9,7 +9,16 @@ Snowflake account created
       1. Clean up                
 //-- ################################################################# --//
 
-ALTER TASK BAKERY_DB.ORDERS.PROCESS_ORDERS SUSPEND;
+Use role accountadmin;
+
+alter task BAKERY_DB.ORDERS.t_summary     SUSPEND;
+alter task BAKERY_DB.ORDERS.t_warehouse   SUSPEND;
+alter task BAKERY_DB.ORDERS.t_loading     SUSPEND;
+alter task BAKERY_DB.ORDERS.t_root_bakery SUSPEND;
+
+delete from bakery_db.orders.summary_orders;
+delete from bakery_db.orders.customer_orders;
+delete from bakery_db.orders.orders_stg;
 
 DROP DATABASE BAKERY_DB;
 DROP WAREHOUSE BAKERY_WH;

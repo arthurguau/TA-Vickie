@@ -21,9 +21,11 @@ Snowflake Data Engineering - Chapter 02.
 
 //-- ################################################################# --//
       1. Prepare data infrastructure
-         Database - schema, staging, warehousing and delivery tables
-         Warehouse
-         Stage                            
+          - Database 
+          - schema
+          - delivery tables
+          - Warehouse
+          - Stage                            
 //-- ################################################################# --//
 
 

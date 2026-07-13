@@ -1,0 +1,74 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+[working on ...]
+
+
+//-- ################################################################# --//
+      1. Create New Streamlit Application         
+//-- ################################################################# --//
+
+Step 1: Create New Streamlit Application
+
+Projects -> Streamlit
+- database
+- schema
+
+Create New App:
+  - a title, 
+  - location, 
+  - warehouse. 
+
+
+//-- ################################################################# --//
+      2. Prepare script              
+//-- ################################################################# --//
+
+# 02. Calculate Daily Sentiment Scores
+
+import streamlit as st
+import altair as alt
+import pandas as pd
+
+# Set the page title and layout
+st.set_page_config(page_title="FGL Bakery Order Visualization", layout="wide")
+
+# Header
+st.title("ACME Data Visualization Examples")
+st.write("Explore various ways of visualizing data using interactive elements in Streamlit.")
+
+-- search result to dataframe
+sql_result = select * from bakery_db.orders.order_summary;
+df = sql_result.to_pandas()
+
+# Ensure SENTIMENT_SCORE is numeric
+df['SENTIMENT_SCORE'] = pd.to_numeric(df['SENTIMENT_SCORE'])
+
+# Create the base chart with bars
+chart = alt.Chart(df).mark_bar(size=15).encode(
+    x=alt.X('DATE:T',
+            axis=alt.Axis(
+                format='%Y-%m-%d',  # YYYY-MM-DD format
+                labelAngle=90)  # Rotate labels 90 degrees
+            ),
+    y=alt.Y('SENTIMENT_SCORE:Q'),
+    color=alt.condition(
+        alt.datum.SENTIMENT_SCORE >= 0,
+        alt.value('#2ecc71'),  # green for positive
+        alt.value('#e74c3c')   # red for negative
+    ),
+    tooltip=['PRODUCT:N', 'DATE:T'] # Add tooltip
+).properties(
+    height=500
+)
+
+# Display the chart
+st.altair_chart(chart, use_container_width=True)
+
+
+
+//-- ############################# End ############################## --//
+
