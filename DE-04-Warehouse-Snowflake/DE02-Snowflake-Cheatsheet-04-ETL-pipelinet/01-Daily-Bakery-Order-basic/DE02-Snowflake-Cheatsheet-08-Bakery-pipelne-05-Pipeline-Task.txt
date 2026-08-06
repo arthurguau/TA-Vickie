@@ -22,19 +22,19 @@ USE ROLE ACCOUNTADMIN;
 GRANT EXECUTE TASK, EXECUTE MANAGED TASK ON ACCOUNT TO ROLE TASKADMIN;
 
 USE ROLE securityadmin; 
-GRANT USAGE  ON WAREHOUSE BAKERY_WH TO ROLE TASKADMIN;
-GRANT USAGE  ON DATABASE BAKERY_DB  TO ROLE TASKADMIN;
+GRANT USAGE  ON WAREHOUSE BAKERY_WH       TO ROLE TASKADMIN;
+GRANT USAGE  ON DATABASE BAKERY_DB        TO ROLE TASKADMIN;
 GRANT USAGE  ON SCHEMA   BAKERY_DB.ORDERS TO ROLE TASKADMIN;
 
 GRANT CREATE TASK  ON SCHEMA  BAKERY_DB.ORDERS TO ROLE TASKADMIN;
 
-GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.load_file() TO ROLE TASKADMIN;
-GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.transform_warehouse() TO ROLE TASKADMIN;
+GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.load_file()               TO ROLE TASKADMIN;
+GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.transform_warehouse()     TO ROLE TASKADMIN;
 GRANT USAGE ON PROCEDURE BAKERY_DB.ORDERS.transform_Daily_Summary() TO ROLE TASKADMIN;
 
-GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.ORDERS_STG TO ROLE TASKADMIN;
-GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.CUSTOMER_ORDERS TO ROLE TASKADMIN;
-GRANT INSERT ON TABLE    BAKERY_DB.ORDERS.SUMMARY_ORDERS TO ROLE TASKADMIN;
+GRANT TRUNCATE, INSERT ON TABLE BAKERY_DB.ORDERS.ORDERS_STG      TO ROLE TASKADMIN;
+GRANT TRUNCATE, INSERT ON TABLE BAKERY_DB.ORDERS.CUSTOMER_ORDERS TO ROLE TASKADMIN;
+GRANT TRUNCATE, INSERT ON TABLE BAKERY_DB.ORDERS.SUMMARY_ORDERS  TO ROLE TASKADMIN;
 
 -- 03. grant role TASKADMIN TO ROLE SYSADMIN;
 USE ROLE SECURITYADMIN;
@@ -48,6 +48,7 @@ GRANT ROLE TASKADMIN TO ROLE SYSADMIN;
 use warehouse BAKERY_WH;
 use database BAKERY_DB;
 use schema ORDERS; 
+use role taskadmin;
 
 -- 01. Orchestrate by task
 create task T_PROCESS_ORDERS
@@ -61,8 +62,8 @@ begin
   call load_file();
 
   -- 002. staging table to warehousing table
-  -- call stored procedure
   truncate table CUSTOMER_ORDERS;
+  -- call stored procedure
   call transform_warehouse();
 
   -- 003. warehousing table to delivery table
@@ -82,13 +83,16 @@ DROP TASK IF EXISTS BAKERY_DB.ORDERS.T_PROCESS_ORDERS;
       2. Create task graph        
 //-- ################################################################# --//
 
-Use role taskadmin;
+use warehouse BAKERY_WH;
+use database BAKERY_DB;
+use schema ORDERS; 
+use role taskadmin;
 
 -- 00. Root task: empty root task (acts strictly as the orchestrator/timer)
 
 CREATE OR REPLACE TASK t_root_bakery
   WAREHOUSE = BAKERY_WH
-  SCHEDULE = '1 MINUTE'
+  SCHEDULE = '10 MINUTES'
 AS
   SELECT 1;
 
@@ -99,7 +103,7 @@ CREATE OR REPLACE TASK t_loading
   AFTER t_root_bakery
 AS
 BEGIN
-  truncate table ORDERS_STG;
+  truncate table BAKERY_DB.ORDERS.ORDERS_STG;
   call load_file();
 END;
 
@@ -111,7 +115,7 @@ CREATE OR REPLACE TASK t_warehouse
   AFTER t_loading
 AS
 BEGIN
-  truncate table CUSTOMER_ORDERS;
+  truncate table BAKERY_DB.ORDERS.CUSTOMER_ORDERS;
   call transform_warehouse();
 END;
 
@@ -123,7 +127,7 @@ CREATE OR REPLACE TASK t_summary
   AFTER t_warehouse
 AS
 BEGIN
-  truncate table SUMMARY_ORDERS;
+  truncate table BAKERY_DB.ORDERS.SUMMARY_ORDERS;
   call Transform_Daily_Summary();
 END;
 
@@ -132,7 +136,7 @@ END;
       3. Check tasks           
 //-- ################################################################# --//
 
--- 01. check defined tasks
+-- 01. check defined tasks: check predecessors
 SHOW TASKS;
 
 DESCRIBE TASK t_summary;
@@ -146,9 +150,9 @@ catalog -> database -> schema -> tasks -> Graph
 
 -- 03. check tasks
 SELECT 
-    NAME AS TASK_NAME, 
-    PREDECESSORS, 
-    STATE 
+  NAME AS TASK_NAME, 
+  PREDECESSORS, 
+  STATE 
 FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => 't_root_bakery', RECURSIVE => TRUE));
 
 
@@ -157,6 +161,11 @@ FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => 't_root_bakery', RECU
 //-- ################################################################# --//
 
 -- 01. put task into action
+
+alter task t_root_bakery suspend;
+alter task t_loading     suspend;
+alter task t_warehouse   suspend;
+alter task t_summary     suspend;
 
 alter task t_summary     resume;
 alter task t_warehouse   resume;
@@ -173,10 +182,17 @@ execute task t_root_bakery;
       5. Check execution                  
 //-- ################################################################# --//
 
--- 01. Check delivery table
-Select * from BAKERY_DB.ORDERS.SUMMARY_ORDERS;
+use role accountadmin;
 
--- 02. view previous and scheduled task executions
+select * from bakery_db.orders.orders_stg;
+select * from bakery_db.orders.customer_orders;
+select * from bakery_db.orders.summary_orders;
+
+-- 01. Check delivery table
+Select * 
+  from BAKERY_DB.ORDERS.SUMMARY_ORDERS;
+
+-- 02. view previous and scheduled task execution history
 select *
   from table(information_schema.task_history())
   order by scheduled_time desc;

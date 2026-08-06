@@ -1,0 +1,137 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# reference
+https://www.snowflake.com/en/developers/guides/getting-started-with-snowpark-python/#0
+
+
+//-- ################################################################# --//
+       0. Setup
+//-- ################################################################# --//
+
+# 01. Clone notebook project
+git clone https://github.com/Snowflake-Labs/sfguide-getting-started-snowpark-python.git
+cd sfguide-getting-started-snowpark-python 
+
+# 02. Copy public/private keys into root directory 
+rsa_key.p8
+rsa_key.pub
+
+
+//-- ################################################################# --//
+       1. Setup requirements.txt
+//-- ################################################################# --//
+
+# 01. Create required packages
+
+cat <<EFO > requirements.txt
+Snowflake-snowpark-python
+numpy
+pandas
+python-dotenv
+scikit-learn
+ipykernel
+matplotlib
+seaborn
+EFO
+
+
+//-- ################################################################# --//
+       2. Create & activate virtual environment
+//-- ################################################################# --//
+
+# 02. Create virtual environment
+python3 -m venv .venv
+
+# 03. Activate virtual environment
+source .venv/bin/activate
+
+
+//-- ################################################################# --//
+       3. Install required packages
+//-- ################################################################# --//
+
+# 04. Install required packages
+python3 -m pip install -r requirements.txt
+
+
+//-- ################################################################# --//
+       4. create a kernel for Jupyter
+//-- ################################################################# --//
+
+# 01. Create kernel
+python -m ipykernel install --user --name .venv --display-name "Python (Snowpark)"
+
+
+//-- ################################################################# --//
+       5. Launch Jupyter Notebook
+//-- ################################################################# --//
+
+# 01. Startup notebook
+jupyter notebook
+
+# 02. choose "Python (Snowpark)" kernal
+
+
+//-- ################################################################# --//
+       6. Configure connection
+//-- ################################################################# --//
+
+# 01. Create & Edit config.py
+
+snowflake_conn_prop = {
+   "account": "<org>-<account>",
+   "user": "<YourName>",
+   "password": "YourPasswordHere",
+   "role": "ACCOUNTADMIN",
+   "database": "snowpark_quickstart",
+   "schema": "TELCO",
+   "warehouse": "sp_qs_wh",
+}
+
+
+//-- ################################################################# --//
+       7. Setup Snowflake connection
+//-- ################################################################# --//
+
+from snowflake.snowpark.session import Session
+from snowflake.snowpark import functions as F
+from snowflake.snowpark.types import *
+from cryptography.hazmat.primitives import serialization
+
+import pandas as pd
+from sklearn import linear_model
+import matplotlib.pyplot as plt
+
+%matplotlib inline
+import datetime as dt
+import numpy as np
+import seaborn as sns
+
+# Snowflake connection info is saved in config.py
+from config import snowflake_conn_prop
+
+# lets import some tranformations functions
+from snowflake.snowpark.functions import udf, col, lit, translate, is_null, iff
+
+# read private key
+with open("rsa_key.p8", "rb") as key_file:
+    p_key = serialization.load_pem_private_key(key_file.read(), password=None)
+
+pkb = p_key.private_bytes(
+    encoding=serialization.Encoding.DER,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+)
+
+# set private key into connection p
+snowflake_conn_prop['private_key']=pkb
+
+
+
+
+//-- ############################# End ############################## --//
+

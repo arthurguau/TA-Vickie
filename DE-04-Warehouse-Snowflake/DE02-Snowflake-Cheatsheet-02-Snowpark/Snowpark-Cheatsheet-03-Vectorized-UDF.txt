@@ -1,0 +1,49 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+# concept: Vectorized UDFs 
+operate similarly to scalar UDFs in that they let you define Python functions 
+that receive batches of input rows as pandas DataFrames and return collections of results as pandas arrays or series.
+
+Vectorized UDFs parallelize the operation on batches of data and provide significant performance advantages 
+on sets of rows compared to serial row processing. 
+
+they reduce the complexity of using libraries that operate on pandas DataFrames and arrays.
+
+
+//-- ################################################################ --//
+       Vectorized UDF
+//-- ################################################################ --//
+
+# 01. Definition
+
+import pandas as pd
+from snowflake.snowpark.functions import pandas_udf
+from snowflake.snowpark.types import IntegerType, PandasSeriesType, StringType
+
+@pandas_udf(
+    name='column_adder'
+  , stage_location = '@MY_STAGE'
+  , input_types=[PandasSeriesType(StringType()), PandasSeriesType(StringType())]
+  , return_type=PandasSeriesType(StringType())
+  , is_permanent=True
+  , replace=True
+)
+def column_adder(column1: pd.Series, column2: pd.Series) -> pd.Series:
+    return column1 + "," + column2
+
+
+# 02. apply 
+
+df = session.table("EMPLOYEE_DATA")
+
+df.withColumn('City_Country', column_adder(col('CITY'), col('COUNTRY'))).show()
+
+
+
+//-- ############################# End ############################## --//
+

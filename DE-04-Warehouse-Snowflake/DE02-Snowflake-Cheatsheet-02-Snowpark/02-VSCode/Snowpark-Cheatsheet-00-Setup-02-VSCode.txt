@@ -1,0 +1,123 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+//-- ################################################################# --//
+       0. create configuration file
+//-- ################################################################# --//
+
+# create connection configuration: ~/.snowflake/config.toml
+
+[connections.snowflake]
+SNOWFLAKE_ACCOUNT="<org>-<account>"
+SNOWFLAKE_ROLE="accountadmin"
+SNOWFLAKE_USER="<your-name>"
+SNOWFLAKE_WAREHOUSE="compute_wh"
+SNOWFLAKE_DATABASE="healthcare_db"
+SNOWFLAKE_SCHEMA="finance"
+authenticator="SNOWFLAKE_JWT"
+
+
+//-- ################################################################# --//
+       1. Setup project structure
+//-- ################################################################# --//
+
+# 01. Add snowflake packages to requirements.txt
+
+Snowflake-snowpark-python
+numpy 
+pandas
+python-dotenv
+
+
+//-- ################################################################# --//
+       2. Prepare virtual environment
+//-- ################################################################# --//
+
+# 01. Create a virtual environment
+python3 -m venv .venv
+
+# 02. Activate virtual environment
+Source .venv/bin/activate
+
+
+//-- ################################################################# --//
+       3. Install required packages
+//-- ################################################################# --//
+
+# 01. Install required packages
+python3 -m pip install -r requirements.txt
+
+
+//-- ################################################################# --//
+       4. Establish snowflake connection
+//-- ################################################################# --//
+
+# 01. create HelloSnowpark.py
+
+from pathlib import Path
+from snowflake.snowpark import Session
+import snowflake.connector
+from cryptography.hazmat.primitives import serialization
+
+import sys
+import logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+# 1. resolve the path to your Snowflake connections file
+connections_path = Path.home() / ".snowflake" / "config.toml"
+
+# 2. Parse using Python's native TOML parser (Requires Python 3.11+)
+# For Python < 3.11, use: import toml; config = toml.load(connections_path)
+import tomllib
+
+with open(connections_path, "rb") as f:
+    config = tomllib.load(f)
+
+# print(config["connections"]["snowflake"])
+
+with open("rsa_key.p8", "rb") as key_file:
+    p_key = serialization.load_pem_private_key(key_file.read(), password=None)
+
+pkb = p_key.private_bytes(
+    encoding=serialization.Encoding.DER,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+)
+
+# Convert the config section into a standard Python dictionary
+connection_parameters = config["connections"]["snowflake"]
+connection_parameters["private_key"] = pkb
+
+# creating a session object
+session = Session.builder.configs(connection_param).create()
+#session = Session.builder.configs("connection_name", "snowflake").create()
+
+
+# print values from session object to test
+print("\n\t Current Account Name: ",      session.get_current_account())
+print("\t Current Database Name: ",       session.get_current_database())
+print("\t Current Schema Name: ",         session.get_current_schema())
+print("\t Current Role Name: ",           session.get_current_role())
+print("\t Current Warehouse Name: ",      session.get_current_warehouse())
+print("\t Fully Qualified Schema Name: ", session.get_fully_qualified_current_schema(),"\n")
+
+print("Session Object Type:", type(session))
+
+# closing the session
+session.close()
+
+
+//-- ################################################################# --//
+       5. Run test
+//-- ################################################################# --//
+
+python3 ./HelloSnowpark.py
+
+
+//-- ############################# End ############################## --//
+

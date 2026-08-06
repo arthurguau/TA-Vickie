@@ -1,0 +1,321 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+# concept: Snowpark
+
+# Snowpark APIs
+https://docs.snowflake.com/en/developer-guide/snowpark/reference/python/latest/snowpark/index
+
+# Dataframe
+https://docs.snowflake.com/en/developer-guide/snowpark/reference/python/latest/snowpark/dataframe
+
+
+//-- ################################################################# --//
+       0. create warehouse/database/schema
+//-- ################################################################# --//
+
+# 00. execute connection
+
+# 01. Setup session -> create warehouse/database/schema
+
+from snowflake.snowpark import version
+print(version.VERSION)
+
+session = Session.builder.configs(snowflake_conn_prop).create()
+
+session.sql("use role accountadmin").collect()
+session.sql("create database if not exists  {}".format(snowflake_conn_prop['database'])).collect()
+session.sql("use database {}".format(snowflake_conn_prop['database'])).collect()
+session.sql("create schema if not exists {}".format(snowflake_conn_prop['schema'])).collect()
+session.sql("use schema {}".format(snowflake_conn_prop['schema'])).collect()
+session.sql("create or replace warehouse {} with \
+                WAREHOUSE_SIZE = XSMALL \
+                AUTO_SUSPEND = 120 \
+                AUTO_RESUME = TRUE".format(snowflake_conn_prop['warehouse'])).collect()
+session.sql("use warehouse {}".format(snowflake_conn_prop['warehouse']))
+
+print(session.sql('select current_warehouse(), current_database(), current_schema()').collect())
+
+
+//-- ################################################################# --//
+       1. Setup dataset
+//-- ################################################################# --//
+
+# 02. Insert a new cell below -> create table
+
+from snowflake.snowpark.functions import col
+
+session.sql("""
+   CREATE OR REPLACE TABLE FGL_EMPLOYEE_DATA (
+       id INT,
+       name VARCHAR, 
+       age INT, 
+       email VARCHAR, 
+       city VARCHAR,
+       country VARCHAR,
+       department VARCHAR,
+       salary INT)
+""").collect()
+
+
+# 03. Insert data into table
+
+session.sql("""
+    INSERT INTO FGL_EMPLOYEE_DATA VALUES
+    (1, 'John Doe',         25, 'johndoe@example.com',         'New York',    'USA',       'Sales',       70000),
+    (2, 'Jane Smith',       30, 'janesmith@example.com',       'Los Angeles', 'USA',       'Sales',       85000),
+    (3, 'Michael Johnson',  35, 'michaeljohnson@example.com',  'London',      'UK',        'Engineering', 95000),
+    (4, 'Sarah Williams',   28, 'sarahwilliams@example.com',   'Leeds',       'UK',        'Engineering', 110000),
+    (5, 'David Brown',      32, 'davidbrown@example.com',      'Tokyo',       'Japan',     'Marketing',   80000),
+    (6, 'Emily Davis',      29, 'emilydavis@example.com',      'Sydney',      'Australia', 'Marketing',   90000),
+    (7, 'James Miller',     27, 'jamesmiller@example.com',     'Dallas',      'USA',       'Sales',       65000),
+    (8, 'Emma Wilson',      33, 'emmawilson@example.com',      'Berlin',      'Germany',   'Sales',       75000),
+    (9, 'Alexander Taylor', 31, 'alexandertaylor@example.com', 'Rome',        'Italy',     'Engineering', 89000),
+    (10,'Olivia Anderson',  26, 'oliviaanderson@example.com',  'Melbourne',   'Australia', 'Engineering', 78000)
+""").collect()
+
+# To count the number of records present in the table
+session.sql("SELECT count(*) FROM FGL_EMPLOYEE_DATA").collect()
+
+
+//-- ################################################################# --//
+       2. construct a DataFrame from data in 
+           - table
+           - view
+           - stream
+//-- ################################################################# --//
+
+# 01. Insert a new cell below
+
+# 02. create dataframe objects from snowflake tables
+df = session.table("EMPLOYEE_DATA")
+
+# 03. prints the schema of the data frame
+df.schema
+df.schema.names
+
+# 04. prints the number of rows
+df.count()
+
+# 05. min-max statistics
+df.describe().show()
+
+# 06. print the first 15 rows in the DataFrame
+df.show(15)
+
+
+//-- ################################################################# --//
+        3. Transformations
+           .select()
+           .filter()/.where()
+           .with_column()
+           .drop()
+           .group_by()
+           .sort()/.order_by()
+           .join(): 
+//-- ################################################################# --//
+
+# Transformations 
+- build an internal abstract syntax tree
+- output a new Dataframe
+
+Snowpark operates via lazy evaluation, transformation methods do not actually query the database; 
+they merely build an internal abstract syntax tree.
+
+# .select(): 
+Chooses specific columns or applies expressions to generate new ones.
+
+# .filter() / .where(): 
+Filters rows based on a given conditional expression.
+
+# .with_column(): 
+Adds a new column or updates an existing column in the DataFrame.
+
+# .drop(): 
+Removes specific columns from the DataFrame.
+
+# .group_by(): 
+Groups rows for aggregation functions like sum(), avg(), or count().
+
+# .sort() / .order_by(): 
+Sorts rows by one or multiple specified columns.
+
+# .join(): 
+Combines two DataFrames using standard SQL join types (inner, left, right, outer).
+
+
+//-- ################################################################# --//
+       1. Select
+//-- ================================================================= --//
+
+# 01. Insert a new cell below
+
+# 02. Select columns
+df.select('country').show()
+df.select('country').distinct().show()
+
+
+//-- ################################################################# --//
+       2. Filter
+//-- ================================================================= --//
+
+# 01. Insert a new cell below
+
+# 02. filter rows
+df_subset_row = df.filter(col("id") == 1)
+df_subset_row.show()
+
+
+//-- ################################################################# --//
+        3. with_column()
+//-- ================================================================= --//
+
+# Add a new column named "InsertTime"
+from snowflake.snowpark.functions import current_timestamp
+
+df_new_column = df.with_column("InsertTime", current_timestamp())
+df_new_column.show()
+
+# Be aware: old data frame is still with no change
+df.show()
+
+
+//-- ################################################################# --//
+        4. drop()
+//-- ================================================================= --//
+
+# 01. Insert a new cell below
+
+# 02. Drop a single column named 'InsertTime'
+df_droped = df_new_column.drop("InsertTime")
+df_droped.show()
+
+
+//-- ################################################################# --//
+        5. group_by()
+//-- ================================================================= --//
+
+# 01. Insert a new cell below
+
+# 02. Calculates total salary pool for each department
+from snowflake.snowpark.functions import col, sum as sum_, avg, max as max_
+
+df_total_salary = df.group_by("department").sum("salary")
+df_total_salary.show()
+
+# 03. Advanced Group By with multiple, aliased aggregations
+      - Calculates average and max salary, and renames the resulting columns
+df_dept_stats = df.group_by(col("department")).agg(
+    avg(col("salary")).alias("average_salary"),
+    max_(col("salary")).alias("max_salary")
+)
+df_dept_stats.show()
+
+# 04. Grouping by multiple columns using a list. ???
+df_multi_group = df.group_by(["department", "name"]).count()
+df_multi_group.show()
+
+
+//-- ################################################################# --//
+        6. sort()
+//-- ================================================================= --//
+
+# 01. Insert a new cell below
+
+# 02. sort the "age" table by the "age" column in ascending order.
+
+from snowflake.snowpark.functions import asc, desc
+df_sort = df.sort(asc(col("AGE")))
+df_sort.show()
+
+
+//-- ################################################################# --//
+       4. Aggregate: agg()
+//-- ================================================================= --//
+
+# Import the sum function from the functions module.
+from snowflake.snowpark.functions import sum, agg, col
+
+# Calculate the total salary for each department
+df_aggregate = df.groupBy(col("department"))\
+                 .agg(sum(col("salary")).alias("total_salary"))\
+                 .filter(col("department") == 'Engineering')
+
+df_aggregate.show(15)
+
+
+//-- ################################################################# --//
+       5. Cache
+//-- ================================================================= --//
+
+Snowpark executes its commands lazily, there are times when the same transformation on a DataFrame is used multiple times.
+In those cases, the Snowpark DataFrame can be cached.
+In the background, Snowpark will create a temporary table and load the transformed data into that table.
+When that base DataFrame is used, later on, that table will be used instead of recalculating the transformations.
+
+total_stars_by_repo_year = total_stars_by_repo_year.cache_result()
+session.sql("USE VINO_DB")
+total_stars_by_repo_year.write.mode("overwrite").save_as_table("VINO_DB.VINO_SCHEMA.total_stars_by_repo_year")
+
+
+//-- ################################################################# --//
+       6. Join two data frames
+            - union()
+            - ?
+//-- ================================================================= --//
+
+# 01. Union - Adding new records to the Dataframe
+
+# Import the lit function from the functions module.
+from snowflake.snowpark.functions import lit
+
+# Create a new DataFrame with the values for the new row.
+new_row = session.createDataFrame(
+    [(11, 'John Smith', 55, 'johnsmith@example.com','New York','USA','Sales',70000)],
+    ['id', 'name', 'age', 'email', 'city', 'country', 'department', 'salary'])
+
+# Combine the two DataFrames into a single DataFrame.
+df_combined_rows = df.union(new_row)
+
+# Show the resulting DataFrame.
+df_combined_rows.sort(asc(col("id"))).show(15)
+
+
+//-- ################################################################# --//
+        4. Actions
+           01. collect()/collect_nowait()
+           02. show()/take()/limit()
+           03. count()/avg()/max()/median()/min()/sum()
+           04. first()
+//-- ################################################################# --//
+
+# action functions - trigger the evaluation of a DataFrame
+force the execution of the underlying SQL query on the Snowflake engine.
+An action function is required to compile that tree into SQL, send it to the Snowflake virtual warehouse, and return or persist the data.
+
+Snowpark operates via lazy evaluation, transformation methods do not actually query the database; 
+they merely build an internal abstract syntax tree. 
+
+# .collect(): 
+Executes the query and returns all resulting rows as a Python list of Row objects
+
+# .show(n): 
+Evaluates the DataFrame and prints the first n rows directly in a human-readable table format. 
+
+# .count()/avg()/max()/median()/min()/sum(): 
+Executes the query and returns the total number of rows in the resulting dataset as an integer
+
+# .first(n): 
+Returns the first n rows of the dataset as a list of Row objects
+
+# .collect_nowait(): 
+Asynchronously executes the query. 
+It returns a TypedAsyncJob object immediately, 
+allowing your code to continue running while Snowflake processes the data in the background.
+
+
+//-- ############################# End ############################## --//
+

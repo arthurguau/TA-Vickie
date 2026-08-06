@@ -1,0 +1,34 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+//-- ################################################################# --//
+       1. Create private key
+//-- ################################################################# --//
+
+# 01. generate an unencrypted private key (or add -aes256 for a passphrase-protected one)
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+
+# 02. create public key
+openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
+
+# 03. check: rsa_key.p8 rsa_key.pub
+ls -l rsa_key.*
+
+
+//-- ################################################################# --//
+        2. register the public key 
+//-- ################################################################# --//
+
+
+# (strip header/footer/newlines)
+
+ALTER USER FGL_service_user SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
+
+ALTER USER <your-login-name> SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
+
+
+//-- ############################# End ############################## --//
+

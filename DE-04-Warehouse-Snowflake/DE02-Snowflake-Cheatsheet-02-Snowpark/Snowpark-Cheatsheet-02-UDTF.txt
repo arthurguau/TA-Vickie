@@ -1,0 +1,148 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+# concept: Tabular UDFs, also known as UDTFs, 
+require stateful operations to be performed on data batches and are invoked once per row, 
+just like scalar UDFs, but they can return multiple rows as output for each input row. 
+
+The UDTF handler method consists of an additional optional parameter that 
+helps initialize the handler once for each partition and finalize processing for each section. 
+A UDTF is a type of UDF that executes similarly to a UDF but with tabular output. 
+
+# -- Define Python class locally
+'''
+Define main Python class which is leveraged to process partitions.
+
+Executes in the following order:
+- __init__ | Executes once per partition
+- process | Executes once per input row within the partition
+- end_partition | Executes once per partition
+'''
+
+class <name of main Python class> :
+    '''
+    Optional __init__ method to execute logic for a partition before breaking out into rows
+    '''
+    def __init__(self) :
+
+    '''
+    Method to process each input row within a partition, returning a tabular value as tuples.
+    '''
+    def process(self, <arguments>) :
+       '''
+       Enter Python code here that executes for each input row.
+       This likely ends with a set of yield clauses that output tuples, for example:
+       '''
+       yield (<field_1_value_1>, <field_2_value_1>, ...)
+       yield (<field_1_value_2>, <field_2_value_2>, ...)
+
+       '''
+       Alternatively, this may end with a single return clause containing an iterable of tuples, for example:
+       '''
+       return [
+           (<field_1_value_1>, <field_2_value_1>, ...)
+         , (<field_1_value_2>, <field_2_value_2>, ...)
+       ]
+
+
+    '''
+    Optional end_partition method to execute logic for a partition after processing all input rows
+    '''
+    def end_partition(self) :
+       # Python code at the partition level
+       '''
+       This ends with a set of yield clauses that output tuples, for example:
+       '''
+       yield (<field_1_value_1>, <field_2_value_1>, ...)
+       yield (<field_1_value_2>, <field_2_value_2>, ...)
+
+       '''
+       Alternatively, this ends with a single return clause containing
+       an iterable of tuples, for example:
+       '''
+       return [
+           (<field_1_value_1>, <field_2_value_1>, ...)
+         , (<field_1_value_2>, <field_2_value_2>, ...)
+       ]
+
+
+# -- Register UDTF in Snowflake
+
+from snowflake.snowpark.types import StructType, StructField
+from snowflake.snowpark.types import <specific Snowpark DataType objects>
+
+snowpark_session.add_packages(
+    '<list of required packages natively available in Snowflake( 
+        i.e. included in Anaconda Snowpark channel)>')
+
+snowpark_session.add_import('<path\\to\\local\\directory\\or\\file>')
+
+snowpark_session.udtf.register(
+    handler = <name of main Python class>
+  , output_schema = StructType(
+        <list of StructField objects with specific field name and Snowpark DataType objects>)
+  , input_types = <list of input DataType() objects for input parameters>
+  , is_permanent = True
+  , name = '<UDTF name>'
+  , replace = True
+  , stage_location = '@<UDTF stage name>'
+)
+
+
+
+
+//-- ################################################################# --//
+      Snowpark UDTF
+//-- ################################################################# --//
+
+# 01. define function
+class CalculateAverage:
+    def __init__(self) :
+        self._values = []
+    def process(self, input_measure: int) :
+        self._values.append(input_measure)
+    def end_partition(self) :
+        values_list = self._values
+        average = sum(values_list) / len(values_list)
+        yield(average ,)
+
+
+# 02. register in Snowflake
+
+from snowflake.snowpark.types import StructType, StructField
+from snowflake.snowpark.types import FloatType,IntegerType,StringType
+
+output_schema = StructType([
+    StructField("Avg_Age", FloatType())
+])
+
+session.udtf.register(
+    handler = CalculateAverage
+  , output_schema = output_schema
+  , input_types = [IntegerType()]
+  , is_permanent = True
+  , name = 'AVERAGE_AGE'
+  , replace = True
+  , stage_location = '@MY_STAGE'
+)
+
+
+//-- ################################################################# --//
+      Apply UDTF
+//-- ################################################################# --//
+
+session.sql('''
+    SELECT
+        COUNTRY, Avg_Age
+    FROM
+        SAMPLE_EMPLOYEE_DATA,
+        table(AVERAGE_AGE(AGE) over (partition by COUNTRY))
+''').show()
+
+
+//-- ############################# End ############################## --//
+

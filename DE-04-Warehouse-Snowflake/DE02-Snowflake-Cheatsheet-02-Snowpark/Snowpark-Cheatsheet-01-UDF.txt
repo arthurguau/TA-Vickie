@@ -1,0 +1,79 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+# concept: SnowPark Function
+
+def <main Python function name>(<arguments>):
+    return <function output>
+    from snowflake.snowpark.types import <specific Snowpark DataType object>
+    
+    snowpark_session.add_packages('List of native packages in Anaconda Channel')
+    snowpark_session.add_import('Path to Local File')
+    
+    snowpark_session.udf.register(
+       func = <Main Function Name>
+        , return_type = <Return Type of Snowpark DataType object >
+        , input_types = <[Input Types of Snowflake DataType object]>
+        , is_permanent = True
+        , name = '<UDF name>'
+        , replace = True
+        , stage_location = '@<UDF stage name>'
+)
+
+
+//-- ################################################################# --//
+      Snowpark UDF
+       - define
+       - register
+//-- ################################################################# --//
+
+def last_name_finder(input_name:str):
+    last_name = input_name.split()[1]
+    return last_name
+
+from snowflake.snowpark.types import StringType,IntegerType,ArrayType
+
+test = session.udf.register(
+    func = last_name_finder
+  , return_type = StringType()
+  , input_types = [StringType()]
+  , is_permanent = True
+  , name = 'LAST_NAME_FINDER'
+  , replace = True
+  , stage_location = '@MY_STAGE'
+)
+
+
+//-- ################################################################# --//
+      Apply UDF
+       - SQL
+       - Dataframe
+//-- ################################################################# --//
+
+# 01. SQL
+
+session.sql('''
+    SELECT
+      NAME,
+      LAST_NAME_FINDER(NAME) AS LAST_NAME
+    FROM EMPLOYEE_DATA
+''').show()
+
+# 02. Dataframe
+
+from snowflake.snowpark.functions import col, call_udf
+
+df = session.table("EMPLOYEE_DATA")
+
+df.with_column(
+    "last_name",
+    call_udf("LAST_NAME_FINDER", col("name"))
+   ).show()
+
+
+//-- ############################# End ############################## --//
+

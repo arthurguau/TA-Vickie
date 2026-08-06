@@ -1,0 +1,68 @@
+//-- ################################################################# --//
+//-- ****    Prerequisite                                         **** --//
+//-- ################################################################# --//
+
+Snowflake account created
+
+
+# concept: SnowPark Stored Procedure
+
+# 01. Define Python function locally
+def <Python Function Name>(
+    snowpark_session: snowflake.snowpark.Session, <arguments>):
+    return <Output>
+
+
+# 02. Imports Required For Stored Procedure
+from snowflake.snowpark.types import <specific Snowpark DataType object>
+
+# Optional: Import additional packages or files
+snowpark_session.add_packages('List of native packages in Anaconda Channel')
+snowpark_session.add_import('Path to Local File')
+
+
+# 03. register Stored Procedure with Snowflake
+snowpark_session.sproc.register(
+    func = <Function name to register>
+  , return_type = <Return Type of Snowpark DataType object>
+  , input_types = <[Input Types of Snowflake DataType object]>
+  , is_permanent = True
+  , name = '<Stored Procedure name>'
+  , replace = True
+  , stage_location = '@<Stored Procedure stage name>'
+    <optional: , execute_as = 'CALLER'>
+)
+
+
+//-- ################################################################# --//
+      1. Define Snowpark Stored Procedure
+//-- ################################################################# --//
+
+def subset_table(snowpark_session: Session):
+    df = snowpark_session.table('EMPLOYEE_DATA').select("NAME","AGE")
+    return df.collect()
+
+from snowflake.snowpark.types import StringType
+
+session.add_packages('snowflake-snowpark-python')
+
+session.sproc.register(
+    func = subset_table
+  , return_type = StringType()
+  , input_types = []
+  , is_permanent = True
+  , name = 'SPROC_SUBSET_TABLE'
+  , replace = True
+  , stage_location = '@MY_STAGE'
+)
+
+//-- ################################################################# --//
+      2. Test Stored Procedure
+//-- ################################################################# --//
+
+# 01. test
+session.sql(''' CALL SPROC_SUBSET_TABLE()''').show()
+
+
+//-- ############################# End ############################## --//
+
